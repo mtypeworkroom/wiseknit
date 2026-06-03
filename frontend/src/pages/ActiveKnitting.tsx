@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import ChartGrid from '../components/knitting/ChartGrid'
@@ -13,8 +13,6 @@ export default function ActiveKnitting() {
   const [panelOpen, setPanelOpen] = useState<'legend' | 'tools' | null>(null)
   const [backMenuOpen, setBackMenuOpen] = useState(false)
   const [jumpMenuOpen, setJumpMenuOpen] = useState(false)
-  const [jumpRow, setJumpRow] = useState<number>(1)
-  const sessionStartRow = useRef(project?.currentRow ?? 0)
 
   useEffect(() => {
     if (!project) navigate('/dashboard')
@@ -25,16 +23,6 @@ export default function ActiveKnitting() {
   const pct = Math.round((project.currentRow / project.totalRows) * 100)
   const isLaceRow = [2,4,6,8].includes(project.currentRow)
   const isPurlRow = [10,12,14,16].includes(project.currentRow)
-
-  const handleJump = (row: number) => {
-    const rowsBack = row < project.currentRow ? project.currentRow - row : 0
-    updateProject(project.id, {
-      currentRow: row,
-      totalRowsWorked: Math.max(0, (project.totalRowsWorked ?? 0) - rowsBack),
-    })
-    setJumpMenuOpen(false)
-    setBackMenuOpen(false)
-  }
 
   const handleReset = () => {
     if (window.confirm('Reset to row 1? This will clear your progress in this session.')) {
