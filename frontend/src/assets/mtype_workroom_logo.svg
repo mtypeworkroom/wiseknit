@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 680 740"
+   width="680"
+   height="740"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="mtype_workroom_logo.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="0.66891892"
+     inkscape:cx="341.59596"
+     inkscape:cy="370"
+     inkscape:window-width="1280"
+     inkscape:window-height="649"
+     inkscape:window-x="-8"
+     inkscape:window-y="2152"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3" />
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient19"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#e8c84a;stop-opacity:1;"
+         offset="0"
+         id="stop19" />
+      <stop
+         style="stop-color:#5f4e09;stop-opacity:1;"
+         offset="1"
+         id="stop20" />
+    </linearGradient>
+    <pattern
+       inkscape:collect="always"
+       xlink:href="#pattern12206"
+       id="pattern16"
+       patternTransform="matrix(1,0,0,3,200,585)"
+       x="0"
+       y="0"
+       preserveAspectRatio="none" />
+    <pattern
+       inkscape:collect="always"
+       xlink:href="#pattern12206"
+       id="pattern15"
+       patternTransform="matrix(3,0,0,3,200,585)"
+       x="0"
+       y="0"
+       preserveAspectRatio="none" />
+    <pattern
+       inkscape:collect="always"
+       xlink:href="#pattern12206"
+       id="pattern14"
+       patternTransform="matrix(3,0,0,3,200,585)"
+       x="0"
+       y="0"
+       preserveAspectRatio="none" />
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath33">
+      <rect
+         style="fill:#000000;stroke:none;stroke-width:0.999995;stroke-linecap:butt;stroke-linejoin:bevel;paint-order:stroke markers fill;stop-color:#000000"
+         id="rect33"
+         width="46.19186"
+         height="80.006783"
+         x="74.999985"
+         y="399.99661" />
+    </clipPath>
+    <pattern
+       inkscape:collect="always"
+       xlink:href="#pattern12206"
+       id="pattern5"
+       patternTransform="matrix(1.2990381,0.74999998,-1.5,2.5980762,200,585)"
+       x="0"
+       y="0"
+       preserveAspectRatio="none" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="10"
+       height="5"
+       patternTransform="translate(200,585) scale(3)"
+       style="fill:#3ccfef"
+       id="pattern12206"
+       inkscape:label="Snake 2"
+       inkscape:collect="always"
+       inkscape:isstock="true">
+      <path
+         id="path12203"
+         style="opacity:1;stroke:none;stroke-width:4.8561;stroke-linecap:square;paint-order:stroke markers fill;stop-color:#000000"
+         d="M 5,5 C 5,2 7,0 10,0 10,3 8,5 5,5 Z M 0,0 C 0,3 2,5 5,5 5,2 3,0 0,0 Z" />
+    </pattern>
+    <clipPath
+       id="circle-clip">
+      <circle
+         cx="340"
+         cy="330"
+         r="205"
+         id="circle1" />
+    </clipPath>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient19"
+       id="linearGradient20"
+       x1="366.99817"
+       y1="249.52625"
+       x2="373.0018"
+       y2="593.47388"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient19"
+       id="linearGradient23"
+       gradientUnits="userSpaceOnUse"
+       x1="366.99817"
+       y1="249.52625"
+       x2="373.0018"
+       y2="593.47388" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient19"
+       id="linearGradient24"
+       gradientUnits="userSpaceOnUse"
+       x1="366.99817"
+       y1="249.52625"
+       x2="373.0018"
+       y2="593.47388" />
+  </defs>
+  <!-- Background -->
+  <rect
+     id="background"
+     x="0"
+     y="0"
+     width="680"
+     height="740"
+     fill="#0d1b2a"
+     style="fill:#0d1b2a;fill-opacity:1" />
+  <!-- Circle background fill -->
+  <circle
+     cx="340"
+     cy="324.0202"
+     r="205"
+     fill="#0d1b2a"
+     id="circle2" />
+  <!-- M letterform — single clean mitered path, no overlaps -->
+  <g
+     id="letter-M"
+     clip-path="url(#circle-clip)"
+     style="opacity:1;stroke:#000000;stroke-opacity:1"
+     transform="translate(0,-5.979798)">
+    <path
+       style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:url(#pattern16);stroke:url(#pattern15);enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+       d="M 181,351 V 185.5 L 310,295.6 439,185.5 V 351 h 42 V 94.5 L 310,240.4 139,94.5 V 351 Z"
+       id="path5" />
+    <g
+       id="path6"
+       style="opacity:1;stroke:url(#pattern14)">
+      <path
+         style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:url(#pattern5);stroke:url(#pattern14);enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+         d="M 138.5,93.416016 V 351.5 h 43 V 186.58398 L 310,296.25781 438.5,186.58398 V 351.5 h 43 V 93.416016 L 310,239.74219 Z m 1,2.167968 L 310,241.05664 480.5,95.583984 V 350.5 h -41 V 184.41602 L 310,294.94336 180.5,184.41602 V 350.5 h -41 z"
+         id="path11" />
+      <path
+         style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:none;stroke:url(#pattern14);enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+         d="M 138,92.332031 V 352 h 44 V 187.66797 L 310,296.91602 438,187.66797 V 352 h 44 V 92.332031 L 310,239.08398 Z m 2,4.335938 L 310,241.71484 480,96.667969 V 350 H 440 V 183.33203 L 310,294.28516 180,183.33203 V 350 h -40 z"
+         id="path12" />
+    </g>
+  </g>
+  <!-- W letterform — single clean mitered path, no overlaps -->
+  <g
+     id="letter-W"
+     clip-path="url(#circle-clip)"
+     style="opacity:1;fill:url(#linearGradient20);fill-opacity:1;stroke:#000000;stroke-opacity:1"
+     transform="translate(0,-5.979798)">
+    <path
+       style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:url(#linearGradient23);fill-opacity:1;stroke:#000000;stroke-opacity:1;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+       d="M 199,309 V 565.5 L 370,419.6 541,565.5 V 309 H 499 V 474.5 L 370,364.4 241,474.5 V 309 Z"
+       id="path17" />
+    <path
+       style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:url(#linearGradient24);fill-opacity:1;stroke:#000000;stroke-opacity:1;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+       d="M 198.5,308.5 V 566.58398 L 370,420.25781 541.5,566.58398 V 308.5 h -43 V 473.41602 L 370,363.74219 241.5,473.41602 V 308.5 Z m 1,1 h 41 V 475.58398 L 370,365.05664 499.5,475.58398 V 309.5 h 41 V 564.41602 L 370,418.94336 199.5,564.41602 Z"
+       id="path18" />
+  </g>
+  <!-- Wordmark -->
+  <g
+     id="wordmark"
+     transform="matrix(1.1183502,0,0,1.2895907,-40.239068,-199.67449)">
+    <text
+       x="340"
+       y="606"
+       text-anchor="middle"
+       font-family="Raleway, Arial, sans-serif"
+       font-size="42px"
+       font-weight="800"
+       fill="#4AADE0"
+       id="text2"
+       style="fill:#3ccfef;fill-opacity:1">MTYPE</text>
+    <line
+       x1="220"
+       y1="620"
+       x2="460"
+       y2="620"
+       stroke="#e8c84a"
+       stroke-width="1"
+       id="line2"
+       style="stroke:#ae9011;stroke-opacity:1" />
+    <text
+       x="340"
+       y="648"
+       text-anchor="middle"
+       font-family="Raleway, Arial, sans-serif"
+       font-size="17px"
+       font-weight="700"
+       fill="#e8c84a"
+       id="text3"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:22.2052px;font-family:Raleway, Arial, sans-serif;-inkscape-font-specification:'Raleway, Arial, sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;fill:#ae9011;fill-opacity:1">WORKROOM</text>
+  </g>
+</svg>

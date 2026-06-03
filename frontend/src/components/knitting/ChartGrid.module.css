@@ -1,0 +1,214 @@
+.wrap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: max-content;
+}
+
+/* ── COLUMN NUMBERS ── */
+.colNumbers {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.rowNumSpacer {
+  width: 48px;
+  flex-shrink: 0;
+}
+
+.colNum {
+  width: 36px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-light);
+}
+
+/* ── ROWS ── */
+.row {
+  display: flex;
+  align-items: center;
+}
+
+.rowNum {
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-right: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-light);
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.rowNumCurrent {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.arrow {
+  flex-shrink: 0;
+}
+
+.sideLabel {
+  width: 28px;
+  padding-left: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--ink-light);
+  letter-spacing: 0.05em;
+}
+
+/* ── CELLS ── */
+.cell {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--grid-line, var(--border));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  background: var(--surface);
+  position: relative;
+  transition: opacity 0.15s;
+  /* Remove double borders between adjacent cells */
+  margin-right: -1px;
+  margin-bottom: -1px;
+}
+
+.cell:hover { opacity: 0.8; }
+
+/* ── SECTION BACKGROUNDS ── */
+.secA { background: var(--section-a); }
+.secB { background: var(--section-b); }
+.secC { background: var(--section-c); }
+
+/* ── CURRENT ROW ── */
+.cellCurrent {
+  background: var(--row-hl) !important;
+  border-color: var(--row-hl-border) !important;
+  z-index: 1;
+}
+
+/* ── PAST ROWS ── */
+.cellPast {
+  opacity: 0.28;
+}
+
+/* ── SECTION DIVIDER ── */
+.secLine {
+  border-right: 3px solid var(--sec-line, var(--ink-mid)) !important;
+  z-index: 2;
+}
+
+/* ── STITCH COLOURS ── */
+
+/* Purl — dot inherits text colour, we make it ink */
+.stitchP {
+  color: var(--ink);
+}
+
+/* On current row purl needs to be visible against highlight */
+.cellCurrent.stitchP {
+  color: var(--ink);
+}
+
+/* Decrease */
+.stitchDec {
+  color: var(--ink);
+}
+
+/* Cable */
+.stitchCable {
+  color: var(--accent);
+}
+
+/* ── CHART ALWAYS LIGHT ──────────────────────────
+   Knitting charts are always on white/light paper.
+   These override the dark theme CSS variables
+   within the chart area only.
+─────────────────────────────────────────────── */
+
+.wrap {
+  --chart-bg:       #FFFFFF;
+  --chart-surface:  #FFFFFF;
+  --chart-border:   #C0C8D0;
+  --chart-ink:      #1A1A1A;
+  --chart-ink-light:#7A8A94;
+  --chart-sec-a:    #C8DFF0;   /* cable panel — soft blue */
+  --chart-sec-b:    #D4EDD4;   /* seed border — soft green */
+  --chart-sec-c:    #F0F0F0;   /* stockinette — light grey */
+  --chart-hl:       #FFE066;   /* current row — yellow */
+  --chart-hl-border:#C8A800;
+  --chart-sec-line: #5A6A74;
+  --chart-accent:   #1A6A8A;   /* cable colour */
+}
+
+/* Override section backgrounds */
+.wrap .secA { background: var(--chart-sec-a) !important; }
+.wrap .secB { background: var(--chart-sec-b) !important; }
+.wrap .secC { background: var(--chart-sec-c) !important; }
+
+/* Override cell base */
+.wrap .cell {
+  background: var(--chart-bg) !important;
+  border-color: var(--chart-border) !important;
+  color: var(--chart-ink);
+}
+
+/* Keep section colours on base cells */
+.wrap .secA.cell { background: var(--chart-sec-a) !important; }
+.wrap .secB.cell { background: var(--chart-sec-b) !important; }
+.wrap .secC.cell { background: var(--chart-sec-c) !important; }
+
+/* Current row always yellow */
+.wrap .cellCurrent {
+  background: var(--chart-hl) !important;
+  border-color: var(--chart-hl-border) !important;
+}
+
+/* Section divider lines */
+.wrap .secLine {
+  border-right-color: var(--chart-sec-line) !important;
+}
+
+/* Row numbers and labels */
+.wrap .rowNum { color: var(--chart-ink-light); }
+.wrap .rowNumCurrent { color: var(--chart-accent); }
+.wrap .colNum { color: var(--chart-ink-light); }
+.wrap .sideLabel { color: var(--chart-ink-light); }
+
+/* Stitch symbol colours */
+.wrap .stitchDec { color: var(--chart-ink); }
+.wrap .stitchCable { color: var(--chart-accent); }
+.wrap .stitchP { color: var(--chart-ink); }
+
+/* Chart area background */
+.chartAreaLight {
+  background: #F0F2F4;
+}
+
+/* Cable cells — no individual symbol, cable SVG overlays */
+.stitchCable {
+  color: var(--chart-accent, #1A6A8A);
+  overflow: visible;
+}
+
+/* Cable SVG overlay — spans 4 cells */
+.cableSvg {
+  overflow: visible;
+  z-index: 2;
+}
+
+/* Cell row wrapper — needed for cable absolute positioning */
+.cellRow {
+  display: flex;
+  position: relative;
+  overflow: visible;
+  isolation: isolate;
+}

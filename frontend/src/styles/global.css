@@ -1,0 +1,251 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ─────────────────────────────────────
+   WiseKnit — Design Tokens
+   MType Workroom
+───────────────────────────────────── */
+
+:root {
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+/* ── LIGHT THEME ── */
+[data-theme="light"] {
+  --bg:           #E4E8ED;
+  --surface:      #EDF0F4;
+  --surface2:     #E6EAF0;
+  --border:       #BDC5CE;
+  --ink:          #0D1B2A;
+  --ink-mid:      #3A5A6A;
+  --ink-light:    #7A9AAA;
+  --accent:       #0A8AAA;
+  --accent-lt:    #CCF0FA;
+  --accent-text:  #086A88;
+  --ok:           #0A8AAA;
+  --ok-lt:        #CCF0FA;
+  --warn:         #7A5A00;
+  --warn-lt:      #FFF0C0;
+  --warn-border:  #C8A030;
+  --danger:       #882020;
+  --danger-lt:    #F5D8D8;
+  --bottom-bg:    #0D1B2A;
+  --shadow:       0 2px 12px rgba(13,27,42,0.12);
+  --hero-bg:      #0D1B2A;
+  --hero-ink:     rgba(232,232,228,0.95);
+  --hero-mid:     rgba(232,232,228,0.50);
+  --hero-border:  rgba(60,207,239,0.15);
+  --progress-track: #BDC5CE;
+  --row-hl:       #FFF0A0;
+  --row-hl-border:#C8A000;
+  --section-a:    #C8E8F4;
+  --section-b:    #C8F0E8;
+  --section-c:    #D8E8F0;
+  --grid-line:    #B0BCC8;
+  --sec-line:     #5E6B7A;
+  --ok-lt:        #CCF0FA;
+  --col-cable:   #3CCFEF;
+  --col-dec:     #E06060;
+  --col-yo:      #E8C84A;
+  --grid-line:   #1E3448;
+  --sec-line:    #4A6878;
+  --panel-bg:    rgba(20,32,48,0.97);
+}
+
+/* ── DARK THEME ── */
+[data-theme="dark"] {
+  --bg:           #0D1B2A;
+  --surface:      #142030;
+  --surface2:     #1A2A3A;
+  --border:       #1E3448;
+  --ink:          #E8E8E4;
+  --ink-mid:      #8AABB8;
+  --ink-light:    #4A6878;
+  --accent:       #3CCFEF;
+  --accent-lt:    #0A2535;
+  --accent-text:  #3CCFEF;
+  --ok:           #3CCFEF;
+  --ok-lt:        #0A2535;
+  --warn:         #E8C84A;
+  --warn-lt:      #1E1A08;
+  --warn-border:  #AE9011;
+  --danger:       #E06060;
+  --danger-lt:    #2E1010;
+  --bottom-bg:    #080F18;
+  --shadow:       0 2px 20px rgba(0,0,0,0.5);
+  --hero-bg:      #080F18;
+  --hero-ink:     rgba(232,232,228,0.95);
+  --hero-mid:     rgba(232,232,228,0.45);
+  --hero-border:  rgba(60,207,239,0.12);
+  --progress-track: #1E3448;
+  --row-hl:       #1A3A48;
+  --row-hl-border:#3CCFEF;
+  --section-a:    #0A2030;
+  --section-b:    #0A2A20;
+  --section-c:    #1A2030;
+  --grid-line:    #1E3448;
+  --sec-line:     #4A6878;
+  --ok-lt:        #0A2535;
+  --col-cable:   #3CCFEF;
+  --col-dec:     #E06060;
+  --col-yo:      #E8C84A;
+  --grid-line:   #1E3448;
+  --sec-line:    #4A6878;
+  --panel-bg:    rgba(20,32,48,0.97);
+}
+
+/* ─────────────────────────────────────
+   Reset & Base
+───────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ─────────────────────────────────────
+   App Shell
+───────────────────────────────────── */
+
+.app-shell {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ─────────────────────────────────────
+   Scrollable page content
+───────────────────────────────────── */
+
+.page-scroll {
+  position: fixed;
+  inset: 44px 0 60px 0;
+  overflow-y: auto;
+}
+
+.page-scroll.no-bottom-nav {
+  inset: 44px 0 0 0;
+}
+
+/* ─────────────────────────────────────
+   Typography utilities
+───────────────────────────────────── */
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  margin-bottom: 8px;
+}
+
+/* ─────────────────────────────────────
+   Shared card styles
+───────────────────────────────────── */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-row:last-child {
+  border-bottom: none;
+}
+
+/* ─────────────────────────────────────
+   Shared button styles
+───────────────────────────────────── */
+
+.btn-primary {
+  height: 40px;
+  padding: 0 20px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-primary:hover { opacity: 0.88; }
+.btn-primary:disabled { opacity: 0.4; cursor: default; }
+
+.btn-secondary {
+  height: 40px;
+  padding: 0 18px;
+  background: var(--surface2);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ─────────────────────────────────────
+   Progress bar
+───────────────────────────────────── */
+
+.progress-track {
+  height: 5px;
+  background: var(--progress-track);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* ─────────────────────────────────────
+   Scrollbar styling
+───────────────────────────────────── */
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-light); }
