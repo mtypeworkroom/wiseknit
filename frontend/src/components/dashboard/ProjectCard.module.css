@@ -1,0 +1,120 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+.card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+.activeCard { border-color: var(--accent); }
+
+.body { padding: 10px 12px; flex: 1; }
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  background: var(--accent-lt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.meta { flex: 1; min-width: 0; }
+
+.name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  font-size: 10px;
+  color: var(--ink-mid);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  white-space: nowrap;
+}
+
+.badge_active  { background: var(--accent-lt); color: var(--accent-text); }
+.badge_paused  { background: var(--surface2);  color: var(--ink-mid); }
+.badge_waiting { background: var(--warn-lt);   color: var(--warn); }
+.badge_completed { background: var(--ok-lt);   color: var(--ok); }
+.badge_archived  { background: var(--surface2); color: var(--ink-light); }
+
+.progress { margin-bottom: 0; }
+
+.progRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+
+.progLabel { font-size: 11px; color: var(--ink-mid); }
+.progPct {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-mid);
+}
+
+.stats {
+  display: flex;
+  border-top: 1px solid var(--border);
+  margin-top: 10px;
+}
+
+.stat {
+  flex: 1;
+  padding: 7px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border-right: 1px solid var(--border);
+}
+.stat:last-child { border-right: none; }
+
+.statVal {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.statLbl {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-light);
+}

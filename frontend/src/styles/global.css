@@ -43,6 +43,7 @@
   --section-c:    #D8E8F0;
   --grid-line:    #B0BCC8;
   --sec-line:     #5E6B7A;
+  --ok-lt:        #CCF0FA;
 }
 
 /* ── DARK THEME ── */
@@ -78,6 +79,7 @@
   --section-c:    #1A2030;
   --grid-line:    #1E3448;
   --sec-line:     #4A6878;
+  --ok-lt:        #0A2535;
 }
 
 /* ─────────────────────────────────────

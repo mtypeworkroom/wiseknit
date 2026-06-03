@@ -1,0 +1,66 @@
+.resumeStrips {
+  background: var(--hero-bg);
+  border-bottom: 1px solid var(--hero-border);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stripsLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hero-mid);
+  padding: 2px 0 2px;
+}
+
+.projectsWrap {
+  padding: 12px 12px 8px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.sortBtn {
+  font-size: 12px;
+  color: var(--accent);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  font-weight: 500;
+}
+.sortBtn:hover { opacity: 0.75; }
+
+.projectGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.fab {
+  position: fixed;
+  bottom: 76px;
+  right: 18px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  z-index: 99;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.fab:hover { opacity: 0.88; transform: scale(1.05); }
