@@ -233,7 +233,6 @@ export default function ActiveKnitting() {
                   const repeatStart = project.chartRepeatStartRow ?? 1
                   const chartLen = project.totalRows - repeatStart + 1
                   const chartRow = repeatStart + ((totalTarget - 1) % chartLen)
-                  const rowsBack = (project.totalRowsWorked ?? 0) - totalTarget
                   updateProject(project.id, {
                     currentRow: chartRow,
                     totalRowsWorked: totalTarget,

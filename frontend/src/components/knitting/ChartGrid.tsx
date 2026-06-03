@@ -1,13 +1,11 @@
 import styles from './ChartGrid.module.css'
 import { PLEIONE_CHART } from '../../data/pleione'
-import type { ChartRow } from '../../types'
 
 interface ChartGridProps {
   currentRow: number
   totalRows: number
 }
 
-const CELL_SIZE = 36
 
 type StitchType = 'k' | 'p' | 'yo' | 'k2tog' | 'ssk'
 
@@ -53,7 +51,7 @@ function CellSymbol({ type }: { type: StitchType }) {
   }
 }
 
-export default function ChartGrid({ currentRow, totalRows }: ChartGridProps) {
+export default function ChartGrid({ currentRow }: ChartGridProps) {
   // Use Pleione chart data — sorted by row number descending (chart top to bottom)
   const rows = [...PLEIONE_CHART].sort((a, b) => b.rowNumber - a.rowNumber)
   const cols = rows[0]?.stitches.length ?? 10
