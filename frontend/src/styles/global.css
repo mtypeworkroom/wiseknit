@@ -44,6 +44,12 @@
   --grid-line:    #B0BCC8;
   --sec-line:     #5E6B7A;
   --ok-lt:        #CCF0FA;
+  --col-cable:   #3CCFEF;
+  --col-dec:     #E06060;
+  --col-yo:      #E8C84A;
+  --grid-line:   #1E3448;
+  --sec-line:    #4A6878;
+  --panel-bg:    rgba(20,32,48,0.97);
 }
 
 /* ── DARK THEME ── */
@@ -80,6 +86,12 @@
   --grid-line:    #1E3448;
   --sec-line:     #4A6878;
   --ok-lt:        #0A2535;
+  --col-cable:   #3CCFEF;
+  --col-dec:     #E06060;
+  --col-yo:      #E8C84A;
+  --grid-line:   #1E3448;
+  --sec-line:    #4A6878;
+  --panel-bg:    rgba(20,32,48,0.97);
 }
 
 /* ─────────────────────────────────────
