@@ -57,6 +57,7 @@ export interface Project {
   yarn?: Yarn
   gauge?: Gauge
   notes?: string
+  photo?: string  // URL or base64 image from pattern
 }
 
 // ── PATTERN ──────────────────────────

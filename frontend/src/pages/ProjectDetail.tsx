@@ -1,9 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import TopBar from '../components/layout/TopBar'
-import {
-  useProjectStore,
-  selectProgressPct,
-} from '../store/projectStore'
+import { useProjectStore } from '../store/projectStore'
 import styles from './ProjectDetail.module.css'
 
 export default function ProjectDetail() {
@@ -24,8 +21,7 @@ export default function ProjectDetail() {
     )
   }
 
-  const pct = selectProgressPct(project)
-  const rowsLeft = project.totalRows - project.currentRow
+  const rowsWorked = project.totalRowsWorked ?? 0
   const projectSessions = sessions
     .filter((s) => s.projectId === id)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -73,22 +69,19 @@ export default function ProjectDetail() {
             </span>
           </div>
 
-          {/* Progress */}
+          {/* Row info — no progress bar */}
           <div className={styles.heroProgress}>
             <div className={styles.progRow}>
-              <span className={styles.progLabel}>Row {project.currentRow} of {project.totalRows}</span>
-              <span className={styles.progPct}>{pct}%</span>
-            </div>
-            <div className={styles.progTrack}>
-              <div className={styles.progFill} style={{ width: `${pct}%` }} />
+              <span className={styles.progLabel}>Chart row {project.currentRow} of {project.totalRows}</span>
+              <span className={styles.progPct}>{rowsWorked} rows worked</span>
             </div>
           </div>
 
           {/* Stats */}
           <div className={styles.heroStats}>
             <div className={styles.hstat}>
-              <div className={styles.hstatVal}>{rowsLeft}</div>
-              <div className={styles.hstatLbl}>Rows left</div>
+              <div className={styles.hstatVal}>{rowsWorked}</div>
+              <div className={styles.hstatLbl}>Rows worked</div>
             </div>
             <div className={styles.hstat}>
               <div className={styles.hstatVal}>{projectSessions.length}</div>
@@ -99,8 +92,8 @@ export default function ProjectDetail() {
               <div className={styles.hstatLbl}>Time spent</div>
             </div>
             <div className={styles.hstat}>
-              <div className={styles.hstatVal}>~{Math.ceil(rowsLeft / 14)}</div>
-              <div className={styles.hstatLbl}>Sessions left</div>
+              <div className={styles.hstatVal}>{project.currentRow}/{project.totalRows}</div>
+              <div className={styles.hstatLbl}>Chart row</div>
             </div>
           </div>
 
@@ -207,7 +200,7 @@ export default function ProjectDetail() {
           {/* Danger zone */}
           <div className={styles.section}>
             <div className="card">
-              <div className={`${styles.dangerRow}`}>
+              <div className={styles.dangerRow}>
                 <span className={styles.dangerLabel}>Archive Project</span>
               </div>
               <div className={`${styles.dangerRow} ${styles.borderTop}`}>

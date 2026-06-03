@@ -80,7 +80,7 @@ export default function ChartGrid({ currentRow }: ChartGridProps) {
           : row.stitches
 
         return (
-          <div key={row.rowNumber} className={styles.row}>
+          <div key={row.rowNumber} className={styles.row} data-current={isCurrent ? 'true' : 'false'}>
 
             {/* Row number */}
             <div className={`${styles.rowNum} ${isCurrent ? styles.rowNumCurrent : ''}`}>

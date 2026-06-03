@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import ChartGrid from '../components/knitting/ChartGrid'
@@ -12,11 +12,31 @@ export default function ActiveKnitting() {
 
   const [panelOpen, setPanelOpen] = useState<'legend' | 'tools' | null>(null)
   const [backMenuOpen, setBackMenuOpen] = useState(false)
+  const chartAreaRef = useRef<HTMLDivElement>(null)
   const [jumpMenuOpen, setJumpMenuOpen] = useState(false)
 
   useEffect(() => {
     if (!project) navigate('/dashboard')
   }, [project, navigate])
+
+  // Update lastSessionAt when user opens the knitting screen
+  useEffect(() => {
+    if (project) {
+      updateProject(project.id, {
+        lastSessionAt: new Date().toISOString().split('T')[0],
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only on mount
+
+  // Scroll current row into view whenever row changes
+  useEffect(() => {
+    if (!chartAreaRef.current) return
+    const currentRowEl = chartAreaRef.current.querySelector('[data-current="true"]')
+    if (currentRowEl) {
+      currentRowEl.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    }
+  }, [project?.currentRow])
 
   if (!project) return null
 
@@ -60,6 +80,22 @@ export default function ActiveKnitting() {
 
   return (
     <div className={styles.shell}>
+      {/* Rotate overlay — phones in portrait only */}
+      <div className={styles.rotateOverlay}>
+        <svg className={styles.rotateIcon} viewBox="0 0 24 24" fill="none" stroke="#3CCFEF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="4" y="2" width="16" height="20" rx="2"/>
+          <path d="M9 22h6"/>
+          <path d="M12 17v.01"/>
+        </svg>
+        <svg className={styles.rotateArrow} viewBox="0 0 24 24" fill="none" stroke="#3CCFEF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 3H5a2 2 0 0 0-2 2v4m0 6v4a2 2 0 0 0 2 2h4"/>
+          <path d="M21 12V7a2 2 0 0 0-2-2h-4"/>
+          <path d="m3 16 4 4 4-4"/>
+        </svg>
+        <div className={styles.rotateTitle}>Rotate your device</div>
+        <div className={styles.rotateSub}>WiseKnit's chart view works best in landscape mode</div>
+        <div className={styles.rotateBrand}>WiseKnit by MType Workroom</div>
+      </div>
 
       {/* Top bar */}
       <div className={styles.topbar}>
@@ -93,6 +129,7 @@ export default function ActiveKnitting() {
       {/* Chart area — full screen */}
       <div
         className={styles.chartArea}
+        ref={chartAreaRef}
         onClick={() => { setPanelOpen(null); setBackMenuOpen(false) }}
       >
         <ChartGrid
