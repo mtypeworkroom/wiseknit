@@ -4,7 +4,7 @@
 
 // ── ENUMS ────────────────────────────
 
-export type ProjectStatus = 'active' | 'paused' | 'waiting' | 'completed' | 'archived';
+export type ProjectStatus = 'active' | 'paused' | 'waiting' | 'completed' | 'archived'
 
 export type YarnWeight =
   | 'lace'
@@ -14,157 +14,158 @@ export type YarnWeight =
   | 'worsted'
   | 'aran'
   | 'bulky'
-  | 'super-bulky';
+  | 'super-bulky'
 
 export type NeedleType =
   | 'circular-fixed'
   | 'circular-interchangeable'
   | 'straight'
   | 'dpn'
-  | 'magic-loop';
+  | 'magic-loop'
 
 export type StitchType =
-  | 'k'       // knit
-  | 'p'       // purl
-  | 'yo'      // yarn over
-  | 'k2tog'   // knit 2 together
-  | 'ssk'     // slip slip knit
-  | 'cdd'     // central double decrease
-  | 'c4b'     // cable 4 back
-  | 'c4f'     // cable 4 front
-  | 'c6b'     // cable 6 back
-  | 'c6f'     // cable 6 front
-  | 'sl'      // slip
-  | 'empty';  // no stitch
+  | 'k'
+  | 'p'
+  | 'yo'
+  | 'k2tog'
+  | 'ssk'
+  | 'cdd'
+  | 'c4b'
+  | 'c4f'
+  | 'c6b'
+  | 'c6f'
+  | 'sl'
+  | 'empty'
 
 // ── PROJECT ──────────────────────────
 
 export interface Project {
-  id: string;
-  name: string;
-  status: ProjectStatus;
-  category?: string;
-  patternId?: string;
-  currentRow: number;
-  totalRows: number;
-  startedAt?: string;
-  lastSessionAt?: string;
-  createdAt: string;
-  updatedAt: string;
-  needle?: Needle;
-  yarn?: Yarn;
-  gauge?: Gauge;
-  notes?: string;
+  id: string
+  name: string
+  status: ProjectStatus
+  category?: string
+  patternId?: string
+  currentRow: number
+  totalRows: number
+  totalRowsWorked: number
+  chartRepeatStartRow: number
+  startedAt?: string
+  lastSessionAt?: string
+  createdAt: string
+  updatedAt: string
+  needle?: Needle
+  yarn?: Yarn
+  gauge?: Gauge
+  notes?: string
 }
 
 // ── PATTERN ──────────────────────────
 
 export interface Pattern {
-  id: string;
-  name: string;
-  source?: string;
-  designer?: string;
-  totalRows: number;
-  totalStitches: number;
-  sections: PatternSection[];
-  chart: ChartRow[];
-  symbols: StitchSymbol[];
-  reminders: RowReminder[];
-  flags: PatternFlag[];
-  importedAt: string;
+  id: string
+  name: string
+  source?: string
+  designer?: string
+  totalRows: number
+  totalStitches: number
+  sections: PatternSection[]
+  chart: ChartRow[]
+  symbols: StitchSymbol[]
+  reminders: RowReminder[]
+  flags: PatternFlag[]
+  importedAt: string
 }
 
 export interface PatternSection {
-  id: string;
-  name: string;
-  colStart: number;
-  colEnd: number;
-  color: string;
+  id: string
+  name: string
+  colStart: number
+  colEnd: number
+  color: string
 }
 
 export interface ChartRow {
-  rowNumber: number;
-  stitches: ChartCell[];
+  rowNumber: number
+  stitches: ChartCell[]
 }
 
 export interface ChartCell {
-  col: number;
-  stitch: StitchType;
-  sectionId?: string;
+  col: number
+  stitch: string
 }
 
 export interface StitchSymbol {
-  type: StitchType;
-  label: string;
-  description: string;
-  color?: string;
+  type: string
+  label: string
+  description: string
+  color?: string
 }
 
 // ── REMINDERS & FLAGS ────────────────
 
 export interface RowReminder {
-  rowNumber: number;
-  message: string;
-  type: 'cable' | 'section' | 'decrease' | 'warning' | 'info';
+  rowNumber: number
+  message: string
+  type: 'cable' | 'section' | 'decrease' | 'warning' | 'info'
 }
 
 export interface PatternFlag {
-  id: string;
-  rowNumber: number;
-  col: number;
-  message: string;
-  resolved: boolean;
-  resolution?: string;
+  id: string
+  rowNumber: number
+  col: number
+  message: string
+  resolved: boolean
+  resolution?: string
 }
 
 // ── YARN & NEEDLES ───────────────────
 
 export interface Yarn {
-  brand?: string;
-  name?: string;
-  weight?: YarnWeight;
-  colorway?: string;
-  color?: string;
-  fiberContent?: string;
-  dyeLot?: string;
-  skeins?: number;
-  yardsPerSkein?: number;
-  supplier?: string;
+  brand?: string
+  name?: string
+  weight?: YarnWeight
+  colorway?: string
+  color?: string
+  fiberContent?: string
+  dyeLot?: string
+  skeins?: number
+  yardsPerSkein?: number
+  supplier?: string
 }
 
 export interface Needle {
-  sizeMm: number;
-  type: NeedleType;
-  cableLength?: number;
+  sizeMm: number
+  type: NeedleType
+  cableLength?: number
 }
 
 export interface Gauge {
-  stitchesPer10cm: number;
-  rowsPer10cm: number;
+  stitchesPer10cm: number
+  rowsPer10cm: number
 }
 
 // ── SESSIONS ─────────────────────────
 
 export interface Session {
-  id: string;
-  projectId: string;
-  startRow: number;
-  endRow: number;
-  rowsCompleted: number;
-  durationMinutes: number;
-  date: string;
+  id: string
+  projectId: string
+  startRow: number
+  endRow: number
+  rowsCompleted: number
+  durationMinutes: number
+  date: string
 }
 
 // ── UI STATE ─────────────────────────
 
 export interface AppTheme {
-  mode: 'light' | 'dark' | 'auto';
+  mode: 'light' | 'dark' | 'auto'
 }
 
 export interface ChartViewState {
-  zoom: 'S' | 'M' | 'L' | 'XL';
-  showColNumbers: boolean;
-  showRowNumbers: boolean;
-  highlightStyle: 'fill' | 'outline' | 'arrow' | 'dim-others';
-  pastRowOpacity: number;
+  zoom: 'S' | 'M' | 'L' | 'XL'
+  showColNumbers: boolean
+  showRowNumbers: boolean
+  highlightStyle: 'fill' | 'outline' | 'arrow' | 'dim-others'
+  pastRowOpacity: number
 }

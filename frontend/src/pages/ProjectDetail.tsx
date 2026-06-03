@@ -3,7 +3,6 @@ import TopBar from '../components/layout/TopBar'
 import {
   useProjectStore,
   selectProgressPct,
-  selectLastSessionLabel,
 } from '../store/projectStore'
 import styles from './ProjectDetail.module.css'
 
