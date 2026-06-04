@@ -2,7 +2,7 @@
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--hero-border);
   border-radius: 5px;
-  padding: 8px 12px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -23,35 +23,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 5px;
-}
-
-.progressRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.track {
-  flex: 1;
-  height: 4px;
-  background: var(--hero-border);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-.pct {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--hero-mid);
-  flex-shrink: 0;
+  margin-bottom: 3px;
 }
 
 .detail {
@@ -59,7 +31,8 @@
   color: var(--hero-mid);
   font-family: var(--font-mono);
   white-space: nowrap;
-  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .btn {

@@ -500,3 +500,73 @@
   transition: opacity 0.15s;
 }
 .jumpConfirm:hover { opacity: 0.88; }
+
+/* ── ROTATE OVERLAY — phones portrait only ── */
+.rotateOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #0D1B2A;
+  z-index: 99999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  text-align: center;
+  padding: 32px;
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+  .rotateOverlay {
+    display: flex;
+  }
+}
+
+.rotateIcon {
+  width: 48px;
+  height: 48px;
+  opacity: 0.9;
+}
+
+.rotateArrow {
+  width: 32px;
+  height: 32px;
+  opacity: 0.6;
+  margin-top: -8px;
+  animation: bounceRotate 1.5s ease-in-out infinite;
+}
+
+@keyframes bounceRotate {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50%       { transform: translateY(4px); opacity: 1; }
+}
+
+.rotateTitle {
+  font-size: 22px;
+  font-weight: 600;
+  color: #E8E8E4;
+  margin-top: 8px;
+  letter-spacing: 0.01em;
+}
+
+.rotateSub {
+  font-size: 14px;
+  color: #8AABB8;
+  line-height: 1.7;
+  max-width: 260px;
+}
+
+.rotateBrand {
+  font-size: 11px;
+  color: #3CCFEF;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 8px;
+  opacity: 0.7;
+}

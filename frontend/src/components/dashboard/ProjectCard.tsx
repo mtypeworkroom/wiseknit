@@ -1,6 +1,5 @@
 import type { Project } from '../../types'
 import {
-  selectProgressPct,
   selectLastSessionLabel,
 } from '../../store/projectStore'
 import styles from './ProjectCard.module.css'
@@ -27,9 +26,7 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 export default function ProjectCard({ project, onClick }: ProjectCardProps) {
-  const pct = selectProgressPct(project)
   const lastSession = selectLastSessionLabel(project)
-  const rowsLeft = project.totalRows - project.currentRow
 
   return (
     <div
@@ -38,7 +35,6 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
     >
       <div className={styles.body}>
         <div className={styles.top}>
-          <div className={styles.icon}>{STATUS_EMOJI[project.status] ?? '🧶'}</div>
           <div className={styles.meta}>
             <div className={styles.name}>{project.name}</div>
             <div className={styles.sub}>
@@ -50,28 +46,30 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
           </span>
         </div>
 
-        <div className={styles.progress}>
-          <div className={styles.progRow}>
-            <span className={styles.progLabel}>
-              {project.currentRow === 0 ? 'Not started' : `Row ${project.currentRow} of ${project.totalRows}`}
-            </span>
-            <span className={styles.progPct}>{pct}%</span>
-          </div>
-          <div className="progress-track">
-            <div className="progress-fill" style={{ width: `${pct}%` }} />
-          </div>
+        {/* Photo or placeholder below text — full width */}
+        <div className={styles.photoWrap}>
+          {(project as any).photo
+            ? <img src={(project as any).photo} alt={project.name} className={styles.photo} />
+            : <div className={styles.photoPlaceholder}>
+                <span className={styles.placeholderEmoji}>{STATUS_EMOJI[project.status] ?? '🧶'}</span>
+                <span className={styles.placeholderText}>No photo yet</span>
+              </div>
+          }
         </div>
+
+
       </div>
 
       <div className={styles.stats}>
-        <div className={styles.stat}>
-          <div className={styles.statVal}>{rowsLeft}</div>
-          <div className={styles.statLbl}>Rows left</div>
-        </div>
-        <div className={styles.stat}>
-          <div className={styles.statVal}>{lastSession}</div>
-          <div className={styles.statLbl}>Last session</div>
-        </div>
+        <span className={styles.statInline}>
+          <span className={styles.statVal}>{project.totalRowsWorked ?? 0}</span>
+          <span className={styles.statLbl}>rows worked</span>
+        </span>
+        <span className={styles.statDot}>·</span>
+        <span className={styles.statInline}>
+          <span className={styles.statLbl}>last session</span>
+          <span className={styles.statVal}>{lastSession}</span>
+        </span>
       </div>
     </div>
   )
