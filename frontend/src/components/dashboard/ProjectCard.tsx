@@ -1,6 +1,5 @@
 import type { Project } from '../../types'
 import {
-  selectProgressPct,
   selectLastSessionLabel,
 } from '../../store/projectStore'
 import styles from './ProjectCard.module.css'
