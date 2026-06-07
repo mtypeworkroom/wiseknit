@@ -45,7 +45,7 @@
 .active .icon { color: var(--accent); }
 
 .label {
-  font-size: 9px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--ink-mid);

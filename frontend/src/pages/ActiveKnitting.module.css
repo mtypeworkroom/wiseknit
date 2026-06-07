@@ -100,7 +100,7 @@
 .panelOpen { transform: translateX(0); }
 
 .panelTitle {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -128,14 +128,14 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   flex-shrink: 0;
   background: var(--surface);
 }
 .symPurl { background: var(--ink); color: var(--bg); }
 .symYo { color: var(--col-yo, var(--accent)); font-weight: 700; font-size: 13px; }
-.symDec { color: var(--col-dec, var(--danger)); font-size: 9px; font-weight: 600; }
-.symCable { color: var(--col-cable, var(--accent)); font-size: 9px; font-weight: 700; }
+.symDec { color: var(--col-dec, var(--danger)); font-size: 11px; font-weight: 600; }
+.symCable { color: var(--col-cable, var(--accent)); font-size: 11px; font-weight: 700; }
 
 .sectionItem {
   display: flex;
@@ -202,7 +202,7 @@
 }
 
 .rowLabel {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;

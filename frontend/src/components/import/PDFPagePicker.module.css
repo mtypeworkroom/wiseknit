@@ -97,7 +97,7 @@
 .pageBtnPhoto { background: var(--warn-lt); color: var(--warn); }
 
 .pageNum {
-  font-size: 10px; font-family: var(--font-mono);
+  font-size: 12px; font-family: var(--font-mono);
   color: var(--ink-light); text-align: center;
   padding: 3px 0; border-bottom: 1px solid var(--border);
 }

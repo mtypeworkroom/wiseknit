@@ -21,7 +21,7 @@
   width: 36px;
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--ink-light);
 }
 
@@ -58,7 +58,7 @@
   width: 28px;
   padding-left: 6px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
   color: var(--ink-light);
   letter-spacing: 0.05em;
 }

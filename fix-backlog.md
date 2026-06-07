@@ -96,6 +96,17 @@ The full feature requires per-row instruction text to be stored and displayed.
 
 ---
 
+### Active Knitting — Rows Worked Count is Wrong
+`totalRowsWorked` increments on every "Next Row" press but never decrements when the user goes back. This causes the count shown on Project Detail to be higher than the actual chart row, and it grows unboundedly across sessions.
+
+**Required work:**
+- `totalRowsWorked` should only increment when the user advances to a row they have not reached before (i.e. `currentRow > highWaterMark`)
+- Store a `maxRowReached` (or use `totalRowsWorked` as the high-water mark) and only increment when a new furthest row is hit
+- Going back should not change `totalRowsWorked`
+- Project Detail display should match what the knitting screen shows
+
+---
+
 ## Wiring & Functionality
 
 ### Dashboard card, add a smae archive and delete button on the card.

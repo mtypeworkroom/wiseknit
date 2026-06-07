@@ -90,7 +90,7 @@
 .stepLineDone { background: var(--ok); }
 
 .stepLabel {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -169,7 +169,7 @@
   text-transform: none;
   letter-spacing: 0;
   color: var(--ink-light);
-  font-size: 10px;
+  font-size: 12px;
   margin-left: 4px;
 }
 
