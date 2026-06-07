@@ -1,65 +1,85 @@
 import styles from './ChartGrid.module.css'
 import { PLEIONE_CHART } from '../../data/pleione'
+import type { ProjectChart } from '../../types'
 
 interface ChartGridProps {
   currentRow: number
   totalRows: number
+  chart?: ProjectChart   // if provided, render image-based chart
 }
-
 
 type StitchType = 'k' | 'p' | 'yo' | 'k2tog' | 'ssk'
 
 function CellSymbol({ type }: { type: StitchType }) {
   switch (type) {
-    case 'k':
-      return null
-
     case 'p':
       return (
         <svg viewBox="0 0 36 36" width="14" height="14">
           <circle cx="18" cy="18" r="5" fill="currentColor" />
         </svg>
       )
-
     case 'yo':
       return (
         <svg viewBox="0 0 36 36" width="20" height="20">
           <circle cx="18" cy="18" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
         </svg>
       )
-
     case 'k2tog':
-      // Forward slash /
       return (
         <svg viewBox="0 0 36 36" width="28" height="28">
-          <line x1="6" y1="30" x2="30" y2="6"
-            stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+          <line x1="6" y1="30" x2="30" y2="6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
         </svg>
       )
-
     case 'ssk':
-      // Backslash \
       return (
         <svg viewBox="0 0 36 36" width="28" height="28">
-          <line x1="6" y1="6" x2="30" y2="30"
-            stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+          <line x1="6" y1="6" x2="30" y2="30" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
         </svg>
       )
-
     default:
       return null
   }
 }
 
-export default function ChartGrid({ currentRow }: ChartGridProps) {
-  // Use Pleione chart data — sorted by row number descending (chart top to bottom)
+// ── Image-based chart (from AI parse) ─────────────────────────
+
+function ImageChart({ chart, currentRow }: { chart: ProjectChart; currentRow: number }) {
+  const raw = chart.imageBase64!
+  const imageSrc = raw.startsWith('data:') ? raw : `data:image/png;base64,${raw}`
+  const rowHeight = 100 / chart.totalRows
+  const highlightBottom = (currentRow - 1) * rowHeight
+
+  return (
+    <div className={styles.imageChartWrap}>
+      <div className={styles.imageChartInner}>
+        <img src={imageSrc} alt={chart.name} className={styles.chartImage} onError={e => (e.currentTarget.style.outline = '3px solid red')} />
+        <div
+          className={styles.rowHighlight}
+          style={{ bottom: `${highlightBottom}%`, height: `${rowHeight}%` }}
+        />
+      </div>
+      {chart.symbols.length > 0 && (
+        <div className={styles.imageLegend}>
+          {chart.symbols.map((s, i) => (
+            <div key={i} className={styles.legendItem}>
+              <span className={styles.legendSymbol}>{s.symbol || '□'}</span>
+              <span className={styles.legendLabel}>{s.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Stitch-grid chart (Pleione sample) ────────────────────────
+
+function StitchChart({ currentRow }: { currentRow: number }) {
   const rows = [...PLEIONE_CHART].sort((a, b) => b.rowNumber - a.rowNumber)
   const cols = rows[0]?.stitches.length ?? 10
 
   return (
     <div className={styles.wrap}>
-
-      {/* Column numbers — right to left as per chart convention */}
       <div className={styles.colNumbers}>
         <div className={styles.rowNumSpacer} />
         {Array.from({ length: cols }, (_, i) => (
@@ -68,21 +88,14 @@ export default function ChartGrid({ currentRow }: ChartGridProps) {
         <div className={styles.sideSpacer} />
       </div>
 
-      {/* Rows */}
       {rows.map((row) => {
         const isCurrent = row.rowNumber === currentRow
         const isPast = row.rowNumber < currentRow
         const isRS = row.rowNumber % 2 !== 0
-
-        // On RS rows read right to left (reverse the stitches for display)
-        const displayStitches = isRS
-          ? [...row.stitches].reverse()
-          : row.stitches
+        const displayStitches = isRS ? [...row.stitches].reverse() : row.stitches
 
         return (
           <div key={row.rowNumber} className={styles.row} data-current={isCurrent ? 'true' : 'false'}>
-
-            {/* Row number */}
             <div className={`${styles.rowNum} ${isCurrent ? styles.rowNumCurrent : ''}`}>
               {isCurrent && (
                 <svg viewBox="0 0 10 14" width="8" height="12">
@@ -91,8 +104,6 @@ export default function ChartGrid({ currentRow }: ChartGridProps) {
               )}
               {row.rowNumber}
             </div>
-
-            {/* Cells */}
             <div className={styles.cellRow}>
               {displayStitches.map((cell, i) => {
                 const cellClasses = [
@@ -103,7 +114,6 @@ export default function ChartGrid({ currentRow }: ChartGridProps) {
                   cell.stitch === 'k2tog' || cell.stitch === 'ssk' ? styles.stitchDec : '',
                   cell.stitch === 'yo' ? styles.stitchYo : '',
                 ].filter(Boolean).join(' ')
-
                 return (
                   <div key={i} className={cellClasses}>
                     <CellSymbol type={cell.stitch as StitchType} />
@@ -111,16 +121,27 @@ export default function ChartGrid({ currentRow }: ChartGridProps) {
                 )
               })}
             </div>
-
-            {/* RS/WS label */}
-            <div className={styles.sideLabel}>
-              {isRS ? 'RS' : 'WS'}
-            </div>
-
+            <div className={styles.sideLabel}>{isRS ? 'RS' : 'WS'}</div>
           </div>
         )
       })}
-
     </div>
   )
+}
+
+// ── Main export ───────────────────────────────────────────────
+
+export default function ChartGrid({ currentRow, chart }: ChartGridProps) {
+  if (chart?.imageBase64) {
+    return <ImageChart chart={chart} currentRow={currentRow} />
+  }
+  // If project has a chart but no image yet, show a placeholder
+  if (chart) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ink-mid)', fontSize: 14 }}>
+        Chart image not available — re-import the project to add a chart image.
+      </div>
+    )
+  }
+  return <StitchChart currentRow={currentRow} />
 }

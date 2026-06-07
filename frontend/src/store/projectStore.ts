@@ -12,11 +12,12 @@ interface ProjectStore {
   updateProject: (id: string, updates: Partial<Project>) => void
   advanceRow: (id: string) => void
   addSession: (session: Session) => void
+  deleteProject: (id: string) => void
 }
 
 const MOCK_PROJECTS: Project[] = [
   {
-    id: 'proj-1',
+    id: 'proj-pleione',
     name: 'Pleione Tee',
     status: 'active',
     category: 'Sweater / Jumper',
@@ -39,24 +40,14 @@ const MOCK_PROJECTS: Project[] = [
   },
 ]
 
-const MOCK_SESSIONS: Session[] = [
-  {
-    id: 'sess-1',
-    projectId: 'proj-1',
-    startRow: 1,
-    endRow: 8,
-    rowsCompleted: 8,
-    durationMinutes: 60,
-    date: '2026-05-23',
-  },
-]
+const MOCK_SESSIONS: Session[] = []
 
 export const useProjectStore = create<ProjectStore>()(
   persist(
     (set) => ({
       projects: MOCK_PROJECTS,
       sessions: MOCK_SESSIONS,
-      activeProjectId: 'proj-1',
+      activeProjectId: 'proj-pleione',
 
       setActiveProject: (id) => set({ activeProjectId: id }),
 
@@ -92,6 +83,13 @@ export const useProjectStore = create<ProjectStore>()(
 
       addSession: (session) =>
         set((state) => ({ sessions: [...state.sessions, session] })),
+
+      deleteProject: (id) =>
+        set((state) => ({
+          projects: state.projects.filter((p) => p.id !== id),
+          sessions: state.sessions.filter((s) => s.projectId !== id),
+          activeProjectId: state.activeProjectId === id ? null : state.activeProjectId,
+        })),
     }),
     { name: 'wiseknit-projects' }
   )

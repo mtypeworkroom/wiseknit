@@ -6,7 +6,7 @@ import styles from './ProjectDetail.module.css'
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { projects, sessions } = useProjectStore()
+  const { projects, sessions, deleteProject } = useProjectStore()
 
   const project = projects.find((p) => p.id === id)
 
@@ -203,8 +203,17 @@ export default function ProjectDetail() {
               <div className={styles.dangerRow}>
                 <span className={styles.dangerLabel}>Archive Project</span>
               </div>
-              <div className={`${styles.dangerRow} ${styles.borderTop}`}>
+              <div
+                className={`${styles.dangerRow} ${styles.borderTop} ${styles.dangerClickable}`}
+                onClick={() => {
+                  if (window.confirm(`Delete "${project.name}"? This cannot be undone.`)) {
+                    deleteProject(project.id)
+                    navigate('/dashboard')
+                  }
+                }}
+              >
                 <span className={styles.dangerLabel}>Delete Project</span>
+                <span className={styles.dangerArrow}>›</span>
               </div>
             </div>
           </div>

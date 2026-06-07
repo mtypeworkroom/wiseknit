@@ -1,0 +1,62 @@
+.page {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.section { display: flex; flex-direction: column; gap: 8px; }
+
+.sectionTitle {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+}
+
+.menuRow {
+  cursor: pointer;
+  transition: background 0.15s;
+  min-height: 56px;
+}
+.menuRow:hover { background: var(--surface2); }
+
+.rowIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rowLeft { flex: 1; min-width: 0; }
+
+.rowLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.rowSub {
+  font-size: 11px;
+  color: var(--ink-mid);
+  margin-top: 2px;
+}
+
+.rowArrow {
+  color: var(--ink-light);
+  font-size: 18px;
+}
+
+.comingSoon {
+  padding: 32px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-light);
+  font-style: italic;
+}

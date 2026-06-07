@@ -58,6 +58,29 @@ export interface Project {
   gauge?: Gauge
   notes?: string
   photo?: string  // URL or base64 image from pattern
+  charts?: ProjectChart[]  // parsed charts from AI
+}
+
+// ── PROJECT CHART ────────────────────
+
+export interface ProjectChartSymbol {
+  symbol: string
+  label: string
+  description: string
+  confident: boolean
+}
+
+export interface ProjectChart {
+  id: string
+  name: string
+  totalRows: number
+  totalStitches: number
+  repeatStartRow: number
+  workedInRound: boolean
+  symbols: ProjectChartSymbol[]
+  notes?: string
+  flags: string[]
+  imageBase64?: string  // the original chart page image
 }
 
 // ── PATTERN ──────────────────────────

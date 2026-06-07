@@ -41,8 +41,13 @@ export default function ActiveKnitting() {
   if (!project) return null
 
   const pct = Math.round((project.currentRow / project.totalRows) * 100)
-  const isLaceRow = [2,4,6,8].includes(project.currentRow)
-  const isPurlRow = [10,12,14,16].includes(project.currentRow)
+  const chart = project.charts?.[0]
+
+  const getRowSide = () => {
+    if (!chart) return null
+    if (chart.workedInRound) return 'Rnd'
+    return project.currentRow % 2 !== 0 ? 'RS' : 'WS'
+  }
 
   const handleReset = () => {
     if (window.confirm('Reset to row 1? This will clear your progress in this session.')) {
@@ -69,13 +74,6 @@ export default function ActiveKnitting() {
 
   const togglePanel = (panel: 'legend' | 'tools') => {
     setPanelOpen(panelOpen === panel ? null : panel)
-  }
-
-  const getRowInstruction = (row: number) => {
-    if ([2,4,6,8].includes(row)) return 'ssk, yo, k, yo, <strong>k2tog</strong>, p, ssk, yo, k, yo'
-    if ([10,12,14,16].includes(row)) return 'All purl/dot row — WS'
-    if (row % 2 !== 0) return 'RS — knit all, purl centre stitch'
-    return 'WS — purl all, knit centre stitch'
   }
 
   return (
@@ -135,6 +133,7 @@ export default function ActiveKnitting() {
         <ChartGrid
           currentRow={project.currentRow}
           totalRows={project.totalRows}
+          chart={project.charts?.[0]}
         />
       </div>
 
@@ -203,18 +202,20 @@ export default function ActiveKnitting() {
 
         <div className={styles.separator} />
 
-        <div
-          className={styles.instrWrap}
-          dangerouslySetInnerHTML={{ __html: getRowInstruction(project.currentRow) }}
-        />
-
-        {(isLaceRow || isPurlRow) && (
-          <span className={styles.aiPill}>
-            {isLaceRow ? '⚡ Lace row' : '⚡ All purl row'}
-          </span>
+        {getRowSide() && (
+          <>
+            <div className={styles.instrWrap}>
+              <span className={styles.rowSidePill}>{getRowSide()}</span>
+              {chart?.totalStitches ? (
+                <span className={styles.instrText}>{chart.totalStitches} sts</span>
+              ) : null}
+              {chart?.notes ? (
+                <span className={styles.instrNotes}>{chart.notes}</span>
+              ) : null}
+            </div>
+            <div className={styles.separator} />
+          </>
         )}
-
-        <div className={styles.separator} />
 
         {/* Split back button */}
         <div className={styles.splitBtn}>

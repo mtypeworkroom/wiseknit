@@ -1,0 +1,192 @@
+.page {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.section { display: flex; flex-direction: column; gap: 8px; }
+
+.sectionTitle {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+}
+
+/* Provider cards */
+.providerList { display: flex; flex-direction: column; gap: 8px; }
+
+.providerCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.providerCard:hover { border-color: var(--accent); }
+.providerSelected { border-color: var(--accent); background: var(--accent-lt); }
+
+.providerTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.providerName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  flex: 1;
+}
+
+.freeBadge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: var(--ok-lt);
+  color: var(--ok);
+}
+
+.selectedTick {
+  font-size: 14px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.providerDesc {
+  font-size: 12px;
+  color: var(--ink-mid);
+  line-height: 1.5;
+}
+
+/* API Key */
+.keyCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.keyInputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.keyInput {
+  flex: 1;
+  height: 40px;
+  padding: 0 12px;
+  background: var(--surface2);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.keyInput:focus { border-color: var(--accent); }
+.keyInput::placeholder { color: var(--ink-light); }
+
+.showBtn {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--ink-mid);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.showBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+.keyLink {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+.keyLink:hover { opacity: 0.8; }
+
+.testResult {
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.testOk { background: var(--ok-lt); color: var(--ok); }
+.testFail { background: var(--danger-lt); color: var(--danger); }
+
+.keyActions {
+  display: flex;
+  gap: 8px;
+}
+
+.testBtn {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.testBtn:hover { border-color: var(--accent); color: var(--accent); }
+.testBtn:disabled { opacity: 0.4; cursor: default; }
+
+.saveBtn {
+  flex: 1;
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.saveBtn:hover { opacity: 0.88; }
+.saveBtn:disabled { opacity: 0.4; cursor: default; }
+
+/* Info */
+.infoCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.infoTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.infoText {
+  font-size: 12px;
+  color: var(--ink-mid);
+  line-height: 1.6;
+}
