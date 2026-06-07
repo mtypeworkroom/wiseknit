@@ -67,15 +67,12 @@ export const useProjectStore = create<ProjectStore>()(
             if (p.id !== id) return p
             const chartRows = p.totalRows
             const repeatStart = p.chartRepeatStartRow ?? 1
-            const totalWorked = (p.totalRowsWorked ?? 0) + 1
-            // If at end of chart, loop back to repeatStart
             const isAtEnd = p.currentRow >= chartRows
             const nextRow = isAtEnd ? repeatStart : p.currentRow + 1
-            console.log(`advanceRow: current=${p.currentRow} total=${chartRows} atEnd=${isAtEnd} next=${nextRow}`)
             return {
               ...p,
               currentRow: nextRow,
-              totalRowsWorked: totalWorked,
+              totalRowsWorked: (p.totalRowsWorked ?? 0) + 1,
               updatedAt: new Date().toISOString(),
             }
           }),

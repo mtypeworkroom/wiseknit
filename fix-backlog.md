@@ -2,11 +2,6 @@
 
 ## UI & Visual
 
-### Contrast
-Some text/background combinations in dark mode and light mode do not meet contrast requirements.
-For example on the dashboard, the project card has rows worked and last session, which are not readable. The All Project text above the cards also is not readable.
-Audit all pages for text that becomes unreadable in dark and light mode and ensure sufficient contrast ratio (WCAG AA minimum 4.5:1 for normal text).
-
 ### Project Setup — Back Button Placement
 The Back button sits top-left while Next sits bottom-right. These should be
 co-located. Move Back button to sit beside the Next button in the same bottom
@@ -31,10 +26,6 @@ We need place on the page to edit the chart, need to be able to re-select in cas
 
 ### Project Detail - Guage and Yarn
 Need to implement the Add button and change that text to Edit if those details were already entered.
-
-### Active Kintting - Chart
-Need to rename the "back" button of the chart ot Previous so it doesn't look like a page back button
-
 ---
 
 ## Project Setup — Needle Size Selector
@@ -95,9 +86,6 @@ The full feature requires per-row instruction text to be stored and displayed.
 - Fall back to RS/WS/Rnd + stitch count when no note exists for a row
 
 ---
-
-### Active Knitting — Rows Worked Count is Wrong
-`totalRowsWorked` increments on every "Next Row" press but never decrements when the user goes back. This causes the count shown on Project Detail to be higher than the actual chart row, and it grows unboundedly across sessions.
 
 **Required work:**
 - `totalRowsWorked` should only increment when the user advances to a row they have not reached before (i.e. `currentRow > highWaterMark`)

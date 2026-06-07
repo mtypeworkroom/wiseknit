@@ -64,12 +64,16 @@ export default function ActiveKnitting() {
   }
 
   const handlePrev = () => {
-    if (project.currentRow > 1) {
-      updateProject(project.id, {
-        currentRow: project.currentRow - 1,
-        // totalRowsWorked unchanged — going back doesn't un-knit rows
-      })
-    }
+    const worked = project.totalRowsWorked ?? 0
+    if (worked === 0) return
+    const repeatStart = project.chartRepeatStartRow ?? 1
+    // Wrap back to end of chart only when at the repeat boundary and past first pass
+    const atRepeatBoundary = project.currentRow <= repeatStart && worked >= project.totalRows
+    const prevRow = atRepeatBoundary ? project.totalRows : project.currentRow - 1
+    updateProject(project.id, {
+      currentRow: prevRow,
+      totalRowsWorked: Math.max(0, worked - 1),
+    })
   }
 
   const togglePanel = (panel: 'legend' | 'tools') => {
@@ -219,7 +223,7 @@ export default function ActiveKnitting() {
 
         {/* Split back button */}
         <div className={styles.splitBtn}>
-          <button className={styles.splitMain} onClick={handlePrev}>← Back</button>
+          <button className={styles.splitMain} onClick={handlePrev}>← Prev Row</button>
           <button
             className={styles.splitArrow}
             onClick={() => setBackMenuOpen(o => !o)}
