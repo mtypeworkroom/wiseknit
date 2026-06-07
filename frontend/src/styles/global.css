@@ -140,6 +140,14 @@ body {
   inset: 44px 0 0 0;
 }
 
+.page-scroll.no-top-nav {
+  inset: 0 0 60px 0;
+}
+
+.page-scroll.no-top-nav.no-bottom-nav {
+  inset: 0;
+}
+
 /* ─────────────────────────────────────
    Typography utilities
 ───────────────────────────────────── */

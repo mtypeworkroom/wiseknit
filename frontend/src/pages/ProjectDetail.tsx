@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import TopBar from '../components/layout/TopBar'
 import { useProjectStore } from '../store/projectStore'
 import styles from './ProjectDetail.module.css'
 
@@ -12,12 +11,9 @@ export default function ProjectDetail() {
 
   if (!project) {
     return (
-      <>
-        <TopBar title="Project" showBack backTo="/dashboard" />
-        <div className="page-scroll" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <p style={{ color: 'var(--ink-mid)' }}>Project not found</p>
-        </div>
-      </>
+      <div className="page-scroll no-top-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--ink-mid)' }}>Project not found</p>
+      </div>
     )
   }
 
@@ -41,21 +37,14 @@ export default function ProjectDetail() {
   }
 
   return (
-    <>
-      <TopBar
-        title={project.name}
-        showBack
-        backTo="/dashboard"
-        rightContent={
-          <button className={styles.editBtn}>Edit</button>
-        }
-      />
-
-      <div className="page-scroll">
+    <div className="page-scroll no-top-nav">
 
         {/* Hero */}
         <div className={styles.hero}>
           <div className={styles.heroInner}>
+          <button className={styles.heroBackBtn} onClick={() => navigate('/dashboard')}>
+            ← Projects
+          </button>
           <div className={styles.heroTop}>
             <div className={styles.heroIcon}>🧶</div>
             <div className={styles.heroMeta}>
@@ -207,6 +196,6 @@ export default function ProjectDetail() {
 
         </div>
       </div>
-    </>
   )
 }
+

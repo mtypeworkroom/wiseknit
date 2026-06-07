@@ -21,14 +21,18 @@ export default function Dashboard() {
 
         {/* Resume strips — one per active project */}
         <div className={styles.resumeStrips}>
-          <div className={styles.stripsLabel}>Continue knitting</div>
-          {activeProjects.map((project) => (
-            <ResumeStrip
-              key={project.id}
-              project={project}
-              onResume={() => navigate(`/project/${project.id}/knit`)}
-            />
-          ))}
+          <div className={styles.stripsInner}>
+            <div className={styles.stripsLabel}>Continue knitting</div>
+            <div className={styles.stripsGrid}>
+              {activeProjects.map((project) => (
+                <ResumeStrip
+                  key={project.id}
+                  project={project}
+                  onResume={() => navigate(`/project/${project.id}/knit`)}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Project grid */}

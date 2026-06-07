@@ -19,8 +19,8 @@ export default function ResumeStrip({ project, onResume }: ResumeStripProps) {
           {isNew ? 'Not started yet' : `Last worked ${lastSession}`}
         </div>
       </div>
-      <button className={styles.btn} onClick={onResume}>
-        {isNew ? 'Begin →' : 'Resume →'}
+      <button className={styles.btn} onClick={onResume} aria-label={isNew ? 'Begin' : 'Resume'}>
+        →
       </button>
     </div>
   )

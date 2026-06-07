@@ -1,23 +1,25 @@
-.editBtn {
-  height: 28px;
-  padding: 0 10px;
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  background: transparent;
-  color: var(--ink-mid);
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.editBtn:hover { border-color: var(--accent); color: var(--accent); }
-
 /* ── HERO ── */
 .hero {
   background: var(--hero-bg);
   border-bottom: 1px solid var(--hero-border);
 }
+
+.heroBackBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  margin-bottom: 12px;
+  border: 1px solid var(--hero-border);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--hero-mid);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.heroBackBtn:hover { border-color: var(--accent); color: var(--accent); }
 
 .heroInner {
   max-width: var(--page-width);
@@ -27,7 +29,7 @@
 
 .heroTop {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   margin-bottom: 10px;
 }

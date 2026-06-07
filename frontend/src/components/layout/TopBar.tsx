@@ -1,4 +1,3 @@
-import { useThemeStore } from '../../store/themeStore'
 import { useNavigate } from 'react-router-dom'
 import logo from '../../assets/mtype_workroom_logo.svg'
 import styles from './TopBar.module.css'
@@ -20,7 +19,6 @@ export default function TopBar({
   backTo,
   rightContent,
 }: TopBarProps) {
-  const { toggle } = useThemeStore()
   const navigate = useNavigate()
 
   const handleBack = () => {
@@ -46,10 +44,11 @@ export default function TopBar({
           <span className={styles.title}>{title}</span>
         )}
 
-        <div className={styles.right}>
-          {rightContent}
-          <button className={styles.themeToggle} onClick={toggle} aria-label="Toggle theme" />
-        </div>
+        {rightContent && (
+          <div className={styles.right}>
+            {rightContent}
+          </div>
+        )}
       </div>
     </div>
   )

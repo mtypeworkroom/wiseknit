@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import TopBar from '../components/layout/TopBar'
 import SettingsAI from './SettingsAI'
+import { useThemeStore } from '../store/themeStore'
 import styles from './Settings.module.css'
 
 type SubPage = null | 'ai' | 'appearance' | 'notifications' | 'data'
@@ -66,6 +67,7 @@ const SUB_TITLES: Record<string, string> = {
 
 export default function Settings() {
   const [subPage, setSubPage] = useState<SubPage>(null)
+  const { mode, setMode } = useThemeStore()
 
   const title = subPage ? SUB_TITLES[subPage] : 'Settings'
 
@@ -126,7 +128,27 @@ export default function Settings() {
         {subPage === 'ai' && <SettingsAI />}
         {subPage === 'appearance' && (
           <div className={styles.page}>
-            <div className={styles.comingSoon}>Appearance settings — coming soon</div>
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>Theme</div>
+              <div className="card">
+                {(['light', 'dark', 'auto'] as const).map((opt, i, arr) => (
+                  <div
+                    key={opt}
+                    className={`card-row ${styles.menuRow}`}
+                    onClick={() => setMode(opt)}
+                    style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}
+                  >
+                    <div className={styles.rowLeft}>
+                      <div className={styles.rowLabel}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</div>
+                      <div className={styles.rowSub}>
+                        {opt === 'light' ? 'Always light' : opt === 'dark' ? 'Always dark' : 'Follow system setting'}
+                      </div>
+                    </div>
+                    {mode === opt && <span style={{ color: 'var(--accent)', fontSize: 18 }}>✓</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
         {subPage === 'notifications' && (

@@ -1,10 +1,24 @@
 .resumeStrips {
   background: var(--hero-bg);
   border-bottom: 1px solid var(--hero-border);
+}
+
+.stripsInner {
+  max-width: var(--page-width);
+  margin: 0 auto;
   padding: 8px 12px;
-  display: flex;
-  flex-direction: column;
+}
+
+.stripsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
+}
+
+@media (max-width: 480px) {
+  .stripsGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .stripsLabel {
@@ -17,6 +31,8 @@
 }
 
 .projectsWrap {
+  max-width: var(--page-width);
+  margin: 0 auto;
   padding: 12px 12px 8px;
 }
 
