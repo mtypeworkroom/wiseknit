@@ -169,30 +169,6 @@
 
 .section { margin-bottom: 18px; }
 
-/* pattern */
-.patternRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.patternRow:hover { background: var(--surface2); }
-.patternIcon {
-  width: 34px;
-  height: 34px;
-  border-radius: 5px;
-  background: var(--accent-lt);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.patternName { font-size: 13px; font-weight: 500; color: var(--ink); }
-.patternMeta { font-size: 11px; color: var(--ink-mid); margin-top: 2px; }
-.arrow { color: var(--ink-light); font-size: 14px; margin-left: auto; }
-
 /* detail rows */
 .detailRow {
   display: flex;
@@ -219,6 +195,88 @@
   font-family: var(--font-sans);
   font-weight: 500;
 }
+
+/* inline edit forms */
+.inlineForm {
+  padding: 10px 14px 12px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.inlineLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--ink-light);
+  font-family: var(--font-sans);
+}
+
+.inlineInput {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  width: 110px;
+}
+.inlineInput:focus { outline: none; border-color: var(--accent); }
+
+.inlineSelect {
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  min-width: 140px;
+}
+.inlineSelect:focus { outline: none; border-color: var(--accent); }
+
+.inlineActions {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  padding-bottom: 1px;
+}
+
+.inlineSave {
+  height: 30px;
+  padding: 0 12px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 3px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.inlineSave:hover { opacity: 0.85; }
+
+.inlineCancel {
+  height: 30px;
+  padding: 0 10px;
+  background: transparent;
+  color: var(--ink-mid);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.inlineCancel:hover { border-color: var(--ink-mid); color: var(--ink); }
 
 /* sessions */
 .sessionRow {

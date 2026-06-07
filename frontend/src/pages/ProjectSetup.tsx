@@ -37,7 +37,30 @@ const INITIAL: SetupState = {
   gaugeStitches: '', gaugeRows: '', notes: '',
 }
 
-const NEEDLE_SIZES = [2, 2.5, 3, 3.25, 3.5, 3.75, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 10, 12]
+const NEEDLE_SIZES: { label: string; mm: number }[] = [
+  { label: 'US 0000 (1.25mm)', mm: 1.25 },
+  { label: 'US 000 (1.5mm)',   mm: 1.5  },
+  { label: 'US 00 (1.75mm)',   mm: 1.75 },
+  { label: 'US 0 (2.0mm)',     mm: 2.0  },
+  { label: 'US 1 (2.25mm)',    mm: 2.25 },
+  { label: 'US 2 (2.75mm)',    mm: 2.75 },
+  { label: 'US 3 (3.25mm)',    mm: 3.25 },
+  { label: 'US 4 (3.5mm)',     mm: 3.5  },
+  { label: 'US 5 (3.75mm)',    mm: 3.75 },
+  { label: 'US 6 (4.0mm)',     mm: 4.0  },
+  { label: 'US 7 (4.5mm)',     mm: 4.5  },
+  { label: 'US 8 (5.0mm)',     mm: 5.0  },
+  { label: 'US 9 (5.5mm)',     mm: 5.5  },
+  { label: 'US 10 (6.0mm)',    mm: 6.0  },
+  { label: 'US 10.5 (6.5mm)', mm: 6.5  },
+  { label: 'US 11 (8.0mm)',    mm: 8.0  },
+  { label: 'US 13 (9.0mm)',    mm: 9.0  },
+  { label: 'US 15 (10.0mm)',   mm: 10.0 },
+  { label: 'US 17 (12.0mm)',   mm: 12.0 },
+  { label: 'US 19 (15.0mm)',   mm: 15.0 },
+  { label: 'US 35 (19.0mm)',   mm: 19.0 },
+  { label: 'US 50 (25.0mm)',   mm: 25.0 },
+]
 const STEPS = ['Basics', 'Yarn', 'Needles', 'Pattern', 'Review']
 
 export default function ProjectSetup() {
@@ -212,7 +235,7 @@ export default function ProjectSetup() {
 
       {/* Top bar */}
       <div className={styles.topbar}>
-        <span className={styles.tbTitle}>New Project — {STEPS[step]}</span>
+        <span className={styles.tbTitle}>{existingProject ? 'Edit Project' : 'New Project'} — {STEPS[step]}</span>
       </div>
 
       {/* Step indicators */}
@@ -239,7 +262,7 @@ export default function ProjectSetup() {
           {/* ── STEP 0: BASICS ── */}
           {step === 0 && (
             <div className={styles.stepPanel}>
-              <div className={styles.stepHeading}>Start a new project</div>
+              <div className={styles.stepHeading}>{existingProject ? 'Edit project details' : 'Start a new project'}</div>
               <div className={styles.stepSub}>Give it a name and choose a category</div>
               <div className={styles.card}>
                 <div className={styles.field}>
@@ -410,14 +433,18 @@ export default function ProjectSetup() {
               <div className={styles.stepSub}>Used for project details and compatibility checks</div>
               <div className={styles.card}>
                 <div className={styles.cardTitle}>Needle Size</div>
-                <div className={styles.pillRow}>
-                  {NEEDLE_SIZES.map(size => (
-                    <button key={size}
-                      className={`${styles.pill} ${form.needleSizeMm === size ? styles.pillSel : ''}`}
-                      onClick={() => set('needleSizeMm', size)}>
-                      {size}mm
-                    </button>
-                  ))}
+                <div className={styles.fieldRow}>
+                  <div className={styles.field}>
+                    <select
+                      className={styles.select}
+                      value={form.needleSizeMm}
+                      onChange={e => set('needleSizeMm', parseFloat(e.target.value))}
+                    >
+                      {NEEDLE_SIZES.map(n => (
+                        <option key={n.mm} value={n.mm}>{n.label}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className={styles.fieldRow} style={{ marginTop: 12 }}>
                   <div className={styles.field}>
@@ -478,7 +505,7 @@ export default function ProjectSetup() {
                     ? pageSelections.filter(s => s.role === 'chart').map(s => s.chartName ?? `p.${s.pageNumber}`).join(', ')
                     : `${form.totalRows} rows (manual)`, s: 3 },
                   { label: 'Yarn', val: form.yarnBrand || form.yarnName ? `${form.yarnBrand} ${form.yarnName}`.trim() : 'Not set', s: 1 },
-                  { label: 'Needle', val: `${form.needleSizeMm}mm · ${form.needleType.replace(/-/g, ' ')}`, s: 2 },
+                  { label: 'Needle', val: `${NEEDLE_SIZES.find(n => n.mm === form.needleSizeMm)?.label ?? `${form.needleSizeMm}mm`} · ${form.needleType.replace(/-/g, ' ')}`, s: 2 },
                 ].map(({ label, val, s }) => (
                   <div key={label} className={styles.reviewRow}>
                     <span className={styles.reviewLabel}>{label}</span>

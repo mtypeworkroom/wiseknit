@@ -2,27 +2,25 @@
 
 ## UI & Visual
 
-### Project Setup — Back Button Placement
-The Back button sits top-left while Next sits bottom-right. These should be
-co-located. Move Back button to sit beside the Next button in the same bottom
-action row, with matching formatting/style.
+### Project Detail - Header status badge
+In light mode not enough constrast between the text and background.
 
-### Project Detail — Edit Button
-Current placement and presentation of the Edit button is unsatisfactory.
-Needs repositioning and proper wiring. Exact target placement TBD during redesign.
+### Select & Set UP Chart Page
+But all the nudge buttons at the top, can we show more of the chart without scrolling.
 
-### Project Detail — Archive & Delete Buttons
-Archive and Delete actions require scrolling to access. These should be accessible
-without scrolling — consider placing in a header action menu (⋯) or a fixed
-footer action bar.
+When a chart is setup it need to be page added to the project, not a replacement of the PDR page. The PDF needs to stay as is, eventually we will need to have a page picker. 
 
-### Project Detail — Resume Knitting Button
-The Resume Knitting / Play button spans the full width of the screen which is
-visually heavy. Reduce width — either auto-width centered, or a fixed comfortable
-width (e.g. 60-70% max) centered on screen.
+Make it more obvious the the numbers in the gauge swatch boxes are examples (are we reading this from the pattern?)
+
+If a file has already been uploaded and pages selected and we are in edit mode we need to skip the upload PDF step and go straight to the page picker.
+
+When there are multiple charts, need a selector so the user can decide on which chart to start with.
 
 ### Project Detail - Pattern
 We need place on the page to edit the chart, need to be able to re-select in case the set up need to be adjusted.
+
+### Project Detail - Session History
+Move Notes up and Session History to the bottom, or better yet make that a button or an expand out
 
 ### Project Detail - Guage and Yarn
 Need to implement the Add button and change that text to Edit if those details were already entered.
