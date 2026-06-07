@@ -4,13 +4,19 @@
   height: 44px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+  z-index: 100;
+  box-shadow: var(--shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.topbarInner {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  height: 100%;
   display: flex;
   align-items: center;
   padding: 0 16px;
   gap: 10px;
-  z-index: 100;
-  box-shadow: var(--shadow);
-  transition: background 0.3s, border-color 0.3s;
 }
 
 .brandWrap {

@@ -55,64 +55,58 @@ export default function ProjectDetail() {
 
         {/* Hero */}
         <div className={styles.hero}>
+          <div className={styles.heroInner}>
           <div className={styles.heroTop}>
             <div className={styles.heroIcon}>🧶</div>
             <div className={styles.heroMeta}>
               <div className={styles.heroName}>{project.name}</div>
-              <div className={styles.heroSub}>
-                {project.category ?? 'Project'} · Started{' '}
-                {project.startedAt ? formatDate(project.startedAt) : '—'}
+              <div className={styles.heroBadgeRow}>
+                <span className={`${styles.badge} ${styles[`badge_${project.status}`]}`}>
+                  {{ active: 'Active', paused: 'Paused', waiting: 'Draft', completed: 'Done', archived: 'Archived' }[project.status] ?? project.status}
+                </span>
+                {project.startedAt && (
+                  <span className={styles.heroStartDate}>Started {formatDate(project.startedAt)}</span>
+                )}
               </div>
             </div>
-            <span className={`${styles.badge} ${styles[`badge_${project.status}`]}`}>
-              {{ active: 'Active', paused: 'Paused', waiting: 'Draft', completed: 'Done', archived: 'Archived' }[project.status] ?? project.status}
-            </span>
-          </div>
-
-          {/* Row info — no progress bar */}
-          <div className={styles.heroProgress}>
-            <div className={styles.progRow}>
-              <span className={styles.progLabel}>Chart row {project.currentRow} of {project.totalRows}</span>
-              <span className={styles.progPct}>{rowsWorked} rows worked</span>
+            <div className={styles.heroActions}>
+              {project.status === 'waiting' ? (
+                <button className={styles.heroResumeBtn} onClick={() => navigate(`/project/${project.id}/setup`)}>
+                  ✎ Setup
+                </button>
+              ) : (
+                <button className={styles.heroResumeBtn} onClick={() => navigate(`/project/${project.id}/knit`)}>
+                  ▶ Knit
+                </button>
+              )}
+              <button className={styles.heroIconBtn} title="Archive project">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
+                </svg>
+              </button>
+              <button
+                className={`${styles.heroIconBtn} ${styles.heroIconBtnDanger}`}
+                title="Delete project"
+                onClick={() => { if (window.confirm(`Delete "${project.name}"? This cannot be undone.`)) { deleteProject(project.id); navigate('/dashboard') } }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+                </svg>
+              </button>
             </div>
           </div>
 
-          {/* Stats */}
-          <div className={styles.heroStats}>
-            <div className={styles.hstat}>
-              <div className={styles.hstatVal}>{rowsWorked}</div>
-              <div className={styles.hstatLbl}>Rows worked</div>
-            </div>
-            <div className={styles.hstat}>
-              <div className={styles.hstatVal}>{projectSessions.length}</div>
-              <div className={styles.hstatLbl}>Sessions</div>
-            </div>
-            <div className={styles.hstat}>
-              <div className={styles.hstatVal}>{totalHours}h</div>
-              <div className={styles.hstatLbl}>Time spent</div>
-            </div>
-            <div className={styles.hstat}>
-              <div className={styles.hstatVal}>{project.currentRow}/{project.totalRows}</div>
-              <div className={styles.hstatLbl}>Chart row</div>
-            </div>
+          {/* Compact metrics strip */}
+          <div className={styles.metaStrip}>
+            <span>Row {project.currentRow}/{project.totalRows}</span>
+            <span className={styles.metaDot}>·</span>
+            <span>{rowsWorked} rows worked</span>
+            <span className={styles.metaDot}>·</span>
+            <span>{projectSessions.length} sessions</span>
+            <span className={styles.metaDot}>·</span>
+            <span>{totalHours}h</span>
           </div>
-
-          {/* Resume / Continue Setup button */}
-          {project.status === 'waiting' ? (
-            <button
-              className={styles.resumeBtn}
-              onClick={() => navigate(`/project/${project.id}/setup`)}
-            >
-              ✎ Continue Setup
-            </button>
-          ) : (
-            <button
-              className={styles.resumeBtn}
-              onClick={() => navigate(`/project/${project.id}/knit`)}
-            >
-              ▶ Resume Knitting — Row {project.currentRow}
-            </button>
-          )}
+          </div>
         </div>
 
         <div className={styles.content}>
@@ -143,6 +137,10 @@ export default function ProjectDetail() {
           <div className={styles.section}>
             <div className="section-label">Project Details</div>
             <div className="card">
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Category</span>
+                <span className={styles.detailVal}>{project.category ?? '—'}</span>
+              </div>
               <div className={styles.detailRow}>
                 <span className={styles.detailLabel}>Needle</span>
                 <span className={styles.detailVal}>
@@ -206,26 +204,6 @@ export default function ProjectDetail() {
             </div>
           </div>
 
-          {/* Danger zone */}
-          <div className={styles.section}>
-            <div className="card">
-              <div className={styles.dangerRow}>
-                <span className={styles.dangerLabel}>Archive Project</span>
-              </div>
-              <div
-                className={`${styles.dangerRow} ${styles.borderTop} ${styles.dangerClickable}`}
-                onClick={() => {
-                  if (window.confirm(`Delete "${project.name}"? This cannot be undone.`)) {
-                    deleteProject(project.id)
-                    navigate('/dashboard')
-                  }
-                }}
-              >
-                <span className={styles.dangerLabel}>Delete Project</span>
-                <span className={styles.dangerArrow}>›</span>
-              </div>
-            </div>
-          </div>
 
         </div>
       </div>

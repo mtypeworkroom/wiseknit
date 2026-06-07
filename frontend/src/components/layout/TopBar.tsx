@@ -30,24 +30,26 @@ export default function TopBar({
 
   return (
     <div className={styles.topbar}>
-      {showBack && (
-        <button className={styles.backBtn} onClick={handleBack}>
-          {backLabel}
-        </button>
-      )}
+      <div className={styles.topbarInner}>
+        {showBack && (
+          <button className={styles.backBtn} onClick={handleBack}>
+            {backLabel}
+          </button>
+        )}
 
-      {showBrand ? (
-        <div className={styles.brandWrap}>
-          <img src={logo} alt="MType Workroom" className={styles.logo} />
-          <span className={styles.brandText}>{title}</span>
+        {showBrand ? (
+          <div className={styles.brandWrap}>
+            <img src={logo} alt="MType Workroom" className={styles.logo} />
+            <span className={styles.brandText}>{title}</span>
+          </div>
+        ) : (
+          <span className={styles.title}>{title}</span>
+        )}
+
+        <div className={styles.right}>
+          {rightContent}
+          <button className={styles.themeToggle} onClick={toggle} aria-label="Toggle theme" />
         </div>
-      ) : (
-        <span className={styles.title}>{title}</span>
-      )}
-
-      <div className={styles.right}>
-        {rightContent}
-        <button className={styles.themeToggle} onClick={toggle} aria-label="Toggle theme" />
       </div>
     </div>
   )

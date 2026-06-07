@@ -4,10 +4,16 @@
   height: 60px;
   background: var(--bottom-bg);
   border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
   z-index: 100;
   transition: background 0.3s;
+}
+
+.navInner {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .navItem {

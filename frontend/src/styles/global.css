@@ -8,6 +8,14 @@
 :root {
   --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
+  --page-width: 700px;
+}
+
+/* Content rail — constrain content width while backgrounds stay full-bleed */
+.page-rail {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* ── LIGHT THEME ── */

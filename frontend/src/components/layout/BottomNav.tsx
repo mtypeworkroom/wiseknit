@@ -44,19 +44,21 @@ export default function BottomNav() {
 
   return (
     <nav className={styles.nav}>
-      {NAV_ITEMS.map((item) => {
-        const isActive = location.pathname.startsWith(item.path)
-        return (
-          <button
-            key={item.path}
-            className={`${styles.navItem} ${isActive ? styles.active : ''}`}
-            onClick={() => navigate(item.path)}
-          >
-            <span className={styles.icon}>{item.icon}</span>
-            <span className={styles.label}>{item.label}</span>
-          </button>
-        )
-      })}
+      <div className={styles.navInner}>
+        {NAV_ITEMS.map((item) => {
+          const isActive = location.pathname.startsWith(item.path)
+          return (
+            <button
+              key={item.path}
+              className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+              onClick={() => navigate(item.path)}
+            >
+              <span className={styles.icon}>{item.icon}</span>
+              <span className={styles.label}>{item.label}</span>
+            </button>
+          )
+        })}
+      </div>
     </nav>
   )
 }
