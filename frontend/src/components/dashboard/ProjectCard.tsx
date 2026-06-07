@@ -20,7 +20,7 @@ const STATUS_EMOJI: Record<string, string> = {
 const STATUS_LABEL: Record<string, string> = {
   active: 'Active',
   paused: 'Paused',
-  waiting: 'Waiting',
+  waiting: 'Draft',
   completed: 'Done',
   archived: 'Archived',
 }

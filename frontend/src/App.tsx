@@ -45,6 +45,7 @@ function App() {
 
           {/* Project screens */}
           <Route path="/project/new" element={<ProjectSetup />} />
+          <Route path="/project/:id/setup" element={<ProjectSetup />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
           <Route path="/project/:id/knit" element={<ActiveKnitting />} />
         </Routes>
@@ -53,6 +54,7 @@ function App() {
         <Routes>
           <Route path="/project/:id/knit" element={null} />
           <Route path="/project/new" element={null} />
+          <Route path="/project/:id/setup" element={null} />
           <Route path="*" element={<BottomNav />} />
         </Routes>
       </div>

@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef, useMemo } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import type { Project, NeedleType, YarnWeight, ProjectChart } from '../types'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
@@ -42,9 +42,43 @@ const STEPS = ['Basics', 'Yarn', 'Needles', 'Pattern', 'Review']
 
 export default function ProjectSetup() {
   const navigate = useNavigate()
-  const { addProject } = useProjectStore()
+  const { id: editId } = useParams<{ id: string }>()
+  const { projects, addProject, updateProject } = useProjectStore()
+
+  const existingProject = useMemo(
+    () => editId ? projects.find(p => p.id === editId) : undefined,
+    [editId, projects]
+  )
+
+  const initialForm = useMemo<SetupState>(() => {
+    if (!existingProject) return INITIAL
+    const p = existingProject
+    return {
+      name: p.name ?? '',
+      category: p.category ?? 'Sweater / Jumper',
+      designer: '',
+      totalRows: p.totalRows ?? 16,
+      chartRepeatStartRow: p.chartRepeatStartRow ?? 1,
+      yarnBrand: p.yarn?.brand ?? '',
+      yarnName: p.yarn?.name ?? '',
+      yarnWeight: p.yarn?.weight ?? '',
+      colorway: p.yarn?.colorway ?? '',
+      fiberContent: p.yarn?.fiberContent ?? '',
+      dyeLot: p.yarn?.dyeLot ?? '',
+      skeins: p.yarn?.skeins?.toString() ?? '',
+      yardsPerSkein: p.yarn?.yardsPerSkein?.toString() ?? '',
+      supplier: p.yarn?.supplier ?? '',
+      needleSizeMm: p.needle?.sizeMm ?? 4,
+      needleType: p.needle?.type ?? 'circular-fixed',
+      cableLength: p.needle?.cableLength?.toString() ?? '',
+      gaugeStitches: p.gauge?.stitchesPer10cm?.toString() ?? '',
+      gaugeRows: p.gauge?.rowsPer10cm?.toString() ?? '',
+      notes: p.notes ?? '',
+    }
+  }, [existingProject])
+
   const [step, setStep] = useState(0)
-  const [form, setForm] = useState<SetupState>(INITIAL)
+  const [form, setForm] = useState<SetupState>(initialForm)
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [showPagePicker, setShowPagePicker] = useState(false)
   const [pageSelections, setPageSelections] = useState<PageSelection[]>([])
@@ -73,30 +107,27 @@ export default function ProjectSetup() {
   }
 
   const handleSaveDraft = async () => {
-    const now = new Date().toISOString()
-    const draft: Project = {
-      id: `draft-${Date.now()}`,
+    const draftFields = {
       name: form.name || 'Untitled Draft',
-      status: 'waiting',
+      status: 'waiting' as const,
       category: form.category,
-      currentRow: 1,
       totalRows: form.totalRows,
-      totalRowsWorked: 0,
       chartRepeatStartRow: form.chartRepeatStartRow,
-      createdAt: now,
-      updatedAt: now,
       notes: form.notes || undefined,
-      needle: form.needleSizeMm ? {
-        sizeMm: form.needleSizeMm,
-        type: form.needleType,
-      } : undefined,
+      needle: form.needleSizeMm ? { sizeMm: form.needleSizeMm, type: form.needleType } : undefined,
       yarn: (form.yarnBrand || form.yarnName) ? {
         brand: form.yarnBrand || undefined,
         name: form.yarnName || undefined,
       } : undefined,
     }
-    addProject(draft)
-    navigate('/dashboard')
+    if (existingProject) {
+      updateProject(existingProject.id, draftFields)
+      navigate(`/project/${existingProject.id}`)
+    } else {
+      const now = new Date().toISOString()
+      addProject({ id: `draft-${Date.now()}`, currentRow: 1, totalRowsWorked: 0, createdAt: now, updatedAt: now, ...draftFields })
+      navigate('/dashboard')
+    }
   }
 
   const handleCreate = () => {
@@ -151,8 +182,20 @@ export default function ProjectSetup() {
         rowsPer10cm: parseFloat(form.gaugeRows),
       } : undefined,
     }
-    addProject(newProject)
-    navigate(`/project/${newProject.id}`)
+    if (existingProject) {
+      updateProject(existingProject.id, {
+        ...newProject,
+        id: existingProject.id,
+        createdAt: existingProject.createdAt,
+        currentRow: existingProject.currentRow,
+        totalRowsWorked: existingProject.totalRowsWorked,
+        charts: projectCharts.length > 0 ? projectCharts : existingProject.charts,
+      })
+      navigate(`/project/${existingProject.id}`)
+    } else {
+      addProject(newProject)
+      navigate(`/project/${newProject.id}`)
+    }
   }
 
   return (
@@ -169,9 +212,6 @@ export default function ProjectSetup() {
 
       {/* Top bar */}
       <div className={styles.topbar}>
-        <button className={styles.tbBack} onClick={() => step === 0 ? navigate('/dashboard') : prevStep()}>
-          ← {step === 0 ? 'Dashboard' : 'Back'}
-        </button>
         <span className={styles.tbTitle}>New Project — {STEPS[step]}</span>
       </div>
 
@@ -455,13 +495,17 @@ export default function ProjectSetup() {
 
       {/* Bottom bar */}
       <div className={styles.bottomBar}>
-        {step < 4 && step !== 3 && (
-          <button className={styles.skipBtn} onClick={nextStep}>Skip for now</button>
+        {step > 0 && (
+          <button className={styles.btnBack} onClick={prevStep}>← Back</button>
         )}
+        <button className={styles.btnDiscard} onClick={() => navigate('/dashboard')}>Discard & Exit</button>
+        {step < 4 && step !== 3 && (
+          <button className={styles.skipBtn} onClick={nextStep}>Skip</button>
+        )}
+        <div className={styles.spacer} />
         {form.name && (
           <button className={styles.draftBtn} onClick={handleSaveDraft}>Save Draft</button>
         )}
-        <div className={styles.spacer} />
         {step < 4
           ? <button className={styles.btnPrimary} onClick={nextStep} disabled={step === 0 && !form.name}>
               Next →

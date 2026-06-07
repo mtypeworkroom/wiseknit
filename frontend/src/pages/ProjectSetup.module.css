@@ -14,25 +14,44 @@
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 16px;
-  gap: 10px;
   flex-shrink: 0;
   box-shadow: var(--shadow);
 }
 
-.tbBack {
-  height: 28px;
-  padding: 0 10px;
+
+.btnBack {
+  height: 40px;
+  padding: 0 18px;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: 4px;
   background: transparent;
   color: var(--ink-mid);
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
+  flex-shrink: 0;
 }
-.tbBack:hover { border-color: var(--accent); color: var(--accent); }
+.btnBack:hover { border-color: var(--ink-mid); color: var(--ink); }
+
+.btnDiscard {
+  height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-mid);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.btnDiscard:hover { border-color: var(--danger); color: var(--danger); }
 
 .tbTitle {
   font-size: 13px;

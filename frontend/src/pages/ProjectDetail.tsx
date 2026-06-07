@@ -65,7 +65,7 @@ export default function ProjectDetail() {
               </div>
             </div>
             <span className={`${styles.badge} ${styles[`badge_${project.status}`]}`}>
-              {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+              {{ active: 'Active', paused: 'Paused', waiting: 'Draft', completed: 'Done', archived: 'Archived' }[project.status] ?? project.status}
             </span>
           </div>
 
@@ -97,13 +97,22 @@ export default function ProjectDetail() {
             </div>
           </div>
 
-          {/* Resume button */}
-          <button
-            className={styles.resumeBtn}
-            onClick={() => navigate(`/project/${project.id}/knit`)}
-          >
-            ▶ Resume Knitting — Row {project.currentRow}
-          </button>
+          {/* Resume / Continue Setup button */}
+          {project.status === 'waiting' ? (
+            <button
+              className={styles.resumeBtn}
+              onClick={() => navigate(`/project/${project.id}/setup`)}
+            >
+              ✎ Continue Setup
+            </button>
+          ) : (
+            <button
+              className={styles.resumeBtn}
+              onClick={() => navigate(`/project/${project.id}/knit`)}
+            >
+              ▶ Resume Knitting — Row {project.currentRow}
+            </button>
+          )}
         </div>
 
         <div className={styles.content}>
