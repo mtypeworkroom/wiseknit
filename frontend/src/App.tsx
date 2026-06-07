@@ -49,9 +49,10 @@ function App() {
           <Route path="/project/:id/knit" element={<ActiveKnitting />} />
         </Routes>
 
-        {/* Bottom nav hidden on active knitting screen */}
+        {/* Bottom nav hidden on active knitting and setup screens */}
         <Routes>
           <Route path="/project/:id/knit" element={null} />
+          <Route path="/project/new" element={null} />
           <Route path="*" element={<BottomNav />} />
         </Routes>
       </div>

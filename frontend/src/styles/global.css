@@ -123,7 +123,10 @@ body {
   position: fixed;
   inset: 44px 0 60px 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
+
+
 
 .page-scroll.no-bottom-nav {
   inset: 44px 0 0 0;
@@ -231,7 +234,17 @@ body {
    Scrollbar styling
 ───────────────────────────────────── */
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 20px; height: 20px; }
+::-webkit-scrollbar-track { background: var(--surface2); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; min-height: 48px; border: 3px solid var(--surface2); }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-mid); }
+
+/* Force scrollbar to always show on page-scroll */
+.page-scroll {
+  scrollbar-width: auto;
+  scrollbar-color: var(--accent) var(--surface2);
+  overflow-y: scroll;
+}
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-light); }
