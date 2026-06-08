@@ -4,6 +4,8 @@ import { useProjectStore } from '../store/projectStore'
 import type { Gauge, Yarn, Needle, NeedleType, YarnWeight, ProjectChart } from '../types'
 import ChartEditModal from '../components/import/ChartEditModal'
 import PDFViewer from '../components/reader/PDFViewer'
+import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
+import { loadPDF, saveImage } from '../store/imageStore'
 import styles from './ProjectDetail.module.css'
 
 type EditingField = null | 'name' | 'category' | 'gauge' | 'yarn' | 'needle'
@@ -40,6 +42,7 @@ export default function ProjectDetail() {
 
   const [editingField, setEditingField] = useState<EditingField>(null)
   const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
+  const [pdfPickerFile, setPdfPickerFile] = useState<File | null>(null)
   const [nameForm, setNameForm] = useState('')
   const [categoryForm, setCategoryForm] = useState('')
   const [gaugeForm, setGaugeForm] = useState<Gauge>({ stitchesPer10cm: 0, rowsPer10cm: 0 })
@@ -74,6 +77,23 @@ export default function ProjectDetail() {
   const saveCategory = () => {
     updateProject(project.id, { category: categoryForm.trim() || undefined })
     setEditingField(null)
+  }
+
+  const openPhotoPicker = async () => {
+    if (!project?.pdfKey) return
+    const ab = await loadPDF(project.pdfKey)
+    if (!ab) return
+    setPdfPickerFile(new File([ab], 'pattern.pdf', { type: 'application/pdf' }))
+  }
+
+  const handlePhotoPickerComplete = (selections: PageSelection[], _totalPages: number) => {
+    setPdfPickerFile(null)
+    const photoSel = selections.find(s => s.role === 'photo' && s.croppedBase64)
+    if (!photoSel?.croppedBase64 || !project) return
+    const photoKey = `photo-${project.id}`
+    void saveImage(photoKey, photoSel.croppedBase64).then(() => {
+      updateProject(project.id, { photoKey })
+    })
   }
 
   const deleteChart = (chartId: string) => {
@@ -128,6 +148,14 @@ export default function ProjectDetail() {
     <div className="page-scroll no-top-nav">
       {pdfViewerOpen && project.pdfKey && (
         <PDFViewer pdfKey={project.pdfKey} onClose={() => setPdfViewerOpen(false)} />
+      )}
+
+      {pdfPickerFile && (
+        <PDFPagePicker
+          file={pdfPickerFile}
+          onComplete={handlePhotoPickerComplete}
+          onCancel={() => setPdfPickerFile(null)}
+        />
       )}
 
       {editModalChart && (
@@ -212,6 +240,22 @@ export default function ProjectDetail() {
                     <span className={styles.pdfRowMeta}>{project.pdfPageCount} pages</span>
                   )}
                   <button className={styles.addBtn} onClick={() => setPdfViewerOpen(true)}>Read →</button>
+                </div>
+              )}
+              {project.pdfKey && (
+                <div className={styles.pdfRow}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  <span className={styles.pdfRowName}>Project Photo</span>
+                  {project.photoKey && (
+                    <span className={styles.pdfRowMeta}>set</span>
+                  )}
+                  <button className={styles.addBtn} onClick={openPhotoPicker}>
+                    {project.photoKey ? 'Update' : 'Add →'}
+                  </button>
                 </div>
               )}
               {(project.charts?.length ?? 0) === 0 ? (

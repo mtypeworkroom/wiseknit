@@ -59,6 +59,7 @@ export interface Project {
   notes?: string
   photo?: string
   charts?: ProjectChart[]
+  photoKey?: string     // IndexedDB key for the project photo crop
   pdfKey?: string       // IndexedDB key for the attached PDF file
   pdfPageCount?: number // total pages in the attached PDF
 }

@@ -100,6 +100,8 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
           chartInputRefs.current[index]?.focus()
           chartInputRefs.current[index]?.select()
         }, 100)
+      } else if (role === 'photo') {
+        setExpandedIndex(index)
       }
       return { ...s, role, chartName: role === 'chart' ? `Chart ${chartCount}` : undefined, confirmed: false }
     }))
@@ -114,7 +116,10 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
   }
 
   const selectedCharts = selections.filter(s => s.role === 'chart')
-  const canComplete = !loading && (selectedCharts.length === 0 || selectedCharts.every(s => s.confirmed))
+  const photoSel = selections.find(s => s.role === 'photo')
+  const canComplete = !loading
+    && (selectedCharts.length === 0 || selectedCharts.every(s => s.confirmed))
+    && (!photoSel || photoSel.confirmed)
 
   return (
     <div className={styles.overlay}>
@@ -166,15 +171,44 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
                     />
                   )}
 
+                  {/* Photo crop panel when expanded */}
+                  {isPhoto && isExpanded && pageImageDatas[i] && (
+                    <PhotoCropPanel
+                      src={src}
+                      imageData={pageImageDatas[i]}
+                      onConfirm={(croppedBase64) => {
+                        const updated = selections.map((s2, i2) =>
+                          i2 === i ? { ...s2, croppedBase64, confirmed: true } : s2
+                        )
+                        setSelections(updated)
+                        setExpandedIndex(null)
+                        const charts = updated.filter(s2 => s2.role === 'chart')
+                        if (charts.length === 0 || charts.every(s2 => s2.confirmed)) {
+                          onComplete(updated.filter(s2 => s2.role !== null), totalPages)
+                        }
+                      }}
+                      onCancel={() => setExpandedIndex(null)}
+                    />
+                  )}
+
                   {/* Original page — always shown when not expanded */}
                   {!isExpanded && (
-                    <div className={styles.pageImgWrap} onClick={isChart && !sel.confirmed ? () => setExpandedIndex(i) : undefined}>
+                    <div
+                      className={styles.pageImgWrap}
+                      onClick={((isChart || isPhoto) && !sel.confirmed) ? () => setExpandedIndex(i) : undefined}
+                    >
                       <img src={src} alt={`Page ${i + 1}`} className={styles.pageImg} />
                       {isChart && !sel.confirmed && (
                         <div className={styles.tapToSetup}>Tap to set up chart</div>
                       )}
                       {isChart && sel.confirmed && (
                         <div className={styles.confirmedOverlay}>✓ {sel.chartName}</div>
+                      )}
+                      {isPhoto && !sel.confirmed && (
+                        <div className={styles.tapToSetup}>Tap to crop photo</div>
+                      )}
+                      {isPhoto && sel.confirmed && (
+                        <div className={styles.confirmedOverlay}>✓ Photo</div>
                       )}
                     </div>
                   )}
@@ -207,7 +241,7 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
           <div className={styles.footerInfo}>
             {selectedCharts.length} chart{selectedCharts.length !== 1 ? 's' : ''} selected
             {selectedCharts.filter(s => s.confirmed).length > 0 && ` · ${selectedCharts.filter(s => s.confirmed).length} confirmed`}
-            {selections.find(s => s.role === 'photo') ? ' · 1 photo' : ''}
+            {photoSel ? (photoSel.confirmed ? ' · 1 photo ✓' : ' · 1 photo — tap to crop') : ''}
           </div>
           <div className={styles.footerActions}>
             <button className={styles.cancelBtn} onClick={onCancel}>Cancel</button>
@@ -372,6 +406,62 @@ function CropRefinePanel({ imageData, initialBounds, chartName, onBack, onConfir
       <div className={styles.refineActions}>
         <button className={styles.cancelBtn} onClick={onBack}>← Back</button>
         <button className={styles.confirmBtn} onClick={handleConfirm}>Confirm Chart ✓</button>
+      </div>
+    </div>
+  )
+}
+
+// ── Photo Crop Panel ──────────────────────────────────────────
+
+interface PhotoCropPanelProps {
+  src: string
+  imageData: ImageData
+  onConfirm: (croppedBase64: string) => void
+  onCancel: () => void
+}
+
+function PhotoCropPanel({ src, imageData, onConfirm, onCancel }: PhotoCropPanelProps) {
+  const [crop, setCrop] = useState<Crop>()
+
+  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget
+    setCrop(centerCrop(
+      makeAspectCrop({ unit: '%', width: 55 }, 4 / 5, width, height),
+      width, height
+    ))
+  }
+
+  const handleConfirm = () => {
+    if (!crop) return
+    const cropX = Math.round((crop.x / 100) * imageData.width)
+    const cropY = Math.round((crop.y / 100) * imageData.height)
+    const cropW = Math.round((crop.width / 100) * imageData.width)
+    const cropH = Math.round((crop.height / 100) * imageData.height)
+    if (cropW <= 0 || cropH <= 0) return
+    const canvas = document.createElement('canvas')
+    canvas.width = cropW
+    canvas.height = cropH
+    canvas.getContext('2d', { willReadFrequently: true })!
+      .putImageData(imageData, -cropX, -cropY, cropX, cropY, cropW, cropH)
+    onConfirm(canvas.toDataURL('image/jpeg', 0.85))
+  }
+
+  return (
+    <div className={styles.setupPanel}>
+      <div className={styles.setupSection}>
+        <div className={styles.setupLabel}>
+          Drag to crop the project photo (4:5 portrait)
+          {crop && <span className={styles.cropDone}> ✓ Ready</span>}
+        </div>
+        <ReactCrop crop={crop} onChange={(_c, pc) => setCrop(pc)} aspect={4 / 5} className={styles.cropWrap}>
+          <img src={src} alt="Page" className={styles.cropImg} onLoad={onImageLoad} />
+        </ReactCrop>
+      </div>
+      <div className={styles.refineActions}>
+        <button className={styles.cancelBtn} onClick={onCancel}>← Back</button>
+        <button className={styles.confirmBtn} disabled={!crop} onClick={handleConfirm}>
+          Confirm Photo ✓
+        </button>
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from 'react'
-import { savePDF } from '../store/imageStore'
+import { savePDF, saveImage } from '../store/imageStore'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import type { Project, NeedleType, YarnWeight, ProjectChart } from '../types'
@@ -173,6 +173,13 @@ export default function ProjectSetup() {
       await savePDF(pdfKey, ab)
     }
 
+    let photoKey: string | undefined = existingProject?.photoKey
+    const photoSel = pageSelections.find(s => s.role === 'photo' && s.croppedBase64)
+    if (photoSel?.croppedBase64) {
+      photoKey = `photo-${projectId}`
+      await saveImage(photoKey, photoSel.croppedBase64)
+    }
+
     const confirmedSelections = pageSelections.filter(s => s.role === 'chart' && s.confirmed)
     const projectCharts: ProjectChart[] = confirmedSelections.map((sel, i) => ({
       id: `chart-${Date.now()}-${i}`,
@@ -201,7 +208,7 @@ export default function ProjectSetup() {
       lastSessionAt: now.split('T')[0],
       startedAt: now.split('T')[0],
       notes: form.notes || undefined,
-      photo: undefined,
+      photoKey: photoKey,
       charts: projectCharts.length > 0 ? projectCharts : undefined,
       pdfKey: pdfKey,
       pdfPageCount: finalPageCount || undefined,
