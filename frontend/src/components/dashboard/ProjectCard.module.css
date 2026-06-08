@@ -6,14 +6,21 @@
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
+  flex-direction: column;
 }
 .card:hover {
   border-color: var(--accent);
   box-shadow: var(--shadow);
 }
 .activeCard { border-color: var(--accent); }
+
+/* ── Top row: photo + info ── */
+.cardRow {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1;
+}
 
 /* ── Left photo column ── */
 .photoWrap {
@@ -103,7 +110,7 @@
   -webkit-box-orient: vertical;
 }
 
-/* ── Stats strip at bottom of info column ── */
+/* ── Stats strip ── */
 .stats {
   padding: 5px 7px 6px;
   border-top: 1px solid var(--border);
@@ -133,3 +140,31 @@
   font-weight: 500;
   line-height: 1.2;
 }
+
+/* ── Bottom action strip ── */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 4px 6px;
+  border-top: 1px solid var(--border);
+}
+
+.archiveBtn,
+.deleteBtn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  color: var(--ink-light);
+}
+.archiveBtn:hover { border-color: var(--ink-mid); color: var(--ink); }
+.deleteBtn:hover  { border-color: var(--danger); color: var(--danger); background: var(--danger-lt); }

@@ -10,8 +10,22 @@ import styles from './Dashboard.module.css'
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { projects } = useProjectStore()
+  const { projects, updateProject, deleteProject } = useProjectStore()
   const activeProjects = selectActiveProjects(projects)
+
+  const handleArchive = (id: string) => {
+    const project = projects.find(p => p.id === id)
+    if (!project) return
+    updateProject(id, { status: project.status === 'archived' ? 'paused' : 'archived' })
+  }
+
+  const handleDelete = (id: string) => {
+    const project = projects.find(p => p.id === id)
+    if (!project) return
+    if (window.confirm(`Delete "${project.name}"? This cannot be undone.`)) {
+      deleteProject(id)
+    }
+  }
 
   return (
     <>
@@ -48,6 +62,8 @@ export default function Dashboard() {
                 key={project.id}
                 project={project}
                 onClick={() => navigate(`/project/${project.id}`)}
+                onArchive={handleArchive}
+                onDelete={handleDelete}
               />
             ))}
           </div>
