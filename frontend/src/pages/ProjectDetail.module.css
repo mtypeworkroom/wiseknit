@@ -320,6 +320,25 @@
   display: flex; align-items: center; justify-content: center;
 }
 .chartDeleteBtn:hover { background: rgba(220,38,38,0.1); color: #dc2626; }
+.pdfRow {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink-mid);
+}
+.pdfRowName {
+  font-size: 13px;
+  color: var(--ink);
+  flex: 1;
+}
+.pdfRowMeta {
+  font-size: 11px;
+  color: var(--ink-light);
+  font-family: var(--font-mono);
+}
+
 .chartImportRow {
   padding: 10px 14px 6px;
 }

@@ -57,8 +57,10 @@ export interface Project {
   yarn?: Yarn
   gauge?: Gauge
   notes?: string
-  photo?: string  // URL or base64 image from pattern
-  charts?: ProjectChart[]  // parsed charts from AI
+  photo?: string
+  charts?: ProjectChart[]
+  pdfKey?: string       // IndexedDB key for the attached PDF file
+  pdfPageCount?: number // total pages in the attached PDF
 }
 
 // ── PROJECT CHART ────────────────────

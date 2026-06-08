@@ -16,7 +16,7 @@ export interface PageSelection {
 
 interface PDFPagePickerProps {
   file: File
-  onComplete: (selections: PageSelection[]) => void
+  onComplete: (selections: PageSelection[], totalPages: number) => void
   onCancel: () => void
 }
 
@@ -114,7 +114,7 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
   }
 
   const selectedCharts = selections.filter(s => s.role === 'chart')
-  const allConfirmed = selectedCharts.length > 0 && selectedCharts.every(s => s.confirmed)
+  const canComplete = !loading && (selectedCharts.length === 0 || selectedCharts.every(s => s.confirmed))
 
   return (
     <div className={styles.overlay}>
@@ -213,8 +213,8 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
             <button className={styles.cancelBtn} onClick={onCancel}>Cancel</button>
             <button
               className={styles.proceedBtn}
-              disabled={!allConfirmed}
-              onClick={() => onComplete(selections.filter(s => s.role !== null))}
+              disabled={!canComplete}
+              onClick={() => onComplete(selections.filter(s => s.role !== null), totalPages)}
             >
               Done →
             </button>

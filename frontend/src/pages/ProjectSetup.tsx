@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo } from 'react'
+import { savePDF } from '../store/imageStore'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import type { Project, NeedleType, YarnWeight, ProjectChart } from '../types'
@@ -106,6 +107,7 @@ export default function ProjectSetup() {
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [showPagePicker, setShowPagePicker] = useState(false)
   const [pageSelections, setPageSelections] = useState<PageSelection[]>([])
+  const [pdfPageCount, setPdfPageCount] = useState(0)
   const [chartEdits, setChartEdits] = useState<Record<string, Partial<ProjectChart>>>({})
   const [deletedChartIds, setDeletedChartIds] = useState<Set<string>>(new Set())
   const [editModalChart, setEditModalChart] = useState<ProjectChart | null>(null)
@@ -127,8 +129,9 @@ export default function ProjectSetup() {
     }
   }
 
-  const handlePagePickerComplete = (selections: PageSelection[]) => {
+  const handlePagePickerComplete = (selections: PageSelection[], totalPages: number) => {
     setPageSelections(selections)
+    setPdfPageCount(totalPages)
     setShowPagePicker(false)
     nextStep()
   }
@@ -157,8 +160,19 @@ export default function ProjectSetup() {
     }
   }
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     const now = new Date().toISOString()
+    const projectId = existingProject ? existingProject.id : `proj-${Date.now()}`
+
+    let pdfKey: string | undefined = existingProject?.pdfKey
+    let finalPageCount: number = existingProject?.pdfPageCount ?? pdfPageCount
+    if (pdfFile) {
+      pdfKey = `pdf-${projectId}`
+      finalPageCount = pdfPageCount
+      const ab = await pdfFile.arrayBuffer()
+      await savePDF(pdfKey, ab)
+    }
+
     const confirmedSelections = pageSelections.filter(s => s.role === 'chart' && s.confirmed)
     const projectCharts: ProjectChart[] = confirmedSelections.map((sel, i) => ({
       id: `chart-${Date.now()}-${i}`,
@@ -174,7 +188,7 @@ export default function ProjectSetup() {
     }))
 
     const newProject: Project = {
-      id: `proj-${Date.now()}`,
+      id: projectId,
       name: form.name || 'Untitled Project',
       status: 'active',
       category: form.category,
@@ -189,6 +203,8 @@ export default function ProjectSetup() {
       notes: form.notes || undefined,
       photo: undefined,
       charts: projectCharts.length > 0 ? projectCharts : undefined,
+      pdfKey: pdfKey,
+      pdfPageCount: finalPageCount || undefined,
       needle: {
         sizeMm: form.needleSizeMm,
         type: form.needleType,

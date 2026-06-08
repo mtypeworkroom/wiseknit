@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import type { Gauge, Yarn, Needle, NeedleType, YarnWeight, ProjectChart } from '../types'
 import ChartEditModal from '../components/import/ChartEditModal'
+import PDFViewer from '../components/reader/PDFViewer'
 import styles from './ProjectDetail.module.css'
 
 type EditingField = null | 'name' | 'category' | 'gauge' | 'yarn' | 'needle'
@@ -38,6 +39,7 @@ export default function ProjectDetail() {
   const { projects, sessions, deleteProject, updateProject } = useProjectStore()
 
   const [editingField, setEditingField] = useState<EditingField>(null)
+  const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
   const [nameForm, setNameForm] = useState('')
   const [categoryForm, setCategoryForm] = useState('')
   const [gaugeForm, setGaugeForm] = useState<Gauge>({ stitchesPer10cm: 0, rowsPer10cm: 0 })
@@ -124,6 +126,10 @@ export default function ProjectDetail() {
 
   return (
     <div className="page-scroll no-top-nav">
+      {pdfViewerOpen && project.pdfKey && (
+        <PDFViewer pdfKey={project.pdfKey} onClose={() => setPdfViewerOpen(false)} />
+      )}
+
       {editModalChart && (
         <ChartEditModal
           chart={editModalChart}
@@ -193,6 +199,21 @@ export default function ProjectDetail() {
           <div className={styles.section}>
             <div className="section-label">Pattern</div>
             <div className="card">
+              {project.pdfKey && (
+                <div className={styles.pdfRow}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="9" y1="13" x2="15" y2="13"/>
+                    <line x1="9" y1="17" x2="12" y2="17"/>
+                  </svg>
+                  <span className={styles.pdfRowName}>Pattern PDF</span>
+                  {project.pdfPageCount && (
+                    <span className={styles.pdfRowMeta}>{project.pdfPageCount} pages</span>
+                  )}
+                  <button className={styles.addBtn} onClick={() => setPdfViewerOpen(true)}>Read →</button>
+                </div>
+              )}
               {(project.charts?.length ?? 0) === 0 ? (
                 <div className={styles.emptyState}>No charts yet</div>
               ) : (
