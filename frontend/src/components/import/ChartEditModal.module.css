@@ -1,24 +1,45 @@
-/* ── Full-screen reselect phase ── */
+/* ── Full-screen reselect phase — orientation-aware ── */
 .reselectScreen {
   position: fixed;
   inset: 0;
   z-index: 1200;
-  background: var(--bg);
+  background: var(--surface2);
   display: flex;
-  flex-direction: column;
   overflow: hidden;
+  /* portrait: image on top, bar below */
+  flex-direction: column;
 }
 
-.reselectBar {
-  height: 48px;
-  padding: 0 16px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+/* Crop area fills all remaining space */
+.reselectCropArea {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  order: 0;
+}
+
+/* max-width/max-height set via inline style from JS — ReactCrop's own CSS interferes with cascade */
+.reselectImg {
+  display: block;
+  width: auto;
+  height: auto;
+}
+
+/* Portrait: slim bottom bar so image gets full-width, top-to-fold height */
+.reselectBar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
   flex-shrink: 0;
-  box-shadow: var(--shadow);
+  order: 1;
 }
 
 .reselectHint {
@@ -59,157 +80,185 @@
 .reselectDetect:hover { opacity: 0.88; }
 .reselectDetect:disabled { opacity: 0.4; cursor: default; }
 
-.reselectCropArea {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  background: var(--surface2);
-  -webkit-overflow-scrolling: touch;
+/* Landscape: bar becomes a slim right sidebar, image fills full height */
+@media (orientation: landscape) {
+  .reselectScreen { flex-direction: row; }
+
+  .reselectBar {
+    width: 160px;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 10px;
+    border-top: none;
+    border-left: 1px solid var(--border);
+    order: 1;
+    gap: 8px;
+  }
+
+  .reselectHint {
+    flex: 1;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .reselectCancel, .reselectDetect {
+    width: 100%;
+    text-align: center;
+  }
 }
 
-/* Image fills all space below the bar — portal means we own the full viewport */
-.reselectImg {
-  display: block;
-  max-width: 100%;
-  max-height: calc(100vh - 48px);
-  width: auto;
-  height: auto;
-}
-
-/* ── Refine phase modal ── */
-.overlay {
+/* ── Refine phase — full-screen, orientation-aware ── */
+.refineScreen {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.72);
-  z-index: 1100;
+  z-index: 1200;
+  background: var(--surface2);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+  overflow: hidden;
+  flex-direction: column;
 }
 
-.modal {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  width: 100%;
-  max-width: 620px;
-  max-height: 92vh;
+/* Portrait: controls wrapper is a column of two single-row bars at the bottom */
+.refineControls {
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow);
-  overflow: hidden;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  order: 1;
 }
 
-.header {
-  padding: 14px 16px;
+/* Nudge bar — closest to the image; single row, no wrapping */
+.refineNudgeBar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
   border-bottom: 1px solid var(--border);
+}
+
+/* Actions bar — name, counts, save; single row, no wrapping */
+.refineActionsBar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+}
+
+.refineSpacer { flex: 1; min-width: 0; }
+
+/* Landscape: refineControls becomes right sidebar; both bars stack vertically */
+@media (orientation: landscape) {
+  .refineScreen { flex-direction: row; }
+
+  .refineControls {
+    width: 180px;
+    flex-direction: column;
+    border-top: none;
+    border-left: 1px solid var(--border);
+    order: 1;
+    overflow-y: auto;
+  }
+
+  .refineNudgeBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 10px 8px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .refineActionsBar {
+    flex: 1;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 8px;
+  }
+
+  .refineSpacer { flex: 1; }
+  .countLabel { flex-direction: column; align-items: flex-start; gap: 3px; width: 100%; }
+  .countInput { width: 100% !important; text-align: left; }
+  .iconBtn, .iconBtnPrimary { width: 100% !important; height: 30px; }
+}
+
+
+.countLabel {
   display: flex;
   align-items: center;
+  gap: 4px;
   flex-shrink: 0;
 }
-.headerTitle { flex: 1; font-size: 15px; font-weight: 600; color: var(--ink); }
-.closeBtn {
-  width: 28px; height: 28px;
-  border: none; background: transparent;
-  color: var(--ink-mid); font-size: 14px;
-  cursor: pointer; border-radius: 4px;
-  display: flex; align-items: center; justify-content: center;
+.countLabelText {
+  font-size: 11px;
+  color: var(--ink-mid);
+  font-weight: 600;
+  white-space: nowrap;
 }
-.closeBtn:hover { background: var(--surface2); color: var(--ink); }
 
-/* Name + counts row */
-.fields {
-  display: flex;
-  gap: 8px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.nameInput {
-  flex: 1; min-width: 0;
-  height: 36px; padding: 0 10px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 4px; color: var(--ink);
-  font-family: var(--font-sans); font-size: 13px;
-  outline: none;
-}
-.nameInput:focus { border-color: var(--accent); }
 .countInput {
-  width: 72px; flex-shrink: 0;
-  height: 36px; padding: 0 8px;
+  width: 52px; flex-shrink: 0;
+  height: 26px; padding: 0 6px;
   background: var(--surface2); border: 1px solid var(--border);
   border-radius: 4px; color: var(--ink);
-  font-family: var(--font-mono); font-size: 13px;
+  font-family: var(--font-mono); font-size: 12px;
   text-align: center; outline: none;
+  /* hide number spinners — they eat the space at small sizes */
+  -moz-appearance: textfield;
+}
+.countInput::-webkit-outer-spin-button,
+.countInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 .countInput:focus { border-color: var(--accent); }
 
-/* Scrollable body */
-.body {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 14px 16px;
-}
 
-.hint { font-size: 12px; color: var(--ink-mid); }
-
-.cropWrap {
-  overflow: hidden;
-  border-radius: 4px;
-  background: #fff;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-/* header ~50px + fields ~62px + body padding 28px + hint ~30px + actions ~52px + gaps ~24px = ~246px */
-.pageImg {
-  display: block;
-  max-width: 100%;
-  max-height: calc(92vh - 260px);
-  width: auto;
-  height: auto;
-}
-
-/* Nudge controls */
-.nudgeSection { display: flex; flex-direction: column; gap: 6px; }
+/* Nudge controls — inline in portrait, stacked in landscape */
+.nudgeSection { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
 .nudgeLabel { font-size: 11px; color: var(--ink-mid); font-weight: 500; }
 .nudgeGrid { display: flex; gap: 6px; flex-wrap: wrap; }
 .nudgeGroup {
-  display: flex; align-items: center; gap: 4px;
+  display: flex; align-items: center; gap: 3px;
   background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 4px; padding: 3px 6px;
+  border-radius: 4px; padding: 2px 5px;
 }
 .nudgeEdgeLabel {
-  font-size: 10px; font-weight: 600; color: var(--ink-mid);
-  text-transform: uppercase; letter-spacing: 0.05em; min-width: 32px;
+  font-size: 10px; font-weight: 700; color: var(--ink-mid);
+  text-transform: uppercase; min-width: 14px; text-align: center;
 }
 .nudgeBtn {
-  width: 26px; height: 26px;
+  width: 22px; height: 22px;
   border: 1px solid var(--border); border-radius: 3px;
   background: var(--surface); color: var(--ink);
-  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: all 0.12s;
 }
 .nudgeBtn:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
 .nudgeBtn:active { transform: scale(0.95); }
 
-/* Crop preview */
+/* Preview fills all remaining space — both orientations handled by flexbox */
 .previewWrap {
-  position: relative;
-  border: 1px solid var(--border); border-radius: 4px;
-  background: #fff; overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-  min-height: 80px; flex: 1;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  order: 0;
 }
-.previewImg { display: block; max-width: 100%; max-height: calc(92vh - 320px); object-fit: contain; }
+.previewImg {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
 .detectingOverlay {
   position: absolute; inset: 0;
   background: rgba(0,0,0,0.25);
@@ -224,22 +273,26 @@
   padding-top: 4px;
   flex-shrink: 0;
 }
-.btnSecondary {
-  height: 36px; padding: 0 16px;
+.iconBtn {
+  height: 30px; padding: 0 10px; flex-shrink: 0;
   border: 1px solid var(--border); border-radius: 4px;
   background: transparent; color: var(--ink-mid);
-  font-family: var(--font-sans); font-size: 13px; cursor: pointer;
+  font-family: var(--font-sans); font-size: 12px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
 }
-.btnSecondary:hover { border-color: var(--ink-mid); color: var(--ink); }
-.btnPrimary {
-  height: 36px; padding: 0 20px;
-  border: none; border-radius: 4px;
-  background: var(--accent); color: var(--bg);
-  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: opacity 0.15s;
+.iconBtn:hover { border-color: var(--ink-mid); color: var(--ink); }
+
+.iconBtnPrimary {
+  width: 30px; height: 30px; flex-shrink: 0;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: transparent; color: var(--ink-mid);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
 }
-.btnPrimary:hover { opacity: 0.88; }
-.btnPrimary:disabled { opacity: 0.4; cursor: default; }
+.iconBtnPrimary:hover { border-color: var(--accent); color: var(--accent); }
+.iconBtnPrimary:disabled { opacity: 0.4; cursor: default; }
 
 /* States */
 .loading {
@@ -259,4 +312,5 @@
   padding: 10px 12px;
   background: var(--surface2); border-radius: 6px;
   border-left: 3px solid var(--border);
+  flex-shrink: 0;
 }

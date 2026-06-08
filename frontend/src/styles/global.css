@@ -129,7 +129,7 @@ body {
 
 .page-scroll {
   position: fixed;
-  inset: 44px 0 60px 0;
+  inset: 44px 0 48px 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -141,7 +141,7 @@ body {
 }
 
 .page-scroll.no-top-nav {
-  inset: 0 0 60px 0;
+  inset: 0 0 48px 0;
 }
 
 .page-scroll.no-top-nav.no-bottom-nav {

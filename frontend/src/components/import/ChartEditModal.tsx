@@ -53,10 +53,28 @@ export default function ChartEditModal({ chart, onSave, onClose }: Props) {
   const [previewUrl, setPreviewUrl] = useState(chart.imageBase64 ?? '')
   const [phase, setPhase] = useState<'refine' | 'reselect'>('refine')
   const [crop, setCrop] = useState<PercentCrop>()
-  const [name, setName] = useState(chart.name)
   const [totalRows, setTotalRows] = useState<number | ''>(chart.totalRows ?? '')
   const [totalStitches, setTotalStitches] = useState<number | ''>(chart.totalStitches ?? '')
   const mountedRef = useRef(true)
+
+  // Computed image size for the reselect screen — JS wins over CSS cascade issues with ReactCrop's own styles
+  const [imgMaxSize, setImgMaxSize] = useState({ maxWidth: 0, maxHeight: 0 })
+  useEffect(() => {
+    const SIDEBAR = 160
+    const BAR = 52
+    const calc = () => {
+      const w = window.innerWidth
+      const h = window.innerHeight
+      const landscape = w > h
+      setImgMaxSize(landscape
+        ? { maxWidth: w - SIDEBAR, maxHeight: h }
+        : { maxWidth: w, maxHeight: h - BAR }
+      )
+    }
+    calc()
+    window.addEventListener('resize', calc)
+    return () => window.removeEventListener('resize', calc)
+  }, [])
 
   useEffect(() => {
     mountedRef.current = true
@@ -134,6 +152,8 @@ export default function ChartEditModal({ chart, onSave, onClose }: Props) {
     setNudgeBounds(newBounds)
     setOffsets(newOffsets)
     if (url) setPreviewUrl(url)
+    setTotalRows('')
+    setTotalStitches('')
     setPhase('refine')
   }
 
@@ -154,7 +174,6 @@ export default function ChartEditModal({ chart, onSave, onClose }: Props) {
       if (url) finalCrop = url
     }
     onSave({
-      name,
       totalRows: typeof totalRows === 'number' ? totalRows : undefined,
       totalStitches: typeof totalStitches === 'number' ? totalStitches : undefined,
       ...(finalCrop ? { imageBase64: finalCrop } : {}),
@@ -165,6 +184,26 @@ export default function ChartEditModal({ chart, onSave, onClose }: Props) {
   if (phase === 'reselect') {
     return createPortal(
       <div className={styles.reselectScreen}>
+        {pageLoading ? (
+          <div className={styles.loading}><div className={styles.spinner} /></div>
+        ) : (
+          <div className={styles.reselectCropArea}>
+            <ReactCrop crop={crop} onChange={(_c, pc) => setCrop(pc)}>
+              <img
+                ref={pageImgRef}
+                src={chart.pageBase64}
+                alt="Pattern page"
+                className={styles.reselectImg}
+                style={imgMaxSize.maxWidth ? {
+                  maxWidth: imgMaxSize.maxWidth,
+                  maxHeight: imgMaxSize.maxHeight,
+                } : undefined}
+                onLoad={onImageLoad}
+              />
+            </ReactCrop>
+          </div>
+        )}
+
         <div className={styles.reselectBar}>
           <span className={styles.reselectHint}>
             {pageLoading ? 'Loading page…' : 'Drag to select the chart area'}
@@ -178,79 +217,65 @@ export default function ChartEditModal({ chart, onSave, onClose }: Props) {
             Detect →
           </button>
         </div>
-
-        {pageLoading ? (
-          <div className={styles.loading}><div className={styles.spinner} /></div>
-        ) : (
-          <div className={styles.reselectCropArea}>
-            <ReactCrop crop={crop} onChange={(_c, pc) => setCrop(pc)}>
-              <img
-                ref={pageImgRef}
-                src={chart.pageBase64}
-                alt="Pattern page"
-                className={styles.reselectImg}
-                onLoad={onImageLoad}
-              />
-            </ReactCrop>
-          </div>
-        )}
       </div>,
       document.body
     )
   }
 
-  // ── Refine phase modal ──────────────────────────────────────────────────
-  return (
-    <div className={styles.overlay} onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className={styles.modal}>
+  // ── Refine phase — full-screen via portal ──────────────────────────────
+  // Controls bar switches axis: portrait = top bar (wraps), landscape = right sidebar
+  return createPortal(
+    <div className={styles.refineScreen}>
 
-        <div className={styles.header}>
-          <div className={styles.headerTitle}>Edit Chart</div>
-          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+      <div className={styles.previewWrap}>
+        {previewUrl
+          ? <img key={previewUrl} src={previewUrl} alt="Chart preview" className={styles.previewImg} />
+          : <div className={styles.loading}><div className={styles.spinner} /></div>
+        }
+      </div>
+
+      <div className={styles.refineControls}>
+
+        {/* Nudge bar — sits closest to the image in both orientations */}
+        <div className={styles.refineNudgeBar}>
+          {(['top', 'bottom', 'left', 'right'] as const).map(edge => (
+            <div key={edge} className={styles.nudgeGroup}>
+              <span className={styles.nudgeEdgeLabel}>{edge.charAt(0).toUpperCase()}</span>
+              <button className={styles.nudgeBtn} disabled={!nudgeBounds} onClick={() => nudge(edge, NUDGE_PX)}>+</button>
+              <button className={styles.nudgeBtn} disabled={!nudgeBounds} onClick={() => nudge(edge, -NUDGE_PX)}>−</button>
+            </div>
+          ))}
         </div>
 
-        <div className={styles.fields}>
-          <input className={styles.nameInput} value={name} onChange={e => setName(e.target.value)} placeholder="Chart name" />
-          <input className={styles.countInput} type="number" value={totalRows}
-            onChange={e => setTotalRows(e.target.value === '' ? '' : parseInt(e.target.value))} placeholder="Rows" />
-          <input className={styles.countInput} type="number" value={totalStitches}
-            onChange={e => setTotalStitches(e.target.value === '' ? '' : parseInt(e.target.value))} placeholder="Sts" />
-        </div>
-
-        <div className={styles.body}>
-          <div className={styles.nudgeSection}>
-            <div className={styles.nudgeLabel}>Fine-tune crop · + expands edge outward, − shrinks inward</div>
-            <div className={styles.nudgeGrid}>
-              {(['top', 'bottom', 'left', 'right'] as const).map(edge => (
-                <div key={edge} className={styles.nudgeGroup}>
-                  <span className={styles.nudgeEdgeLabel}>{edge}</span>
-                  <button className={styles.nudgeBtn} disabled={!nudgeBounds} onClick={() => nudge(edge, NUDGE_PX)}>+</button>
-                  <button className={styles.nudgeBtn} disabled={!nudgeBounds} onClick={() => nudge(edge, -NUDGE_PX)}>−</button>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className={styles.previewWrap}>
-            {previewUrl
-              ? <img key={previewUrl} src={previewUrl} alt="Chart preview" className={styles.previewImg} />
-              : <div className={styles.loading}><div className={styles.spinner} /></div>
-            }
-          </div>
-          {!hasFullPage && (
-            <div className={styles.noPageNote}>
-              Full page not stored — nudge to trim edges, or delete and re-add from PDF to re-crop.
-            </div>
+        {/* Actions bar — counts and save controls */}
+        <div className={styles.refineActionsBar}>
+          <label className={styles.countLabel}>
+            <span className={styles.countLabelText}>Rows</span>
+            <input className={styles.countInput} type="number" value={totalRows}
+              onChange={e => setTotalRows(e.target.value === '' ? '' : parseInt(e.target.value))} placeholder="Rows" />
+          </label>
+          <label className={styles.countLabel}>
+            <span className={styles.countLabelText}>Sts</span>
+            <input className={styles.countInput} type="number" value={totalStitches}
+              onChange={e => setTotalStitches(e.target.value === '' ? '' : parseInt(e.target.value))} placeholder="Sts" />
+          </label>
+          <div className={styles.refineSpacer} />
+          {hasFullPage && (
+            <button className={styles.iconBtn} aria-label="Re-crop" title="Re-crop" onClick={enterReselect}>Crop</button>
           )}
-          <div className={styles.actions}>
-            {hasFullPage
-              ? <button className={styles.btnSecondary} onClick={enterReselect}>Re-crop from page</button>
-              : <button className={styles.btnSecondary} onClick={onClose}>Cancel</button>
-            }
-            <button className={styles.btnPrimary} onClick={handleSave}>Save chart ✓</button>
-          </div>
+          <button className={styles.iconBtnPrimary} aria-label="Save" title="Save" onClick={handleSave}>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 1h8.5L13 3.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+              <rect x="4.5" y="1" width="4" height="3.5" rx="0.4" stroke="currentColor" strokeWidth="1.2"/>
+              <rect x="3" y="8" width="9" height="5.5" rx="0.4" stroke="currentColor" strokeWidth="1.2"/>
+            </svg>
+          </button>
+          <button className={styles.iconBtn} aria-label="Close" title="Close" onClick={onClose}>✕</button>
         </div>
 
       </div>
-    </div>
+
+    </div>,
+    document.body
   )
 }

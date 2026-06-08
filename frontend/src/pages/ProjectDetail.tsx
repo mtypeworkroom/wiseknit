@@ -135,11 +135,7 @@ export default function ProjectDetail() {
         {/* Hero */}
         <div className={styles.hero}>
           <div className={styles.heroInner}>
-          <button className={styles.heroBackBtn} onClick={() => navigate('/dashboard')}>
-            ← Projects
-          </button>
           <div className={styles.heroTop}>
-            <div className={styles.heroIcon}>🧶</div>
             <div className={styles.heroMeta}>
               <div className={styles.heroName}>{project.name}</div>
               <div className={styles.heroBadgeRow}>

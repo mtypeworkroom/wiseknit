@@ -1,7 +1,7 @@
 .nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  height: 60px;
+  height: 48px;
   background: var(--bottom-bg);
   border-top: 1px solid var(--border);
   z-index: 100;
@@ -23,7 +23,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   cursor: pointer;
   border: none;
   background: transparent;
@@ -35,9 +35,9 @@
 .navItem:hover { opacity: 0.75; }
 
 .icon {
-  width: 20px;
-  height: 20px;
-  color: var(--ink-mid);
+  width: 16px;
+  height: 16px;
+  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -51,10 +51,11 @@
 .active .icon { color: var(--accent); }
 
 .label {
-  font-size: 11px;
+  font-size: 9px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: var(--ink-mid);
+  color: var(--ink);
 }
 
 .active .label { color: var(--accent); }
