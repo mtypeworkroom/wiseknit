@@ -132,6 +132,8 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
           </div>
         ) : (
           <div className={styles.pageGrid}>
+
+            {/* ── PDF pages — original always visible ── */}
             {pages.map((src, i) => {
               const sel = selections[i]
               const isChart = sel.role === 'chart'
@@ -141,7 +143,6 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
               return (
                 <div key={i} className={`${styles.pageCard} ${isChart ? styles.pageChart : ''} ${isPhoto ? styles.pagePhoto : ''} ${isExpanded ? styles.pageExpanded : ''}`}>
 
-                  {/* Buttons */}
                   <div className={styles.pageBtns}>
                     <button className={`${styles.pageBtn} ${isChart ? styles.pageBtnActive : ''}`} onClick={() => toggleRole(i, 'chart')}>
                       {isChart ? (sel.confirmed ? '✓ Chart' : '● Chart') : 'Chart'}
@@ -153,7 +154,7 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
 
                   <div className={styles.pageNum}>Page {i + 1}</div>
 
-                  {/* Chart setup panel — shown when expanded */}
+                  {/* Chart setup panel when expanded */}
                   {isChart && isExpanded && pageImageDatas[i] && (
                     <ChartSetupPanel
                       src={src}
@@ -165,23 +166,15 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
                     />
                   )}
 
-                  {/* Confirmed summary */}
-                  {isChart && !isExpanded && sel.confirmed && (
-                    <div className={styles.confirmedSummary} onClick={() => setExpandedIndex(i)}>
-                      <div className={styles.confirmedName}>{sel.chartName}</div>
-                      <div className={styles.confirmedDetail}>
-                        {sel.totalRows ?? '?'} rows · {sel.totalStitches ?? '?'} sts
-                      </div>
-                      <div className={styles.confirmedEdit}>Edit ›</div>
-                    </div>
-                  )}
-
-                  {/* Collapsed unconfirmed — show thumbnail */}
-                  {(!isChart || (!isExpanded && !sel.confirmed)) && (
-                    <div className={styles.pageImgWrap} onClick={isChart ? () => setExpandedIndex(i) : undefined}>
+                  {/* Original page — always shown when not expanded */}
+                  {!isExpanded && (
+                    <div className={styles.pageImgWrap} onClick={isChart && !sel.confirmed ? () => setExpandedIndex(i) : undefined}>
                       <img src={src} alt={`Page ${i + 1}`} className={styles.pageImg} />
-                      {isChart && (
+                      {isChart && !sel.confirmed && (
                         <div className={styles.tapToSetup}>Tap to set up chart</div>
+                      )}
+                      {isChart && sel.confirmed && (
+                        <div className={styles.confirmedOverlay}>✓ {sel.chartName}</div>
                       )}
                     </div>
                   )}
@@ -189,6 +182,24 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
                 </div>
               )
             })}
+
+            {/* ── Confirmed chart crops — appear at the end ── */}
+            {selections.filter(s => s.role === 'chart' && s.confirmed).map((sel) => (
+              <div key={`crop-${sel.pageNumber}`} className={`${styles.pageCard} ${styles.pageChart}`}>
+                <div className={styles.pageBtns}>
+                  <span className={styles.chartCropLabel}>✓ Chart from page {sel.pageNumber}</span>
+                  <button className={styles.pageBtn} onClick={() => setExpandedIndex(sel.pageNumber - 1)}>Edit ›</button>
+                </div>
+                <div className={styles.pageNum}>{sel.chartName}</div>
+                {sel.croppedBase64 && (
+                  <div className={styles.pageImgWrap}>
+                    <img src={sel.croppedBase64} alt={sel.chartName} className={styles.pageImg} />
+                  </div>
+                )}
+                <div className={styles.cropDetail}>{sel.totalRows} rows · {sel.totalStitches} sts</div>
+              </div>
+            ))}
+
           </div>
         )}
 
@@ -217,15 +228,15 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
 
 // ── Types ──────────────────────────────────────────────────────
 
-interface PixelBounds { x: number; y: number; w: number; h: number }
-interface NudgeOffsets { top: number; bottom: number; left: number; right: number }
+export interface PixelBounds { x: number; y: number; w: number; h: number }
+export interface NudgeOffsets { top: number; bottom: number; left: number; right: number }
 
 // ── detectChartBounds ─────────────────────────────────────────
 // Finds tight content bounds within a crop region using adaptive density
 // thresholding. Handles normal, inverted (dark-bg), colorwork, and no-stitch
 // charts by setting threshold at 25% of the peak row density in the region.
 
-function detectChartBounds(
+export function detectChartBounds(
   data: Uint8ClampedArray, srcWidth: number,
   ox: number, oy: number, w: number, h: number
 ): { x: number; y: number; x2: number; y2: number } {
@@ -283,7 +294,7 @@ function detectChartBounds(
 // Applies nudge offsets to initial bounds, clamped to image extents.
 // Positive offset = expand that edge outward; negative = shrink inward.
 
-function computeBounds(
+export function computeBounds(
   initial: PixelBounds, offsets: NudgeOffsets, imgW: number, imgH: number
 ): PixelBounds {
   const x = Math.max(0, initial.x - offsets.left)
@@ -336,13 +347,19 @@ function CropRefinePanel({ imageData, initialBounds, chartName, onBack, onConfir
 
   return (
     <div className={styles.refinePanel}>
-      <div className={styles.refineTitle}>{chartName} — Fine-tune crop</div>
-      <div className={styles.refineHint}>Use + to expand each edge outward, − to shrink it inward</div>
+      <div className={styles.refineHeader}>
+        <span className={styles.refineTitle}>{chartName} — Fine-tune crop</span>
+        <span className={styles.refineHint}>+ expands edge outward, − shrinks inward</span>
+      </div>
 
-      <div className={styles.refineNudgeRow}>
-        <span className={styles.refineEdgeLabel}>Top</span>
-        <button className={styles.nudgeBtn} onClick={() => nudge('top', NUDGE_PX)}>▲ +</button>
-        <button className={styles.nudgeBtn} onClick={() => nudge('top', -NUDGE_PX)}>▼ −</button>
+      <div className={styles.nudgeGrid}>
+        {(['top','bottom','left','right'] as const).map(edge => (
+          <div key={edge} className={styles.nudgeGroup}>
+            <span className={styles.nudgeEdgeLabel}>{edge}</span>
+            <button className={styles.nudgeBtn} onClick={() => nudge(edge, NUDGE_PX)}>+</button>
+            <button className={styles.nudgeBtn} onClick={() => nudge(edge, -NUDGE_PX)}>−</button>
+          </div>
+        ))}
       </div>
 
       <div className={styles.refinePreviewWrap}>
@@ -350,22 +367,6 @@ function CropRefinePanel({ imageData, initialBounds, chartName, onBack, onConfir
           ? <img src={previewUrl} alt="Crop preview" className={styles.refinePreview} />
           : <div className={styles.refineLoading}>Generating preview…</div>
         }
-      </div>
-
-      <div className={styles.refineNudgeRow}>
-        <span className={styles.refineEdgeLabel}>Bottom</span>
-        <button className={styles.nudgeBtn} onClick={() => nudge('bottom', NUDGE_PX)}>▼ +</button>
-        <button className={styles.nudgeBtn} onClick={() => nudge('bottom', -NUDGE_PX)}>▲ −</button>
-      </div>
-
-      <div className={styles.refineNudgeRow}>
-        <span className={styles.refineEdgeLabel}>Left</span>
-        <button className={styles.nudgeBtn} onClick={() => nudge('left', NUDGE_PX)}>◄ +</button>
-        <button className={styles.nudgeBtn} onClick={() => nudge('left', -NUDGE_PX)}>► −</button>
-        <span className={styles.refineEdgeSep} />
-        <span className={styles.refineEdgeLabel}>Right</span>
-        <button className={styles.nudgeBtn} onClick={() => nudge('right', NUDGE_PX)}>► +</button>
-        <button className={styles.nudgeBtn} onClick={() => nudge('right', -NUDGE_PX)}>◄ −</button>
       </div>
 
       <div className={styles.refineActions}>
@@ -475,7 +476,7 @@ function ChartSetupPanel({ src, imageData, sel, inputRef, onChange, onConfirm }:
             min={1}
             value={sel.totalRows ?? ''}
             onChange={e => onChange({ totalRows: parseInt(e.target.value) || undefined })}
-            placeholder="e.g. 28"
+            placeholder="Count rows"
           />
         </div>
         <div className={styles.setupSection}>
@@ -486,7 +487,7 @@ function ChartSetupPanel({ src, imageData, sel, inputRef, onChange, onConfirm }:
             min={1}
             value={sel.totalStitches ?? ''}
             onChange={e => onChange({ totalStitches: parseInt(e.target.value) || undefined })}
-            placeholder="e.g. 14"
+            placeholder="Count stitches"
           />
         </div>
       </div>

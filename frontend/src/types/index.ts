@@ -80,7 +80,8 @@ export interface ProjectChart {
   symbols: ProjectChartSymbol[]
   notes?: string
   flags: string[]
-  imageBase64?: string  // the original chart page image
+  imageBase64?: string   // cropped chart area
+  pageBase64?: string    // full original PDF page
 }
 
 // ── PATTERN ──────────────────────────

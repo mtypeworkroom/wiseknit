@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
-import type { Gauge, Yarn, Needle, NeedleType, YarnWeight } from '../types'
+import type { Gauge, Yarn, Needle, NeedleType, YarnWeight, ProjectChart } from '../types'
+import ChartEditModal from '../components/import/ChartEditModal'
 import styles from './ProjectDetail.module.css'
 
-type EditingField = null | 'gauge' | 'yarn' | 'needle'
+type EditingField = null | 'name' | 'category' | 'gauge' | 'yarn' | 'needle'
 
 const NEEDLE_SIZES: { label: string; mm: number }[] = [
   { label: 'US 0000 (1.25mm)', mm: 1.25 },
@@ -37,9 +38,12 @@ export default function ProjectDetail() {
   const { projects, sessions, deleteProject, updateProject } = useProjectStore()
 
   const [editingField, setEditingField] = useState<EditingField>(null)
+  const [nameForm, setNameForm] = useState('')
+  const [categoryForm, setCategoryForm] = useState('')
   const [gaugeForm, setGaugeForm] = useState<Gauge>({ stitchesPer10cm: 0, rowsPer10cm: 0 })
   const [yarnForm, setYarnForm] = useState<Partial<Yarn>>({})
   const [needleForm, setNeedleForm] = useState<Partial<Needle>>({ sizeMm: 4.0, type: 'circular-fixed' })
+  const [editModalChart, setEditModalChart] = useState<ProjectChart | null>(null)
 
   const project = projects.find((p) => p.id === id)
 
@@ -52,10 +56,34 @@ export default function ProjectDetail() {
   }
 
   const openEdit = (field: EditingField) => {
-    if (field === 'gauge')  setGaugeForm(project.gauge ?? { stitchesPer10cm: 0, rowsPer10cm: 0 })
-    if (field === 'yarn')   setYarnForm(project.yarn ?? {})
-    if (field === 'needle') setNeedleForm(project.needle ?? { sizeMm: 4.0, type: 'circular-fixed' })
+    if (field === 'name')     setNameForm(project.name)
+    if (field === 'category') setCategoryForm(project.category ?? '')
+    if (field === 'gauge')    setGaugeForm(project.gauge ?? { stitchesPer10cm: 0, rowsPer10cm: 0 })
+    if (field === 'yarn')     setYarnForm(project.yarn ?? {})
+    if (field === 'needle')   setNeedleForm(project.needle ?? { sizeMm: 4.0, type: 'circular-fixed' })
     setEditingField(field)
+  }
+
+  const saveName = () => {
+    if (nameForm.trim()) updateProject(project.id, { name: nameForm.trim() })
+    setEditingField(null)
+  }
+
+  const saveCategory = () => {
+    updateProject(project.id, { category: categoryForm.trim() || undefined })
+    setEditingField(null)
+  }
+
+  const deleteChart = (chartId: string) => {
+    if (!window.confirm('Remove this chart?')) return
+    updateProject(project.id, { charts: (project.charts ?? []).filter(c => c.id !== chartId) })
+  }
+
+  const saveChartEdit = (chartId: string, updates: Partial<ProjectChart>) => {
+    updateProject(project.id, {
+      charts: (project.charts ?? []).map(c => c.id === chartId ? { ...c, ...updates } : c),
+    })
+    setEditModalChart(null)
   }
 
   const saveGauge = () => {
@@ -96,6 +124,13 @@ export default function ProjectDetail() {
 
   return (
     <div className="page-scroll no-top-nav">
+      {editModalChart && (
+        <ChartEditModal
+          chart={editModalChart}
+          onSave={(updates) => saveChartEdit(editModalChart.id, updates)}
+          onClose={() => setEditModalChart(null)}
+        />
+      )}
 
         {/* Hero */}
         <div className={styles.hero}>
@@ -162,15 +197,26 @@ export default function ProjectDetail() {
           <div className={styles.section}>
             <div className="section-label">Pattern</div>
             <div className="card">
-              <div className={styles.detailRow}>
-                <span className={styles.detailLabel}>Charts</span>
-                <span className={styles.detailVal}>
-                  {(project.charts?.length ?? 0) > 0
-                    ? `${project.charts!.length} chart${project.charts!.length !== 1 ? 's' : ''} · ${project.totalRows} rows`
-                    : <span className={styles.missing}>No charts set up</span>}
-                </span>
-                <button className={styles.addBtn} onClick={() => navigate(`/project/${project.id}/setup`)}>
-                  Edit setup
+              {(project.charts?.length ?? 0) === 0 ? (
+                <div className={styles.emptyState}>No charts yet</div>
+              ) : (
+                project.charts!.map(chart => (
+                  <div key={chart.id} className={styles.chartRow}>
+                    {chart.imageBase64 && (
+                      <img src={chart.imageBase64} alt="" className={styles.chartThumb} />
+                    )}
+                    <span className={styles.chartRowName}>{chart.name}</span>
+                    {chart.totalRows > 0 && (
+                      <span className={styles.chartRowMeta}>{chart.totalRows}r</span>
+                    )}
+                    <button className={styles.addBtn} onClick={() => setEditModalChart(chart)}>Edit</button>
+                    <button className={styles.chartDeleteBtn} onClick={() => deleteChart(chart.id)}>✕</button>
+                  </div>
+                ))
+              )}
+              <div className={styles.chartImportRow}>
+                <button className={styles.chartImportBtn} onClick={() => navigate(`/project/${project.id}/setup`)}>
+                  + Import PDF
                 </button>
               </div>
             </div>
@@ -180,10 +226,49 @@ export default function ProjectDetail() {
           <div className={styles.section}>
             <div className="section-label">Project Details</div>
             <div className="card">
+              {/* Name */}
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Name</span>
+                <span className={styles.detailVal}>{project.name}</span>
+                <button className={styles.addBtn} onClick={() => openEdit('name')}>Edit</button>
+              </div>
+              {editingField === 'name' && (
+                <div className={styles.inlineForm}>
+                  <label className={styles.inlineLabel} style={{ flex: 1 }}>
+                    Name
+                    <input type="text" className={styles.inlineInput} style={{ width: '100%' }}
+                      value={nameForm} onChange={e => setNameForm(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && saveName()} />
+                  </label>
+                  <div className={styles.inlineActions}>
+                    <button className={styles.inlineSave} onClick={saveName}>Save</button>
+                    <button className={styles.inlineCancel} onClick={() => setEditingField(null)}>Cancel</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Category */}
               <div className={styles.detailRow}>
                 <span className={styles.detailLabel}>Category</span>
-                <span className={styles.detailVal}>{project.category ?? '—'}</span>
+                <span className={styles.detailVal}>{project.category ?? <span className={styles.missing}>Not set</span>}</span>
+                <button className={styles.addBtn} onClick={() => openEdit('category')}>
+                  {project.category ? 'Edit' : 'Add'}
+                </button>
               </div>
+              {editingField === 'category' && (
+                <div className={styles.inlineForm}>
+                  <label className={styles.inlineLabel}>
+                    Category
+                    <input type="text" className={styles.inlineInput}
+                      value={categoryForm} onChange={e => setCategoryForm(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && saveCategory()} />
+                  </label>
+                  <div className={styles.inlineActions}>
+                    <button className={styles.inlineSave} onClick={saveCategory}>Save</button>
+                    <button className={styles.inlineCancel} onClick={() => setEditingField(null)}>Cancel</button>
+                  </div>
+                </div>
+              )}
               {/* Needle */}
               <div className={styles.detailRow}>
                 <span className={styles.detailLabel}>Needle</span>

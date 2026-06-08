@@ -358,6 +358,21 @@
 .chartRow:last-of-type { border-bottom: none; }
 .chartRowName { flex: 1; font-size: 13px; color: var(--ink); font-weight: 500; }
 .chartRowPage { font-size: 11px; color: var(--ink-light); font-family: var(--font-mono); }
+.chartEditBtn {
+  font-size: 11px; color: var(--accent); background: none; border: none;
+  cursor: pointer; font-family: var(--font-sans); font-weight: 500;
+  padding: 2px 4px; flex-shrink: 0;
+}
+.chartEditBtn:hover { text-decoration: underline; }
+
+.chartDeleteBtn {
+  width: 22px; height: 22px;
+  border: none; background: transparent;
+  color: var(--ink-light); font-size: 12px;
+  cursor: pointer; border-radius: 3px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.chartDeleteBtn:hover { background: var(--danger-lt, rgba(220,38,38,0.1)); color: var(--danger, #dc2626); }
 
 .draftBtn {
   height: 36px;
@@ -380,3 +395,64 @@
   font-style: italic;
   padding: 6px 0 2px;
 }
+
+/* ── PATTERN STEP — slim import bar ── */
+.patternImportBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-height: 48px;
+  flex-wrap: wrap;
+}
+
+.patternBarMsg {
+  flex: 1;
+  font-size: 13px;
+  color: var(--ink-mid);
+}
+
+.patternBarFileName {
+  flex: 1;
+  font-size: 12px;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.patternBarSep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.patternUploadBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px; padding: 0 16px;
+  border: 1px dashed var(--border); border-radius: 4px;
+  background: transparent; color: var(--ink-mid);
+  font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+  flex: 1;
+  justify-content: center;
+}
+.patternUploadBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+.reimportBtn {
+  height: 30px; padding: 0 12px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: transparent; color: var(--ink-mid);
+  font-family: var(--font-sans); font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+  flex-shrink: 0;
+}
+.reimportBtn:hover { border-color: var(--accent); color: var(--accent); }

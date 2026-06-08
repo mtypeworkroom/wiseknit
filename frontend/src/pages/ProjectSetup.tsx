@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import type { Project, NeedleType, YarnWeight, ProjectChart } from '../types'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
+import ChartEditModal from '../components/import/ChartEditModal'
 import styles from './ProjectSetup.module.css'
 
 interface SetupState {
@@ -105,6 +106,9 @@ export default function ProjectSetup() {
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [showPagePicker, setShowPagePicker] = useState(false)
   const [pageSelections, setPageSelections] = useState<PageSelection[]>([])
+  const [chartEdits, setChartEdits] = useState<Record<string, Partial<ProjectChart>>>({})
+  const [deletedChartIds, setDeletedChartIds] = useState<Set<string>>(new Set())
+  const [editModalChart, setEditModalChart] = useState<ProjectChart | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const set = (key: keyof SetupState, value: any) =>
@@ -166,6 +170,7 @@ export default function ProjectSetup() {
       symbols: [],
       flags: [],
       imageBase64: sel.croppedBase64 || sel.imageBase64,
+      pageBase64: sel.imageBase64,
     }))
 
     const newProject: Project = {
@@ -212,7 +217,12 @@ export default function ProjectSetup() {
         createdAt: existingProject.createdAt,
         currentRow: existingProject.currentRow,
         totalRowsWorked: existingProject.totalRowsWorked,
-        charts: projectCharts.length > 0 ? projectCharts : existingProject.charts,
+        charts: (() => {
+          const merged = (existingProject.charts ?? [])
+            .filter(c => !deletedChartIds.has(c.id))
+            .map(c => chartEdits[c.id] ? { ...c, ...chartEdits[c.id] } : c)
+          return projectCharts.length > 0 ? [...merged, ...projectCharts] : merged
+        })(),
       })
       navigate(`/project/${existingProject.id}`)
     } else {
@@ -230,6 +240,18 @@ export default function ProjectSetup() {
           file={pdfFile}
           onComplete={handlePagePickerComplete}
           onCancel={() => setShowPagePicker(false)}
+        />
+      )}
+
+      {/* Chart edit modal */}
+      {editModalChart && (
+        <ChartEditModal
+          chart={editModalChart}
+          onSave={(updates) => {
+            setChartEdits(x => ({ ...x, [editModalChart.id]: { ...(x[editModalChart.id] ?? {}), ...updates } }))
+            setEditModalChart(null)
+          }}
+          onClose={() => setEditModalChart(null)}
         />
       )}
 
@@ -292,11 +314,15 @@ export default function ProjectSetup() {
           {/* ── STEP 3: PATTERN UPLOAD ── */}
           {step === 3 && (
             <div className={styles.stepPanel}>
-              <div className={styles.stepHeading}>Upload your pattern</div>
-              <div className={styles.stepSub}>Upload a PDF then select which pages contain charts</div>
+              <div className={styles.stepHeading}>Import PDF</div>
+              <div className={styles.stepSub}>
+                {existingProject?.charts?.length
+                  ? 'Add more charts or re-import the pattern PDF'
+                  : 'Upload your pattern PDF then mark which pages contain charts'}
+              </div>
 
-              {/* PDF Upload */}
-              <div className={styles.card}>
+              {/* Set up pattern — slim full-width bar */}
+              <div className={styles.patternImportBar}>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -305,65 +331,80 @@ export default function ProjectSetup() {
                   style={{ display: 'none' }}
                 />
 
-                {!pdfFile ? (
-                  <div className={styles.uploadZone} onClick={() => fileInputRef.current?.click()}>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--ink-light)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                {existingProject?.charts?.length && !pdfFile ? (
+                  <>
+                    <span className={styles.patternBarMsg}>Pattern PDF already imported</span>
+                    <button className={styles.reimportBtn} onClick={() => fileInputRef.current?.click()}>Re-import PDF</button>
+                  </>
+                ) : !pdfFile ? (
+                  <button className={styles.patternUploadBtn} onClick={() => fileInputRef.current?.click()}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                       <polyline points="17 8 12 3 7 8"/>
                       <line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
-                    <div className={styles.uploadTitle}>Tap to upload PDF</div>
-                    <div className={styles.uploadSub}>Your pattern file</div>
-                  </div>
+                    Upload pattern PDF
+                  </button>
                 ) : (
-                  <div className={styles.fileSelected}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                       <polyline points="14 2 14 8 20 8"/>
                     </svg>
-                    <div className={styles.fileName}>{pdfFile.name}</div>
+                    <span className={styles.patternBarFileName}>{pdfFile.name}</span>
                     <button className={styles.changeFile} onClick={() => fileInputRef.current?.click()}>Change</button>
-                  </div>
+                    <div className={styles.patternBarSep} />
+                    {pageSelections.filter(s => s.role === 'chart').length === 0 ? (
+                      <button className={styles.selectPagesBtn} onClick={() => setShowPagePicker(true)}>Select pages →</button>
+                    ) : (
+                      <button className={styles.selectPagesBtn} onClick={() => setShowPagePicker(true)}>
+                        {pageSelections.filter(s => s.role === 'chart').length} chart{pageSelections.filter(s => s.role === 'chart').length !== 1 ? 's' : ''} · Edit selection
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
 
-              {/* Chart page selection — only shown after PDF upload */}
-              {pdfFile && (
-                <div className={styles.card}>
-                  <div className={styles.cardTitle}>Chart Pages</div>
-                  {pageSelections.filter(s => s.role === 'chart').length === 0 ? (
-                    <div className={styles.noCharts}>
-                      <div className={styles.noChartsText}>Select which pages contain charts — AI will read them after setup</div>
-                      <button className={styles.selectPagesBtn} onClick={() => setShowPagePicker(true)}>
-                        Select Pages from PDF →
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      {pageSelections.filter(s => s.role === 'chart').map(s => (
-                        <div key={s.pageNumber} className={styles.chartRow}>
-                          <span className={styles.chartRowName}>{s.chartName ?? `Chart (p.${s.pageNumber})`}</span>
-                          <span className={styles.chartRowPage}>Page {s.pageNumber}</span>
-                        </div>
-                      ))}
-                      {pageSelections.find(s => s.role === 'photo') && (
-                        <div className={styles.chartRow}>
-                          <span className={styles.chartRowName} style={{ color: 'var(--warn)' }}>Project photo selected</span>
-                          <span className={styles.chartRowPage}>Page {pageSelections.find(s => s.role === 'photo')?.pageNumber}</span>
-                        </div>
-                      )}
-                      <div className={styles.parseNote}>
-                        AI will parse {pageSelections.filter(s => s.role === 'chart').length} chart{pageSelections.filter(s => s.role === 'chart').length !== 1 ? 's' : ''} after you tap Start Knitting
+              {/* Charts list */}
+              <div className={styles.card}>
+                <div className={styles.cardTitle}>Charts</div>
+
+                {existingProject?.charts && existingProject.charts.length > 0 && existingProject.charts
+                  .filter(c => !deletedChartIds.has(c.id))
+                  .map((chart) => {
+                    const edits = chartEdits[chart.id] ?? {}
+                    const displayName = edits.name ?? chart.name
+                    const displayRows = edits.totalRows ?? chart.totalRows
+                    const displaySts = edits.totalStitches ?? chart.totalStitches
+                    return (
+                      <div key={chart.id} className={styles.chartRow}>
+                        <span className={styles.chartRowName}>{displayName}</span>
+                        <span className={styles.chartRowPage}>{displayRows} rows · {displaySts} sts</span>
+                        <button className={styles.chartEditBtn} onClick={() => setEditModalChart({ ...chart, ...edits })}>Edit</button>
+                        <button className={styles.chartDeleteBtn} onClick={() => setDeletedChartIds(s => new Set([...s, chart.id]))}>✕</button>
                       </div>
-                      <button className={styles.selectPagesBtn} onClick={() => setShowPagePicker(true)}>
-                        Change Selection
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
+                    )
+                  })
+                }
 
+                {pageSelections.filter(s => s.role === 'chart').map(s => (
+                  <div key={s.pageNumber} className={styles.chartRow}>
+                    <span className={styles.chartRowName}>{s.chartName ?? `Chart (p.${s.pageNumber})`}</span>
+                    <span className={styles.chartRowPage}>p.{s.pageNumber} · new</span>
+                  </div>
+                ))}
 
+                {pageSelections.find(s => s.role === 'photo') && (
+                  <div className={styles.chartRow}>
+                    <span className={styles.chartRowName} style={{ color: 'var(--warn)' }}>Project photo</span>
+                    <span className={styles.chartRowPage}>p.{pageSelections.find(s => s.role === 'photo')?.pageNumber}</span>
+                  </div>
+                )}
+
+                {(!existingProject?.charts?.length && pageSelections.filter(s => s.role === 'chart').length === 0) && (
+                  <div className={styles.noChartsText} style={{ padding: '8px 0' }}>No charts yet — upload a PDF to get started</div>
+                )}
+              </div>
             </div>
           )}
 

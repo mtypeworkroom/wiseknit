@@ -1,24 +1,16 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
   z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
 }
 
 .modal {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
   width: 100%;
-  max-width: 860px;
-  max-height: 92vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
 .header {
@@ -51,13 +43,14 @@
 /* Page grid */
 .pageGrid {
   flex: 1;
-  overflow-y: scroll;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 16px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
   align-content: start;
-  scrollbar-width: auto;
+  scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--surface2);
 }
 .pageGrid::-webkit-scrollbar { width: 14px; }
@@ -120,17 +113,36 @@
 }
 .pageImgWrap:hover .tapToSetup { opacity: 1; }
 
-/* Confirmed summary */
-.confirmedSummary {
-  padding: 10px 12px;
-  cursor: pointer;
-  border-radius: 0 0 6px 6px;
-  transition: background 0.15s;
+/* Overlay badge on confirmed pages */
+.confirmedOverlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(60,207,239,0.82);
+  color: var(--bg);
+  font-size: 11px; font-weight: 600;
+  text-align: center;
+  padding: 4px 8px;
+  backdrop-filter: blur(2px);
 }
-.confirmedSummary:hover { background: var(--surface); }
-.confirmedName { font-size: 13px; font-weight: 600; color: var(--accent); }
-.confirmedDetail { font-size: 11px; color: var(--ink-mid); font-family: var(--font-mono); margin-top: 2px; }
-.confirmedEdit { font-size: 11px; color: var(--ink-light); margin-top: 4px; }
+
+/* Chart crop cards (appended at end of grid) */
+.chartCropLabel {
+  flex: 1;
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+}
+.cropDetail {
+  font-size: 11px;
+  color: var(--ink-mid);
+  font-family: var(--font-mono);
+  text-align: center;
+  padding: 6px 8px;
+  border-top: 1px solid var(--border);
+}
 
 /* ── Chart Setup Panel ──────────────── */
 .setupPanel {
@@ -206,10 +218,17 @@
 
 /* ── Crop Refine Panel ──────────────── */
 .refinePanel {
-  padding: 16px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+}
+
+.refineHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .refineTitle {
@@ -221,26 +240,6 @@
 .refineHint {
   font-size: 11px;
   color: var(--ink-mid);
-  margin-top: -4px;
-}
-
-.refineNudgeRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.refineEdgeLabel {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ink-mid);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  min-width: 48px;
-}
-
-.refineEdgeSep {
-  flex: 1;
 }
 
 .refinePreviewWrap {
@@ -252,12 +251,13 @@
   align-items: center;
   justify-content: center;
   min-height: 80px;
+  flex: 1;
 }
 
 .refinePreview {
   display: block;
   max-width: 100%;
-  max-height: 380px;
+  max-height: calc(100vh - 260px);
   width: auto;
   height: auto;
   object-fit: contain;
@@ -269,25 +269,46 @@
   padding: 24px;
 }
 
-.refineActions {
+.nudgeGrid {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 4px;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.nudgeGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 6px;
+}
+
+.nudgeEdgeLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 32px;
 }
 
 .nudgeBtn {
-  height: 32px;
-  padding: 0 10px;
+  width: 26px;
+  height: 26px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--ink);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.12s;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .nudgeBtn:hover {
   background: var(--accent-lt);
@@ -296,6 +317,12 @@
 }
 .nudgeBtn:active { transform: scale(0.95); }
 
+.refineActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 /* Footer */
 .footer {
   padding: 12px 20px;
@@ -303,7 +330,6 @@
   display: flex; align-items: center; gap: 12px;
   flex-shrink: 0;
   background: var(--surface);
-  border-radius: 0 0 12px 12px;
 }
 .footerInfo { flex: 1; font-size: 12px; color: var(--ink-mid); font-family: var(--font-mono); }
 .footerActions { display: flex; gap: 8px; }

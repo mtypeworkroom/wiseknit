@@ -1,16 +1,14 @@
 # WiseKnit — Known Issues & Fixes Needed
 
 ## UI & Visual
-
-### Project Detail - Header status badge
-In light mode not enough constrast between the text and background.
-
-### Select & Set UP Chart Page
-But all the nudge buttons at the top, can we show more of the chart without scrolling.
-
-When a chart is setup it need to be page added to the project, not a replacement of the PDR page. The PDF needs to stay as is, eventually we will need to have a page picker. 
-
+### Select & Set Up - Guage
 Make it more obvious the the numbers in the gauge swatch boxes are examples (are we reading this from the pattern?)
+
+
+### Select & Set Up Chart Page - Page Picker
+When a chart is setup it need to be page added to the project, not a replacement of the PDR page. The PDF needs to stay as is, eventually we will need to have a page picker.
+
+Can we read total rows at all from the chart?  If not take out the text suggestions in the Total Rows and Stitches per rows
 
 If a file has already been uploaded and pages selected and we are in edit mode we need to skip the upload PDF step and go straight to the page picker.
 

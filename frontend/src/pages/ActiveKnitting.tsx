@@ -12,6 +12,7 @@ export default function ActiveKnitting() {
 
   const [panelOpen, setPanelOpen] = useState<'legend' | 'tools' | null>(null)
   const [backMenuOpen, setBackMenuOpen] = useState(false)
+  const [chartIndex, setChartIndex] = useState(0)
   const chartAreaRef = useRef<HTMLDivElement>(null)
   const [jumpMenuOpen, setJumpMenuOpen] = useState(false)
 
@@ -41,7 +42,8 @@ export default function ActiveKnitting() {
   if (!project) return null
 
   const pct = Math.round((project.currentRow / project.totalRows) * 100)
-  const chart = project.charts?.[0]
+  const charts = project.charts ?? []
+  const chart = charts[chartIndex] ?? charts[0]
 
   const getRowSide = () => {
     if (!chart) return null
@@ -190,6 +192,21 @@ export default function ActiveKnitting() {
           </div>
         </div>
       </div>
+
+      {/* Chart selector — only when multiple charts */}
+      {charts.length > 1 && (
+        <div className={styles.chartSelector}>
+          {charts.map((c, i) => (
+            <button
+              key={c.id}
+              className={`${styles.chartTab} ${i === chartIndex ? styles.chartTabActive : ''}`}
+              onClick={() => setChartIndex(i)}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Bottom bar */}
       <div className={styles.bottomBar}>

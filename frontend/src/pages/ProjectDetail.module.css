@@ -126,6 +126,21 @@
 .badge_completed { background: rgba(60,207,239,0.15); color: #3CCFEF; }
 .badge_archived  { background: rgba(255,255,255,0.08); color: var(--hero-mid); }
 
+:global([data-theme="light"]) .badge_active,
+:global([data-theme="light"]) .badge_completed {
+  background: rgba(8,112,138,0.12);
+  color: #08708A;
+}
+:global([data-theme="light"]) .badge_waiting {
+  background: rgba(146,88,0,0.10);
+  color: #925800;
+}
+:global([data-theme="light"]) .badge_paused,
+:global([data-theme="light"]) .badge_archived {
+  background: rgba(13,27,42,0.08);
+  color: var(--hero-mid);
+}
+
 /* compact metrics strip */
 .metaStrip {
   display: flex;
@@ -277,6 +292,45 @@
   transition: all 0.15s;
 }
 .inlineCancel:hover { border-color: var(--ink-mid); color: var(--ink); }
+
+/* chart rows in Pattern section */
+.chartRow {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.chartRow:last-of-type { border-bottom: none; }
+.chartThumb {
+  width: 36px; height: 36px;
+  object-fit: contain;
+  border-radius: 3px;
+  background: #fff;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.chartRowName { flex: 1; font-size: 13px; color: var(--ink); font-weight: 500; }
+.chartRowMeta { font-size: 11px; color: var(--ink-light); font-family: var(--font-mono); flex-shrink: 0; }
+.chartDeleteBtn {
+  width: 22px; height: 22px;
+  border: none; background: transparent;
+  color: var(--ink-light); font-size: 12px;
+  cursor: pointer; border-radius: 3px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.chartDeleteBtn:hover { background: rgba(220,38,38,0.1); color: #dc2626; }
+.chartImportRow {
+  padding: 10px 14px 6px;
+}
+.chartImportBtn {
+  height: 32px; padding: 0 14px;
+  border: 1px dashed var(--border); border-radius: 4px;
+  background: transparent; color: var(--ink-mid);
+  font-family: var(--font-sans); font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+}
+.chartImportBtn:hover { border-color: var(--accent); color: var(--accent); }
 
 /* sessions */
 .sessionRow {
