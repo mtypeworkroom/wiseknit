@@ -42,6 +42,8 @@ export default function ActiveKnitting() {
   if (!project) return null
 
   const pct = Math.round((project.currentRow / project.totalRows) * 100)
+  const totalRowsWorked = (project as any).totalRowsWorked ?? 0
+  const repeatNum = Math.max(1, Math.ceil(totalRowsWorked / project.totalRows))
   const charts = project.charts ?? []
   const chart = charts[chartIndex] ?? charts[0]
 
@@ -107,6 +109,36 @@ export default function ActiveKnitting() {
           Back
         </button>
         <span className={styles.tbPattern}>{project.name}</span>
+        {/* Chip 1: chart row position */}
+        <div className={styles.tbChip}>
+          <span className={styles.tbChipLabel}>row</span>
+          <span className={styles.tbChipNum}>{project.currentRow}</span>
+          <span className={styles.tbChipSep}>/</span>
+          <span className={styles.tbChipSub}>{project.totalRows}</span>
+        </div>
+        {/* Chip 2: total worked + repeat icon */}
+        <div className={styles.tbChip}>
+          <span className={styles.tbChipNum}>{totalRowsWorked}</span>
+          <svg className={styles.tbRepeatIcon} viewBox="0 0 6.35 6.35" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="repeatArrow" refX="0" refY="0" orient="auto-start-reverse"
+                markerWidth="0.75" markerHeight="0.75" viewBox="0 0 1 1"
+                preserveAspectRatio="xMidYMid" overflow="visible">
+                <path transform="scale(0.7)" fillRule="evenodd" fill="context-stroke"
+                  d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"/>
+              </marker>
+            </defs>
+            <g opacity="0.6">
+              <path fill="none" stroke="currentColor" strokeWidth={0.52} strokeLinecap="round" strokeLinejoin="round"
+                markerEnd="url(#repeatArrow)"
+                d="M 0.72464562,2.9243598 0.71061364,1.7784555 C 0.70573998,1.3804533 1.0310505,1.059986 1.4290825,1.059986 h 3.1034717"/>
+              <path fill="none" stroke="currentColor" strokeWidth={0.52} strokeLinecap="round" strokeLinejoin="round"
+                markerEnd="url(#repeatArrow)"
+                d="m 5.6253527,3.3563935 0.014032,1.1459036 c 0.00487,0.3980019 -0.3204365,0.718469 -0.7184683,0.718469 H 1.8174467"/>
+            </g>
+          </svg>
+          <span className={styles.tbRepeatNum}>{repeatNum}</span>
+        </div>
         <div className={styles.tbRight}>
           <button
             className={`${styles.tbIcon} ${panelOpen === 'tools' ? styles.tbIconActive : ''}`}
@@ -208,66 +240,50 @@ export default function ActiveKnitting() {
         </div>
       )}
 
-      {/* Bottom bar */}
+      {/* Instructions + nav bar — instructions wrap left, buttons anchored right */}
       <div className={styles.bottomBar}>
-        <div className={styles.rowInfo}>
-          <span className={styles.rowLabel}>Row</span>
-          <span className={styles.rowNum}>{project.currentRow}</span>
-          <span className={styles.rowOf}>/ {project.totalRows}</span>
-        </div>
-        <div className={styles.separator} />
-        <div className={styles.rowInfo}>
-          <span className={styles.rowLabel}>Total</span>
-          <span className={styles.rowNum}>{(project as any).totalRowsWorked ?? 0}</span>
-        </div>
-
-        <div className={styles.separator} />
-
         {getRowSide() && (
-          <>
-            <div className={styles.instrWrap}>
-              <span className={styles.rowSidePill}>{getRowSide()}</span>
-              {chart?.totalStitches ? (
-                <span className={styles.instrText}>{chart.totalStitches} sts</span>
-              ) : null}
-              {chart?.notes ? (
-                <span className={styles.instrNotes}>{chart.notes}</span>
-              ) : null}
-            </div>
-            <div className={styles.separator} />
-          </>
+          <div className={styles.instrContent}>
+            <span className={styles.rowSidePill}>{getRowSide()}</span>
+            {chart?.totalStitches ? (
+              <span className={styles.instrText}>{chart.totalStitches} sts</span>
+            ) : null}
+            {chart?.notes ? (
+              <span className={styles.instrNotes}>{chart.notes}</span>
+            ) : null}
+          </div>
         )}
-
-        {/* Split back button */}
-        <div className={styles.splitBtn}>
-          <button className={styles.splitMain} onClick={handlePrev}>← Prev Row</button>
-          <button
-            className={styles.splitArrow}
-            onClick={() => setBackMenuOpen(o => !o)}
-            aria-label="More options"
-          >▾</button>
-          {backMenuOpen && (
-            <div className={styles.backMenu}>
-              <button className={styles.backMenuItem} onClick={() => { handlePrev(); setBackMenuOpen(false) }}>
-                ← Go back one row
-              </button>
-              <button className={styles.backMenuItem} onClick={() => { handleReset(); setBackMenuOpen(false) }}>
-                ↺ Reset to row 1
-              </button>
-              <button className={styles.backMenuItem} style={{color: 'var(--accent)'}} onClick={() => { setJumpMenuOpen(true); setBackMenuOpen(false) }}>
-                ⤷ Go to specific row
-              </button>
-            </div>
-          )}
+        <div className={styles.instrNav}>
+          <div className={styles.splitBtn}>
+            <button className={styles.splitMain} onClick={handlePrev}>← Prev</button>
+            <button
+              className={styles.splitArrow}
+              onClick={() => setBackMenuOpen(o => !o)}
+              aria-label="More options"
+            >▾</button>
+            {backMenuOpen && (
+              <div className={styles.backMenu}>
+                <button className={styles.backMenuItem} onClick={() => { handlePrev(); setBackMenuOpen(false) }}>
+                  ← Go back one row
+                </button>
+                <button className={styles.backMenuItem} onClick={() => { handleReset(); setBackMenuOpen(false) }}>
+                  ↺ Reset to row 1
+                </button>
+                <button className={styles.backMenuItem} style={{color: 'var(--accent)'}} onClick={() => { setJumpMenuOpen(true); setBackMenuOpen(false) }}>
+                  ⤷ Go to specific row
+                </button>
+              </div>
+            )}
+          </div>
+          <button className={styles.nextBtn} onClick={handleNext}>Next ›</button>
         </div>
-        <button className={styles.nextBtn} onClick={handleNext}>Next Row ›</button>
 
         {/* Jump to row picker */}
         {jumpMenuOpen && (
           <div className={styles.jumpOverlay} onClick={() => setJumpMenuOpen(false)}>
             <div className={styles.jumpModal} onClick={e => e.stopPropagation()}>
               <div className={styles.jumpTitle}>Go Back to Total Row</div>
-              <div className={styles.jumpSubtitle}>You have worked {project.totalRowsWorked ?? 0} rows total</div>
+              <div className={styles.jumpSubtitle}>You have worked {totalRowsWorked} rows total</div>
               <div className={styles.jumpInputWrap}>
                 <input
                   type="number"

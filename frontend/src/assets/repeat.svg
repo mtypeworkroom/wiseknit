@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 6.3499999 6.35"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="repeat.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showguides="false"
+     inkscape:zoom="12.742761"
+     inkscape:cx="20.913835"
+     inkscape:cy="16.715373"
+     inkscape:window-width="1261"
+     inkscape:window-height="714"
+     inkscape:window-x="1719"
+     inkscape:window-y="187"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="0.75"
+       markerHeight="0.75"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="rect1"
+       style="fill:none;stroke:#000000;stroke-width:0.362787;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;marker-end:url(#RoundedArrow)"
+       d="M 0.72464562,2.9243598 0.71061364,1.7784555 C 0.70573998,1.3804533 1.0310505,1.059986 1.4290825,1.059986 h 3.1034717"
+       sodipodi:nodetypes="cssc" />
+    <path
+       id="path7"
+       style="fill:none;stroke:#000000;stroke-width:0.362787;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;marker-end:url(#RoundedArrow)"
+       d="m 5.6253527,3.3563935 0.014032,1.1459036 c 0.00487,0.3980019 -0.3204365,0.718469 -0.7184683,0.718469 H 1.8174467"
+       sodipodi:nodetypes="cssc" />
+  </g>
+</svg>
