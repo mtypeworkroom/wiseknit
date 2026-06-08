@@ -191,7 +191,11 @@ export default function ProjectDetail() {
                   ▶ Knit
                 </button>
               )}
-              <button className={styles.heroIconBtn} title="Archive project">
+              <button
+                className={styles.heroIconBtn}
+                title={project.status === 'archived' ? 'Unarchive' : 'Archive'}
+                onClick={() => updateProject(project.id, { status: project.status === 'archived' ? 'paused' : 'archived' })}
+              >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
                 </svg>
@@ -471,6 +475,18 @@ export default function ProjectDetail() {
             </div>
           </div>
 
+          {/* Notes */}
+          <div className={styles.section}>
+            <div className="section-label">Notes</div>
+            <div className="card">
+              {project.notes ? (
+                <div className={styles.notes}>{project.notes}</div>
+              ) : (
+                <div className={styles.emptyState}>No notes yet — tap Edit to add some</div>
+              )}
+            </div>
+          </div>
+
           {/* Session history */}
           <div className={styles.section}>
             <div className="section-label">Session History</div>
@@ -488,18 +504,6 @@ export default function ProjectDetail() {
                     <span className={styles.sessDuration}>{formatDuration(session.durationMinutes)}</span>
                   </div>
                 ))
-              )}
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div className={styles.section}>
-            <div className="section-label">Notes</div>
-            <div className="card">
-              {project.notes ? (
-                <div className={styles.notes}>{project.notes}</div>
-              ) : (
-                <div className={styles.emptyState}>No notes yet — tap Edit to add some</div>
               )}
             </div>
           </div>

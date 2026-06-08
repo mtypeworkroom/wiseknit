@@ -11,6 +11,7 @@ export interface PageSelection {
   croppedBase64?: string     // cropped chart area
   totalRows?: number
   totalStitches?: number
+  workedInRound?: boolean
   confirmed?: boolean
 }
 
@@ -540,6 +541,26 @@ function ChartSetupPanel({ src, imageData, sel, inputRef, onChange, onConfirm }:
           onChange={e => onChange({ chartName: e.target.value })}
           placeholder="e.g. Body Chart, Sleeve Chart…"
         />
+      </div>
+
+      <div className={styles.setupSection}>
+        <div className={styles.setupLabel}>Construction method</div>
+        <div className={styles.toggleRow}>
+          <button
+            type="button"
+            className={`${styles.toggleBtn} ${!sel.workedInRound ? styles.toggleBtnActive : ''}`}
+            onClick={() => onChange({ workedInRound: false })}
+          >
+            Flat (RS / WS)
+          </button>
+          <button
+            type="button"
+            className={`${styles.toggleBtn} ${sel.workedInRound ? styles.toggleBtnActive : ''}`}
+            onClick={() => onChange({ workedInRound: true })}
+          >
+            In the round
+          </button>
+        </div>
       </div>
 
       <div className={styles.setupSection}>

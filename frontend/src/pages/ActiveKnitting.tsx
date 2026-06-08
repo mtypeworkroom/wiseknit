@@ -13,6 +13,7 @@ export default function ActiveKnitting() {
   const [panelOpen, setPanelOpen] = useState<'legend' | 'tools' | null>(null)
   const [backMenuOpen, setBackMenuOpen] = useState(false)
   const [chartIndex, setChartIndex] = useState(0)
+  const [zoom, setZoom] = useState<'S' | 'M' | 'L' | 'XL'>('M')
   const chartAreaRef = useRef<HTMLDivElement>(null)
   const [jumpMenuOpen, setJumpMenuOpen] = useState(false)
 
@@ -74,10 +75,8 @@ export default function ActiveKnitting() {
     // Wrap back to end of chart only when at the repeat boundary and past first pass
     const atRepeatBoundary = project.currentRow <= repeatStart && worked >= project.totalRows
     const prevRow = atRepeatBoundary ? project.totalRows : project.currentRow - 1
-    updateProject(project.id, {
-      currentRow: prevRow,
-      totalRowsWorked: Math.max(0, worked - 1),
-    })
+    // Don't decrement totalRowsWorked — it's a high-water mark, not a cursor
+    updateProject(project.id, { currentRow: prevRow })
   }
 
   const togglePanel = (panel: 'legend' | 'tools') => {
@@ -171,7 +170,8 @@ export default function ActiveKnitting() {
         <ChartGrid
           currentRow={project.currentRow}
           totalRows={project.totalRows}
-          chart={project.charts?.[0]}
+          chart={chart}
+          zoom={zoom}
         />
       </div>
 
@@ -207,9 +207,15 @@ export default function ActiveKnitting() {
       {/* Tools panel */}
       <div className={`${styles.panel} ${panelOpen === 'tools' ? styles.panelOpen : ''}`}>
         <div className={styles.panelTitle}>Chart Tools</div>
-        {['Add section line', 'Color a section', 'Reset highlights', 'Fit to screen'].map((label) => (
-          <button key={label} className={styles.toolBtn}>{label}</button>
-        ))}
+        <div className={styles.zoomRow}>
+          {(['S', 'M', 'L', 'XL'] as const).map(z => (
+            <button
+              key={z}
+              className={`${styles.zoomBtn} ${zoom === z ? styles.zoomBtnActive : ''}`}
+              onClick={() => setZoom(z)}
+            >{z}</button>
+          ))}
+        </div>
         <button className={styles.resetBtn} onClick={handleReset}>
           ↺ Start Over — Reset to Row 1
         </button>

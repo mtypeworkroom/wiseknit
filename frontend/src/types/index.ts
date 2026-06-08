@@ -82,9 +82,11 @@ export interface ProjectChart {
   workedInRound: boolean
   symbols: ProjectChartSymbol[]
   notes?: string
+  rowNotes?: Record<number, string>  // per-row instructions keyed by row number
   flags: string[]
   imageBase64?: string   // cropped chart area
   pageBase64?: string    // full original PDF page
+  textInstructions?: string  // text-only instructions when no chart image
 }
 
 // ── PATTERN ──────────────────────────

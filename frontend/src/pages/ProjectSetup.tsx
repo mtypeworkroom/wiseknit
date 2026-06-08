@@ -187,7 +187,7 @@ export default function ProjectSetup() {
       totalRows: sel.totalRows ?? 0,
       totalStitches: sel.totalStitches ?? 0,
       repeatStartRow: 1,
-      workedInRound: false,
+      workedInRound: sel.workedInRound ?? false,
       symbols: [],
       flags: [],
       imageBase64: sel.croppedBase64 || sel.imageBase64,
@@ -535,11 +535,11 @@ export default function ProjectSetup() {
                 <div className={styles.fieldRow}>
                   <div className={styles.field}>
                     <label className={styles.fieldLabel}>Stitches per 10cm</label>
-                    <input className={styles.input} type="number" value={form.gaugeStitches} onChange={e => set('gaugeStitches', e.target.value)} placeholder="22" />
+                    <input className={styles.input} type="number" value={form.gaugeStitches} onChange={e => set('gaugeStitches', e.target.value)} placeholder="e.g. 22" />
                   </div>
                   <div className={styles.field}>
                     <label className={styles.fieldLabel}>Rows per 10cm</label>
-                    <input className={styles.input} type="number" value={form.gaugeRows} onChange={e => set('gaugeRows', e.target.value)} placeholder="28" />
+                    <input className={styles.input} type="number" value={form.gaugeRows} onChange={e => set('gaugeRows', e.target.value)} placeholder="e.g. 28" />
                   </div>
                 </div>
               </div>

@@ -6,7 +6,10 @@ interface ChartGridProps {
   currentRow: number
   totalRows: number
   chart?: ProjectChart   // if provided, render image-based chart
+  zoom?: 'S' | 'M' | 'L' | 'XL'
 }
+
+const ZOOM_WIDTH: Record<string, number> = { S: 200, M: 320, L: 480, XL: 640 }
 
 type StitchType = 'k' | 'p' | 'yo' | 'k2tog' | 'ssk'
 
@@ -43,15 +46,17 @@ function CellSymbol({ type }: { type: StitchType }) {
 
 // ── Image-based chart (from AI parse) ─────────────────────────
 
-function ImageChart({ chart, currentRow }: { chart: ProjectChart; currentRow: number }) {
+function ImageChart({ chart, currentRow, zoom }: { chart: ProjectChart; currentRow: number; zoom?: string }) {
   const raw = chart.imageBase64!
   const imageSrc = raw.startsWith('data:') ? raw : `data:image/png;base64,${raw}`
   const rowHeight = 100 / chart.totalRows
   const highlightBottom = (currentRow - 1) * rowHeight
 
+  const chartWidth = ZOOM_WIDTH[zoom ?? 'M']
+
   return (
     <div className={styles.imageChartWrap}>
-      <div className={styles.imageChartInner}>
+      <div className={styles.imageChartInner} style={{ width: chartWidth }}>
         <img src={imageSrc} alt={chart.name} className={styles.chartImage} onError={e => (e.currentTarget.style.outline = '3px solid red')} />
         <div
           className={styles.rowHighlight}
@@ -131,9 +136,9 @@ function StitchChart({ currentRow }: { currentRow: number }) {
 
 // ── Main export ───────────────────────────────────────────────
 
-export default function ChartGrid({ currentRow, chart }: ChartGridProps) {
+export default function ChartGrid({ currentRow, chart, zoom }: ChartGridProps) {
   if (chart?.imageBase64) {
-    return <ImageChart chart={chart} currentRow={currentRow} />
+    return <ImageChart chart={chart} currentRow={currentRow} zoom={zoom} />
   }
   // If project has a chart but no image yet, show a placeholder
   if (chart) {

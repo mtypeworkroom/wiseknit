@@ -223,6 +223,31 @@
 }
 .toolBtn:hover { background: var(--accent-lt); color: var(--accent-text); border-color: var(--accent); }
 
+.zoomRow {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.zoomBtn {
+  flex: 1;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink-mid);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.zoomBtn:hover { border-color: var(--accent); color: var(--accent); }
+.zoomBtnActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
 .toolProgress { margin-top: 8px; }
 .toolProgRow {
   display: flex;

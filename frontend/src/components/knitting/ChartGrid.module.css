@@ -230,9 +230,8 @@
 
 .chartImage {
   display: block;
-  max-width: min(600px, calc(100vw - 24px));
-  max-height: calc(100vh - 160px);
-  width: auto;
+  width: 100%;
+  max-width: 100%;
   height: auto;
   background: white;
   border-radius: 4px;
