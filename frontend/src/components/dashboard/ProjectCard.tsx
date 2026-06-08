@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import type { Project } from '../../types'
 import { selectLastSessionLabel } from '../../store/projectStore'
 import { loadImage } from '../../store/imageStore'
+import { ArchiveIcon, TrashIcon } from '../icons'
 import styles from './ProjectCard.module.css'
 
 interface ProjectCardProps {
@@ -91,9 +92,7 @@ export default function ProjectCard({ project, onClick, onArchive, onDelete }: P
               title={project.status === 'archived' ? 'Unarchive' : 'Archive'}
               onClick={e => stopAndCall(e, () => onArchive(project.id))}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
-              </svg>
+              <ArchiveIcon size={12}/>
             </button>
           )}
           {onDelete && (
@@ -102,9 +101,7 @@ export default function ProjectCard({ project, onClick, onArchive, onDelete }: P
               title="Delete"
               onClick={e => stopAndCall(e, () => onDelete(project.id))}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-              </svg>
+              <TrashIcon size={12}/>
             </button>
           )}
         </div>

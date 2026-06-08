@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import ChartGrid from '../components/knitting/ChartGrid'
+import { GearIcon, InfoIcon, PhoneIcon, RotateArrowIcon } from '../components/icons'
 import styles from './ActiveKnitting.module.css'
 
 export default function ActiveKnitting() {
@@ -87,16 +88,8 @@ export default function ActiveKnitting() {
     <div className={styles.shell}>
       {/* Rotate overlay — phones in portrait only */}
       <div className={styles.rotateOverlay}>
-        <svg className={styles.rotateIcon} viewBox="0 0 24 24" fill="none" stroke="#3CCFEF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="4" y="2" width="16" height="20" rx="2"/>
-          <path d="M9 22h6"/>
-          <path d="M12 17v.01"/>
-        </svg>
-        <svg className={styles.rotateArrow} viewBox="0 0 24 24" fill="none" stroke="#3CCFEF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M9 3H5a2 2 0 0 0-2 2v4m0 6v4a2 2 0 0 0 2 2h4"/>
-          <path d="M21 12V7a2 2 0 0 0-2-2h-4"/>
-          <path d="m3 16 4 4 4-4"/>
-        </svg>
+        <PhoneIcon className={styles.rotateIcon}/>
+        <RotateArrowIcon className={styles.rotateArrow}/>
         <div className={styles.rotateTitle}>Rotate your device</div>
         <div className={styles.rotateSub}>WiseKnit's chart view works best in landscape mode</div>
         <div className={styles.rotateBrand}>WiseKnit by MType Workroom</div>
@@ -143,20 +136,13 @@ export default function ActiveKnitting() {
             className={`${styles.tbIcon} ${panelOpen === 'tools' ? styles.tbIconActive : ''}`}
             onClick={() => togglePanel('tools')}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
-            </svg>
+            <GearIcon size={14}/>
           </button>
           <button
             className={`${styles.tbIcon} ${panelOpen === 'legend' ? styles.tbIconActive : ''}`}
             onClick={() => togglePanel('legend')}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
+            <InfoIcon size={14}/>
           </button>
         </div>
       </div>

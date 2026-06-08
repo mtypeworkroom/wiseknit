@@ -199,7 +199,12 @@
   width: 70px;
   flex-shrink: 0;
 }
-.detailVal { font-size: 13px; color: var(--ink); flex: 1; }
+.detailVal {
+  font-size: 13px;
+  color: var(--ink);
+  flex: 1;
+  text-align: right;
+}
 .missing { color: var(--ink-light); font-style: italic; }
 .addBtn {
   font-size: 11px;
@@ -311,7 +316,8 @@
   flex-shrink: 0;
 }
 .chartRowName { flex: 1; font-size: 13px; color: var(--ink); font-weight: 500; }
-.chartRowMeta { font-size: 11px; color: var(--ink-light); font-family: var(--font-mono); flex-shrink: 0; }
+.chartRowActions { display: flex; align-items: center; gap: 4px; width: 54px; flex-shrink: 0; }
+.chartRowMeta { font-size: 11px; color: var(--ink-light); font-family: var(--font-mono); flex-shrink: 0; width: 58px; text-align: right; }
 .chartDeleteBtn {
   width: 22px; height: 22px;
   border: none; background: transparent;
@@ -333,10 +339,14 @@
   color: var(--ink);
   flex: 1;
 }
+.pdfRow .addBtn { min-width: 54px; flex-shrink: 0; text-align: left; }
 .pdfRowMeta {
   font-size: 11px;
   color: var(--ink-light);
   font-family: var(--font-mono);
+  width: 58px;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .chartImportRow {
@@ -376,12 +386,34 @@
 }
 
 /* notes */
+.sectionHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
 .notes {
   padding: 12px 14px;
   font-size: 13px;
   color: var(--ink-mid);
   line-height: 1.6;
 }
+.notesTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.notesTextarea:focus { border-color: var(--accent); }
 .emptyState {
   padding: 12px 14px;
   font-size: 13px;

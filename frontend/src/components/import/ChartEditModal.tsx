@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { SaveIcon } from '../icons'
 import { createPortal } from 'react-dom'
 import ReactCrop, { type PercentCrop, centerCrop, makeAspectCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
@@ -264,11 +265,7 @@ export default function ChartEditModal({ chart, onSave, onClose }: Props) {
             <button className={styles.iconBtn} aria-label="Re-crop" title="Re-crop" onClick={enterReselect}>Crop</button>
           )}
           <button className={styles.iconBtnPrimary} aria-label="Save" title="Save" onClick={handleSave}>
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2 1h8.5L13 3.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-              <rect x="4.5" y="1" width="4" height="3.5" rx="0.4" stroke="currentColor" strokeWidth="1.2"/>
-              <rect x="3" y="8" width="9" height="5.5" rx="0.4" stroke="currentColor" strokeWidth="1.2"/>
-            </svg>
+            <SaveIcon size={15}/>
           </button>
           <button className={styles.iconBtn} aria-label="Close" title="Close" onClick={onClose}>✕</button>
         </div>

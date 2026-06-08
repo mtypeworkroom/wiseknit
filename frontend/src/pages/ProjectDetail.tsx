@@ -6,9 +6,10 @@ import ChartEditModal from '../components/import/ChartEditModal'
 import PDFViewer from '../components/reader/PDFViewer'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
 import { loadPDF, saveImage } from '../store/imageStore'
+import { ArchiveIcon, TrashIcon, FileIcon, ImageIcon } from '../components/icons'
 import styles from './ProjectDetail.module.css'
 
-type EditingField = null | 'name' | 'category' | 'gauge' | 'yarn' | 'needle'
+type EditingField = null | 'name' | 'category' | 'gauge' | 'yarn' | 'needle' | 'notes'
 
 const NEEDLE_SIZES: { label: string; mm: number }[] = [
   { label: 'US 0000 (1.25mm)', mm: 1.25 },
@@ -45,6 +46,7 @@ export default function ProjectDetail() {
   const [pdfPickerFile, setPdfPickerFile] = useState<File | null>(null)
   const [nameForm, setNameForm] = useState('')
   const [categoryForm, setCategoryForm] = useState('')
+  const [notesForm, setNotesForm] = useState('')
   const [gaugeForm, setGaugeForm] = useState<Gauge>({ stitchesPer10cm: 0, rowsPer10cm: 0 })
   const [yarnForm, setYarnForm] = useState<Partial<Yarn>>({})
   const [needleForm, setNeedleForm] = useState<Partial<Needle>>({ sizeMm: 4.0, type: 'circular-fixed' })
@@ -66,7 +68,13 @@ export default function ProjectDetail() {
     if (field === 'gauge')    setGaugeForm(project.gauge ?? { stitchesPer10cm: 0, rowsPer10cm: 0 })
     if (field === 'yarn')     setYarnForm(project.yarn ?? {})
     if (field === 'needle')   setNeedleForm(project.needle ?? { sizeMm: 4.0, type: 'circular-fixed' })
+    if (field === 'notes')    setNotesForm(project.notes ?? '')
     setEditingField(field)
+  }
+
+  const saveNotes = () => {
+    updateProject(project.id, { notes: notesForm.trim() || undefined })
+    setEditingField(null)
   }
 
   const saveName = () => {
@@ -196,18 +204,14 @@ export default function ProjectDetail() {
                 title={project.status === 'archived' ? 'Unarchive' : 'Archive'}
                 onClick={() => updateProject(project.id, { status: project.status === 'archived' ? 'paused' : 'archived' })}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
-                </svg>
+                <ArchiveIcon size={14}/>
               </button>
               <button
                 className={`${styles.heroIconBtn} ${styles.heroIconBtnDanger}`}
                 title="Delete project"
                 onClick={() => { if (window.confirm(`Delete "${project.name}"? This cannot be undone.`)) { deleteProject(project.id); navigate('/dashboard') } }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-                </svg>
+                <TrashIcon size={14}/>
               </button>
             </div>
           </div>
@@ -233,12 +237,7 @@ export default function ProjectDetail() {
             <div className="card">
               {project.pdfKey && (
                 <div className={styles.pdfRow}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="9" y1="13" x2="15" y2="13"/>
-                    <line x1="9" y1="17" x2="12" y2="17"/>
-                  </svg>
+                  <FileIcon size={14}/>
                   <span className={styles.pdfRowName}>Pattern PDF</span>
                   {project.pdfPageCount && (
                     <span className={styles.pdfRowMeta}>{project.pdfPageCount} pages</span>
@@ -248,11 +247,7 @@ export default function ProjectDetail() {
               )}
               {project.pdfKey && (
                 <div className={styles.pdfRow}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                  </svg>
+                  <ImageIcon size={14}/>
                   <span className={styles.pdfRowName}>Project Photo</span>
                   {project.photoKey && (
                     <span className={styles.pdfRowMeta}>set</span>
@@ -274,8 +269,12 @@ export default function ProjectDetail() {
                     {chart.totalRows > 0 && (
                       <span className={styles.chartRowMeta}>{chart.totalRows}r</span>
                     )}
-                    <button className={styles.addBtn} onClick={() => setEditModalChart(chart)}>Edit</button>
-                    <button className={styles.chartDeleteBtn} onClick={() => deleteChart(chart.id)}>✕</button>
+                    <div className={styles.chartRowActions}>
+                      <button className={styles.addBtn} onClick={() => setEditModalChart(chart)}>Edit</button>
+                      <button className={styles.chartDeleteBtn} onClick={() => deleteChart(chart.id)}>
+                        <TrashIcon size={12}/>
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -477,12 +476,34 @@ export default function ProjectDetail() {
 
           {/* Notes */}
           <div className={styles.section}>
-            <div className="section-label">Notes</div>
+            <div className={styles.sectionHeaderRow}>
+              <div className="section-label">Notes</div>
+              {editingField !== 'notes' && (
+                <button className={styles.addBtn} onClick={() => openEdit('notes')}>
+                  {project.notes ? 'Edit' : 'Add'}
+                </button>
+              )}
+            </div>
             <div className="card">
-              {project.notes ? (
+              {editingField === 'notes' ? (
+                <div className={styles.inlineForm}>
+                  <textarea
+                    className={styles.notesTextarea}
+                    value={notesForm}
+                    onChange={e => setNotesForm(e.target.value)}
+                    placeholder="Modifications, sizing notes, reminders…"
+                    rows={5}
+                    autoFocus
+                  />
+                  <div className={styles.inlineActions}>
+                    <button className={styles.inlineSave} onClick={saveNotes}>Save</button>
+                    <button className={styles.inlineCancel} onClick={() => setEditingField(null)}>Cancel</button>
+                  </div>
+                </div>
+              ) : project.notes ? (
                 <div className={styles.notes}>{project.notes}</div>
               ) : (
-                <div className={styles.emptyState}>No notes yet — tap Edit to add some</div>
+                <div className={styles.emptyState}>No notes yet</div>
               )}
             </div>
           </div>

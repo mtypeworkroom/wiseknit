@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import logo from '../../assets/mtype_workroom_logo.svg'
+import logo from '../../assets/mtype_workroom_logo_circle_512.svg'
 import styles from './TopBar.module.css'
 
 interface TopBarProps {

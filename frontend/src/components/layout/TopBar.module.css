@@ -28,11 +28,12 @@
 }
 
 .logo {
-  width: 28px;
-  height: 28px;
-  border-radius: 5px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   flex-shrink: 0;
   object-fit: contain;
+  display: block;
 }
 
 .brandText {

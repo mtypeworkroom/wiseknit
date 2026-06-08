@@ -60,6 +60,12 @@
   gap: 8px;
 }
 
+@media (max-width: 480px) and (orientation: portrait) {
+  .projectGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .fab {
   position: fixed;
   bottom: 76px;
