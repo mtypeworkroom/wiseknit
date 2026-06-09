@@ -378,6 +378,7 @@
   transition: all 0.15s;
 }
 .splitMain:hover { border-color: var(--accent); color: var(--accent); }
+.splitMain:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
 
 .splitArrow {
   height: 24px;

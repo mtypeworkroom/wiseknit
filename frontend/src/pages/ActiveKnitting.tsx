@@ -44,7 +44,7 @@ export default function ActiveKnitting() {
 
   const pct = Math.round((project.currentRow / project.totalRows) * 100)
   const totalRowsWorked = (project as any).totalRowsWorked ?? 0
-  const repeatNum = Math.max(1, Math.ceil(totalRowsWorked / project.totalRows))
+  const repeatNum = Math.floor(totalRowsWorked / project.totalRows) + 1
   const charts = project.charts ?? []
   const chartIndex = Math.max(0, charts.findIndex(c => c.id === project.activeChartId))
   const chart = charts[chartIndex] ?? charts[0]
@@ -73,12 +73,11 @@ export default function ActiveKnitting() {
     const worked = project.totalRowsWorked ?? 0
     if (worked === 0) return
     const repeatStart = project.chartRepeatStartRow ?? 1
-    // Wrap back to end of chart only when at the repeat boundary and past first pass
-    const atRepeatBoundary = project.currentRow <= repeatStart && worked >= project.totalRows
-    const prevRow = atRepeatBoundary ? project.totalRows : project.currentRow - 1
-    // Don't decrement totalRowsWorked — it's a high-water mark, not a cursor
-    updateProject(project.id, { currentRow: prevRow })
+    const prevRow = project.currentRow <= repeatStart ? project.totalRows : project.currentRow - 1
+    updateProject(project.id, { currentRow: prevRow, totalRowsWorked: worked - 1 })
   }
+
+  const canGoBack = (project.totalRowsWorked ?? 0) > 0
 
   const togglePanel = (panel: 'legend' | 'tools') => {
     setPanelOpen(panelOpen === panel ? null : panel)
@@ -216,7 +215,7 @@ export default function ActiveKnitting() {
         )}
         <div className={styles.instrNav}>
           <div className={styles.splitBtn}>
-            <button className={styles.splitMain} onClick={handlePrev}>← Prev</button>
+            <button className={styles.splitMain} onClick={handlePrev} disabled={!canGoBack}>← Prev</button>
             <button
               className={styles.splitArrow}
               onClick={() => setBackMenuOpen(o => !o)}
@@ -224,7 +223,7 @@ export default function ActiveKnitting() {
             >▾</button>
             {backMenuOpen && (
               <div className={styles.backMenu}>
-                <button className={styles.backMenuItem} onClick={() => { handlePrev(); setBackMenuOpen(false) }}>
+                <button className={styles.backMenuItem} onClick={() => { handlePrev(); setBackMenuOpen(false) }} disabled={!canGoBack}>
                   ← Go back one row
                 </button>
                 <button className={styles.backMenuItem} onClick={() => { handleReset(); setBackMenuOpen(false) }}>

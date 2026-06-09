@@ -70,9 +70,7 @@ export const useProjectStore = create<ProjectStore>()(
             const isAtEnd = p.currentRow >= chartRows
             const nextRow = isAtEnd ? repeatStart : p.currentRow + 1
             const current = p.totalRowsWorked ?? 0
-            // High-water mark: only advance when reaching a new furthest row.
-            // Wrapping (completing a pass) always counts as one new row worked.
-            const next = isAtEnd ? current + 1 : Math.max(current, nextRow)
+            const next = current + 1
             return {
               ...p,
               currentRow: nextRow,

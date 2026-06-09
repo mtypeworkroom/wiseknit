@@ -97,12 +97,10 @@
 
 .pageImgWrap {
   position: relative;
-  overflow: hidden;
-  border-radius: 0 0 6px 6px;
   background: white;
   cursor: pointer;
 }
-.pageImg { width: 100%; display: block; object-fit: contain; }
+.pageImg { width: 100%; height: auto; display: block; border-radius: 0 0 6px 6px; }
 .tapToSetup {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
@@ -110,6 +108,7 @@
   color: var(--accent); font-size: 12px; font-weight: 600;
   opacity: 0;
   transition: opacity 0.15s;
+  border-radius: 0 0 6px 6px;
 }
 .pageImgWrap:hover .tapToSetup { opacity: 1; }
 
@@ -123,6 +122,7 @@
   text-align: center;
   padding: 4px 8px;
   backdrop-filter: blur(2px);
+  border-radius: 0 0 6px 6px;
 }
 
 /* Chart crop cards (appended at end of grid) */
@@ -142,6 +142,61 @@
   text-align: center;
   padding: 6px 8px;
   border-top: 1px solid var(--border);
+}
+
+/* ── Chart Setup Overlay (full-screen) ─────────────────────── */
+.chartOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+}
+.chartOverlayHeader {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-height: 44px;
+}
+.chartOverlayTitle {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.chartOverlayBody {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+.chartOverlayLeft {
+  flex: 1;
+  overflow: auto;
+  min-width: 0;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  user-select: none;
+}
+.chartOverlayRight {
+  width: 240px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  background: var(--surface2);
+}
+.setupHint {
+  font-size: 11px;
+  color: var(--ink-light);
+  line-height: 1.4;
 }
 
 /* ── Chart Setup Panel ──────────────── */
@@ -217,14 +272,42 @@
 }
 
 /* Crop area */
+.cropLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.zoomHint {
+  font-size: 10px;
+  color: var(--ink-light);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+.zoomReset {
+  font-size: 10px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  padding: 0 2px;
+  text-decoration: underline;
+  flex-shrink: 0;
+}
+.cropViewport {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: white;
+  -webkit-overflow-scrolling: touch;
+}
 .cropWrap {
-  max-width: 100%;
+  display: block;
 }
 .cropImg {
   display: block;
-  max-width: 100%;
-  max-height: 420px;
-  width: auto;
+  width: 100%;
   height: auto;
 }
 
