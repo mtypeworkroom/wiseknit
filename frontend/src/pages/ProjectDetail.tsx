@@ -1,13 +1,24 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import type { Gauge, Yarn, Needle, NeedleType, YarnWeight, ProjectChart } from '../types'
 import ChartEditModal from '../components/import/ChartEditModal'
 import PDFViewer from '../components/reader/PDFViewer'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
-import { loadPDF, saveImage } from '../store/imageStore'
+import { loadPDF, saveImage, loadImage } from '../store/imageStore'
 import { ArchiveIcon, TrashIcon, FileIcon, ImageIcon } from '../components/icons'
+import { CATEGORY_GROUPS, ALL_CATEGORIES } from '../data/categories'
 import styles from './ProjectDetail.module.css'
+
+function ChartThumb({ chart }: { chart: ProjectChart }) {
+  const [src, setSrc] = useState(chart.imageBase64 ?? '')
+  useEffect(() => {
+    if (!chart.imageKey) return
+    loadImage(chart.imageKey).then(b64 => { if (b64) setSrc(b64) })
+  }, [chart.imageKey])
+  if (!src) return null
+  return <img src={src} alt="" className={styles.chartThumb} />
+}
 
 type EditingField = null | 'name' | 'category' | 'gauge' | 'yarn' | 'needle' | 'notes'
 
@@ -51,6 +62,18 @@ export default function ProjectDetail() {
   const [yarnForm, setYarnForm] = useState<Partial<Yarn>>({})
   const [needleForm, setNeedleForm] = useState<Partial<Needle>>({ sizeMm: 4.0, type: 'circular-fixed' })
   const [editModalChart, setEditModalChart] = useState<ProjectChart | null>(null)
+  const [chartDropdownOpen, setChartDropdownOpen] = useState(false)
+  const knitDropdownRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!chartDropdownOpen) return
+    const handler = (e: MouseEvent) => {
+      if (knitDropdownRef.current && !knitDropdownRef.current.contains(e.target as Node)) {
+        setChartDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [chartDropdownOpen])
 
   const project = projects.find((p) => p.id === id)
 
@@ -133,6 +156,9 @@ export default function ProjectDetail() {
     setEditingField(null)
   }
 
+  const charts = project.charts ?? []
+  const activeChart = charts.find(c => c.id === project.activeChartId) ?? charts[0]
+
   const rowsWorked = project.totalRowsWorked ?? 0
   const projectSessions = sessions
     .filter((s) => s.projectId === id)
@@ -195,9 +221,43 @@ export default function ProjectDetail() {
                   ✎ Setup
                 </button>
               ) : (
-                <button className={styles.heroResumeBtn} onClick={() => navigate(`/project/${project.id}/knit`)}>
-                  ▶ Knit
-                </button>
+                <div className={styles.knitSplitBtn} ref={knitDropdownRef}>
+                  <button
+                    className={styles.knitSplitMain}
+                    onClick={() => navigate(`/project/${project.id}/knit`)}
+                  >
+                    ▶ {activeChart?.name ?? 'Knit'}
+                  </button>
+                  {charts.length > 1 && (
+                    <button
+                      className={styles.knitSplitChevron}
+                      onClick={() => setChartDropdownOpen(o => !o)}
+                    >
+                      ▾
+                    </button>
+                  )}
+                  {chartDropdownOpen && charts.length > 1 && (
+                    <div className={styles.knitSplitDropdown}>
+                      {charts.map(c => (
+                        <button
+                          key={c.id}
+                          className={`${styles.knitDropdownItem}${c.id === (project.activeChartId ?? charts[0]?.id) ? ` ${styles.knitDropdownItemActive}` : ''}`}
+                          onClick={() => {
+                            updateProject(project.id, {
+                              activeChartId: c.id,
+                              totalRows: c.totalRows,
+                              chartRepeatStartRow: c.repeatStartRow,
+                              currentRow: Math.min(project.currentRow, c.totalRows),
+                            })
+                            setChartDropdownOpen(false)
+                          }}
+                        >
+                          {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
               <button
                 className={styles.heroIconBtn}
@@ -218,7 +278,7 @@ export default function ProjectDetail() {
 
           {/* Compact metrics strip */}
           <div className={styles.metaStrip}>
-            <span>Row {project.currentRow}/{project.totalRows}</span>
+            <span>Row {project.currentRow}/{activeChart?.totalRows ?? project.totalRows}</span>
             <span className={styles.metaDot}>·</span>
             <span>{rowsWorked} rows worked</span>
             <span className={styles.metaDot}>·</span>
@@ -262,8 +322,8 @@ export default function ProjectDetail() {
               ) : (
                 project.charts!.map(chart => (
                   <div key={chart.id} className={styles.chartRow}>
-                    {chart.imageBase64 && (
-                      <img src={chart.imageBase64} alt="" className={styles.chartThumb} />
+                    {(chart.imageKey || chart.imageBase64) && (
+                      <ChartThumb chart={chart} />
                     )}
                     <span className={styles.chartRowName}>{chart.name}</span>
                     {chart.totalRows > 0 && (
@@ -323,9 +383,17 @@ export default function ProjectDetail() {
                 <div className={styles.inlineForm}>
                   <label className={styles.inlineLabel}>
                     Category
-                    <input type="text" className={styles.inlineInput}
-                      value={categoryForm} onChange={e => setCategoryForm(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && saveCategory()} />
+                    <select className={styles.inlineSelect}
+                      value={categoryForm} onChange={e => setCategoryForm(e.target.value)}>
+                      {categoryForm && !ALL_CATEGORIES.includes(categoryForm) && (
+                        <option value={categoryForm}>{categoryForm}</option>
+                      )}
+                      {CATEGORY_GROUPS.map(({ group, options }) => (
+                        <optgroup key={group} label={group}>
+                          {options.map(o => <option key={o} value={o}>{o}</option>)}
+                        </optgroup>
+                      ))}
+                    </select>
                   </label>
                   <div className={styles.inlineActions}>
                     <button className={styles.inlineSave} onClick={saveCategory}>Save</button>

@@ -59,6 +59,7 @@ export interface Project {
   notes?: string
   photo?: string
   charts?: ProjectChart[]
+  activeChartId?: string  // persisted chart selection
   photoKey?: string     // IndexedDB key for the project photo crop
   pdfKey?: string       // IndexedDB key for the attached PDF file
   pdfPageCount?: number // total pages in the attached PDF
@@ -84,8 +85,10 @@ export interface ProjectChart {
   notes?: string
   rowNotes?: Record<number, string>  // per-row instructions keyed by row number
   flags: string[]
-  imageBase64?: string   // cropped chart area
-  pageBase64?: string    // full original PDF page
+  imageKey?: string      // IndexedDB key for cropped chart image
+  pageKey?: string       // IndexedDB key for full page image
+  imageBase64?: string   // legacy — superseded by imageKey
+  pageBase64?: string    // legacy — superseded by pageKey
   textInstructions?: string  // text-only instructions when no chart image
 }
 

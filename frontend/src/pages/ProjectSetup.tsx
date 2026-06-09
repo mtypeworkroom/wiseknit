@@ -6,6 +6,7 @@ import { useProjectStore } from '../store/projectStore'
 import type { Project, NeedleType, YarnWeight, ProjectChart } from '../types'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
 import ChartEditModal from '../components/import/ChartEditModal'
+import { CATEGORY_GROUPS } from '../data/categories'
 import styles from './ProjectSetup.module.css'
 
 interface SetupState {
@@ -32,7 +33,7 @@ interface SetupState {
 }
 
 const INITIAL: SetupState = {
-  name: '', category: 'Sweater / Jumper', designer: '',
+  name: '', category: 'Sweaters', designer: '',
   totalRows: 16, chartRepeatStartRow: 1,
   yarnBrand: '', yarnName: '', yarnWeight: '', colorway: '',
   fiberContent: '', dyeLot: '', skeins: '', yardsPerSkein: '', supplier: '',
@@ -81,7 +82,7 @@ export default function ProjectSetup() {
     const p = existingProject
     return {
       name: p.name ?? '',
-      category: p.category ?? 'Sweater / Jumper',
+      category: p.category ?? 'Sweaters',
       designer: '',
       totalRows: p.totalRows ?? 16,
       chartRepeatStartRow: p.chartRepeatStartRow ?? 1,
@@ -182,17 +183,25 @@ export default function ProjectSetup() {
     }
 
     const confirmedSelections = pageSelections.filter(s => s.role === 'chart' && s.confirmed)
-    const projectCharts: ProjectChart[] = confirmedSelections.map((sel, i) => ({
-      id: `chart-${Date.now()}-${i}`,
-      name: sel.chartName ?? `Chart ${i + 1}`,
-      totalRows: sel.totalRows ?? 0,
-      totalStitches: sel.totalStitches ?? 0,
-      repeatStartRow: 1,
-      workedInRound: sel.workedInRound ?? false,
-      symbols: [],
-      flags: [],
-      imageBase64: sel.croppedBase64 || sel.imageBase64,
-      pageBase64: sel.imageBase64,
+    const projectCharts: ProjectChart[] = await Promise.all(confirmedSelections.map(async (sel, i) => {
+      const chartId = `chart-${Date.now()}-${i}`
+      const imageSrc = sel.croppedBase64 || sel.imageBase64
+      const imageKey = imageSrc ? `chart-img-${chartId}` : undefined
+      const pageKey = sel.imageBase64 ? `chart-page-${chartId}` : undefined
+      if (imageKey && imageSrc) await saveImage(imageKey, imageSrc)
+      if (pageKey && sel.imageBase64) await saveImage(pageKey, sel.imageBase64)
+      return {
+        id: chartId,
+        name: sel.chartName ?? `Chart ${i + 1}`,
+        totalRows: sel.totalRows ?? 0,
+        totalStitches: sel.totalStitches ?? 0,
+        repeatStartRow: 1,
+        workedInRound: sel.workedInRound ?? false,
+        symbols: [],
+        flags: [],
+        imageKey,
+        pageKey,
+      }
     }))
 
     const newProject: Project = {
@@ -320,8 +329,10 @@ export default function ProjectSetup() {
                 <div className={styles.field}>
                   <label className={styles.fieldLabel}>Category</label>
                   <select className={styles.select} value={form.category} onChange={e => set('category', e.target.value)}>
-                    {['Sweater / Jumper','Cardigan','Hat','Mittens / Gloves','Socks','Cowl / Scarf','Shawl','Blanket','Other'].map(c => (
-                      <option key={c}>{c}</option>
+                    {CATEGORY_GROUPS.map(({ group, options }) => (
+                      <optgroup key={group} label={group}>
+                        {options.map(o => <option key={o} value={o}>{o}</option>)}
+                      </optgroup>
                     ))}
                   </select>
                 </div>

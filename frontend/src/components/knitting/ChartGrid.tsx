@@ -1,6 +1,9 @@
+import { useState, useEffect } from 'react'
 import styles from './ChartGrid.module.css'
 import { PLEIONE_CHART } from '../../data/pleione'
 import type { ProjectChart } from '../../types'
+import { loadImage } from '../../store/imageStore'
+import { PurlIcon, YarnOverIcon, K2togIcon, SskIcon, RowMarkerIcon } from '../icons'
 
 interface ChartGridProps {
   currentRow: number
@@ -15,40 +18,29 @@ type StitchType = 'k' | 'p' | 'yo' | 'k2tog' | 'ssk'
 
 function CellSymbol({ type }: { type: StitchType }) {
   switch (type) {
-    case 'p':
-      return (
-        <svg viewBox="0 0 36 36" width="14" height="14">
-          <circle cx="18" cy="18" r="5" fill="currentColor" />
-        </svg>
-      )
-    case 'yo':
-      return (
-        <svg viewBox="0 0 36 36" width="20" height="20">
-          <circle cx="18" cy="18" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
-        </svg>
-      )
-    case 'k2tog':
-      return (
-        <svg viewBox="0 0 36 36" width="28" height="28">
-          <line x1="6" y1="30" x2="30" y2="6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-        </svg>
-      )
-    case 'ssk':
-      return (
-        <svg viewBox="0 0 36 36" width="28" height="28">
-          <line x1="6" y1="6" x2="30" y2="30" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-        </svg>
-      )
-    default:
-      return null
+    case 'p':      return <PurlIcon/>
+    case 'yo':     return <YarnOverIcon/>
+    case 'k2tog':  return <K2togIcon/>
+    case 'ssk':    return <SskIcon/>
+    default:       return null
   }
 }
 
 // ── Image-based chart (from AI parse) ─────────────────────────
 
 function ImageChart({ chart, currentRow, zoom }: { chart: ProjectChart; currentRow: number; zoom?: string }) {
-  const raw = chart.imageBase64!
-  const imageSrc = raw.startsWith('data:') ? raw : `data:image/png;base64,${raw}`
+  const inline = chart.imageBase64
+  const [imageSrc, setImageSrc] = useState(
+    inline ? (inline.startsWith('data:') ? inline : `data:image/png;base64,${inline}`) : ''
+  )
+  useEffect(() => {
+    if (!chart.imageKey) return
+    loadImage(chart.imageKey).then(b64 => {
+      if (!b64) return
+      setImageSrc(b64.startsWith('data:') ? b64 : `data:image/png;base64,${b64}`)
+    })
+  }, [chart.imageKey])
+
   const rowHeight = 100 / chart.totalRows
   const highlightBottom = (currentRow - 1) * rowHeight
 
@@ -103,9 +95,7 @@ function StitchChart({ currentRow }: { currentRow: number }) {
           <div key={row.rowNumber} className={styles.row} data-current={isCurrent ? 'true' : 'false'}>
             <div className={`${styles.rowNum} ${isCurrent ? styles.rowNumCurrent : ''}`}>
               {isCurrent && (
-                <svg viewBox="0 0 10 14" width="8" height="12">
-                  <polygon points="0,0 10,7 0,14" fill="#1A6A8A" />
-                </svg>
+                <RowMarkerIcon/>
               )}
               {row.rowNumber}
             </div>
@@ -137,7 +127,7 @@ function StitchChart({ currentRow }: { currentRow: number }) {
 // ── Main export ───────────────────────────────────────────────
 
 export default function ChartGrid({ currentRow, chart, zoom }: ChartGridProps) {
-  if (chart?.imageBase64) {
+  if (chart?.imageKey || chart?.imageBase64) {
     return <ImageChart chart={chart} currentRow={currentRow} zoom={zoom} />
   }
   // If project has a chart but no image yet, show a placeholder

@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import ReactCrop, { type PercentCrop, centerCrop, makeAspectCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
 import type { ProjectChart } from '../../types'
+import { saveImage, loadImage } from '../../store/imageStore'
 import { detectChartBounds, computeBounds, type PixelBounds, type NudgeOffsets } from './PDFPagePicker'
 import styles from './ChartEditModal.module.css'
 
@@ -41,7 +42,7 @@ function loadImg(src: string): Promise<HTMLImageElement> {
 }
 
 export default function ChartEditModal({ chart, onSave, onClose }: Props) {
-  const hasFullPage = !!chart.pageBase64 && chart.pageBase64 !== chart.imageBase64
+  const hasFullPage = !!(chart.pageKey || chart.pageBase64)
 
   const [nudgeImg, setNudgeImg] = useState<HTMLImageElement | null>(null)
   const [nudgeBounds, setNudgeBounds] = useState<PixelBounds | null>(null)
@@ -50,8 +51,9 @@ export default function ChartEditModal({ chart, onSave, onClose }: Props) {
   const pageImgRef = useRef<HTMLImageElement>(null)
   const [pageImageData, setPageImageData] = useState<ImageData | null>(null)
   const [pageLoading, setPageLoading] = useState(false)
+  const [pageImageSrc, setPageImageSrc] = useState(chart.pageKey ? '' : (chart.pageBase64 ?? ''))
 
-  const [previewUrl, setPreviewUrl] = useState(chart.imageBase64 ?? '')
+  const [previewUrl, setPreviewUrl] = useState(chart.imageKey ? '' : (chart.imageBase64 ?? ''))
   const [phase, setPhase] = useState<'refine' | 'reselect'>('refine')
   const [crop, setCrop] = useState<PercentCrop>()
   const [totalRows, setTotalRows] = useState<number | ''>(chart.totalRows ?? '')
@@ -79,21 +81,34 @@ export default function ChartEditModal({ chart, onSave, onClose }: Props) {
 
   useEffect(() => {
     mountedRef.current = true
-    const src = chart.imageBase64 ?? ''
-    if (!src) return
-    loadImg(src).then(img => {
-      if (!mountedRef.current) return
-      setNudgeImg(img)
-      setNudgeBounds({ x: 0, y: 0, w: img.naturalWidth, h: img.naturalHeight })
-    }).catch(() => {})
+    async function init() {
+      const src = chart.imageKey
+        ? (await loadImage(chart.imageKey)) ?? ''
+        : (chart.imageBase64 ?? '')
+      if (!src || !mountedRef.current) return
+      setPreviewUrl(src)
+      loadImg(src).then(img => {
+        if (!mountedRef.current) return
+        setNudgeImg(img)
+        setNudgeBounds({ x: 0, y: 0, w: img.naturalWidth, h: img.naturalHeight })
+      }).catch(() => {})
+    }
+    init()
     return () => { mountedRef.current = false }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const enterReselect = () => {
+  const enterReselect = async () => {
     setPhase('reselect')
-    if (pageImageData || !chart.pageBase64) return
+    if (pageImageData) return
+    let pageSrc = pageImageSrc
+    if (!pageSrc) {
+      if (!chart.pageKey) return
+      pageSrc = (await loadImage(chart.pageKey)) ?? ''
+      if (!pageSrc || !mountedRef.current) return
+      setPageImageSrc(pageSrc)
+    }
     setPageLoading(true)
-    loadImg(chart.pageBase64).then(img => {
+    loadImg(pageSrc).then(img => {
       if (!mountedRef.current) return
       setTimeout(() => {
         if (!mountedRef.current) return
@@ -167,18 +182,23 @@ export default function ChartEditModal({ chart, onSave, onClose }: Props) {
     if (url) setPreviewUrl(url)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     let finalCrop: string | undefined
     if (nudgeImg && nudgeBounds) {
       const b = computeBounds(nudgeBounds, offsets, nudgeImg.naturalWidth, nudgeImg.naturalHeight)
       const url = cropFromImg(nudgeImg, b)
       if (url) finalCrop = url
     }
-    onSave({
+    const updates: Partial<ProjectChart> = {
       totalRows: typeof totalRows === 'number' ? totalRows : undefined,
       totalStitches: typeof totalStitches === 'number' ? totalStitches : undefined,
-      ...(finalCrop ? { imageBase64: finalCrop } : {}),
-    })
+    }
+    if (finalCrop) {
+      const imageKey = chart.imageKey ?? `chart-img-${chart.id}`
+      await saveImage(imageKey, finalCrop)
+      updates.imageKey = imageKey
+    }
+    onSave(updates)
   }
 
   // ── Full-screen reselect phase — rendered via portal to escape stacking context ──
@@ -192,7 +212,7 @@ export default function ChartEditModal({ chart, onSave, onClose }: Props) {
             <ReactCrop crop={crop} onChange={(_c, pc) => setCrop(pc)}>
               <img
                 ref={pageImgRef}
-                src={chart.pageBase64}
+                src={pageImageSrc}
                 alt="Pattern page"
                 className={styles.reselectImg}
                 style={imgMaxSize.maxWidth ? {

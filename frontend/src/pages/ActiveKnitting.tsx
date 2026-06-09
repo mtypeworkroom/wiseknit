@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import ChartGrid from '../components/knitting/ChartGrid'
-import { GearIcon, InfoIcon, PhoneIcon, RotateArrowIcon } from '../components/icons'
+import { GearIcon, InfoIcon, PhoneIcon, RotateArrowIcon, RepeatIcon } from '../components/icons'
 import styles from './ActiveKnitting.module.css'
 
 export default function ActiveKnitting() {
@@ -13,7 +13,6 @@ export default function ActiveKnitting() {
 
   const [panelOpen, setPanelOpen] = useState<'legend' | 'tools' | null>(null)
   const [backMenuOpen, setBackMenuOpen] = useState(false)
-  const [chartIndex, setChartIndex] = useState(0)
   const [zoom, setZoom] = useState<'S' | 'M' | 'L' | 'XL'>('M')
   const chartAreaRef = useRef<HTMLDivElement>(null)
   const [jumpMenuOpen, setJumpMenuOpen] = useState(false)
@@ -47,6 +46,7 @@ export default function ActiveKnitting() {
   const totalRowsWorked = (project as any).totalRowsWorked ?? 0
   const repeatNum = Math.max(1, Math.ceil(totalRowsWorked / project.totalRows))
   const charts = project.charts ?? []
+  const chartIndex = Math.max(0, charts.findIndex(c => c.id === project.activeChartId))
   const chart = charts[chartIndex] ?? charts[0]
 
   const getRowSide = () => {
@@ -111,24 +111,7 @@ export default function ActiveKnitting() {
         {/* Chip 2: total worked + repeat icon */}
         <div className={styles.tbChip}>
           <span className={styles.tbChipNum}>{totalRowsWorked}</span>
-          <svg className={styles.tbRepeatIcon} viewBox="0 0 6.35 6.35" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="repeatArrow" refX="0" refY="0" orient="auto-start-reverse"
-                markerWidth="0.75" markerHeight="0.75" viewBox="0 0 1 1"
-                preserveAspectRatio="xMidYMid" overflow="visible">
-                <path transform="scale(0.7)" fillRule="evenodd" fill="context-stroke"
-                  d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"/>
-              </marker>
-            </defs>
-            <g opacity="0.6">
-              <path fill="none" stroke="currentColor" strokeWidth={0.52} strokeLinecap="round" strokeLinejoin="round"
-                markerEnd="url(#repeatArrow)"
-                d="M 0.72464562,2.9243598 0.71061364,1.7784555 C 0.70573998,1.3804533 1.0310505,1.059986 1.4290825,1.059986 h 3.1034717"/>
-              <path fill="none" stroke="currentColor" strokeWidth={0.52} strokeLinecap="round" strokeLinejoin="round"
-                markerEnd="url(#repeatArrow)"
-                d="m 5.6253527,3.3563935 0.014032,1.1459036 c 0.00487,0.3980019 -0.3204365,0.718469 -0.7184683,0.718469 H 1.8174467"/>
-            </g>
-          </svg>
+          <RepeatIcon className={styles.tbRepeatIcon}/>
           <span className={styles.tbRepeatNum}>{repeatNum}</span>
         </div>
         <div className={styles.tbRight}>
@@ -217,20 +200,6 @@ export default function ActiveKnitting() {
         </div>
       </div>
 
-      {/* Chart selector — only when multiple charts */}
-      {charts.length > 1 && (
-        <div className={styles.chartSelector}>
-          {charts.map((c, i) => (
-            <button
-              key={c.id}
-              className={`${styles.chartTab} ${i === chartIndex ? styles.chartTabActive : ''}`}
-              onClick={() => setChartIndex(i)}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Instructions + nav bar — instructions wrap left, buttons anchored right */}
       <div className={styles.bottomBar}>
