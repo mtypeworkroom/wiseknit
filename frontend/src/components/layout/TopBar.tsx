@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import logo from '../../assets/mtype_workroom_logo_circle_512.svg'
+import { ChevronLeftIcon } from '../icons'
 import styles from './TopBar.module.css'
 
 interface TopBarProps {
@@ -15,7 +16,7 @@ export default function TopBar({
   title = 'WiseKnit',
   showBrand = false,
   showBack = false,
-  backLabel = '← Back',
+  backLabel = 'Back',
   backTo,
   rightContent,
 }: TopBarProps) {
@@ -30,8 +31,8 @@ export default function TopBar({
     <div className={styles.topbar}>
       <div className={styles.topbarInner}>
         {showBack && (
-          <button className={styles.backBtn} onClick={handleBack}>
-            {backLabel}
+          <button className={styles.backBtn} onClick={handleBack} aria-label={backLabel}>
+            <ChevronLeftIcon size={16}/>
           </button>
         )}
 

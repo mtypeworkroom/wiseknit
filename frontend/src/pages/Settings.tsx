@@ -57,7 +57,7 @@ export default function Settings() {
         title={title}
         showBrand={!subPage}
         showBack={!!subPage}
-        backLabel="← Settings"
+        backLabel="Settings"
       />
 
       <div className="page-scroll">

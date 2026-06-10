@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import ChartGrid from '../components/knitting/ChartGrid'
-import { GearIcon, InfoIcon, PhoneIcon, RotateArrowIcon, RepeatIcon } from '../components/icons'
+import { GearIcon, InfoIcon, PhoneIcon, RotateArrowIcon, RepeatIcon, ChevronLeftIcon, ChevronRightIcon } from '../components/icons'
 import styles from './ActiveKnitting.module.css'
 
 export default function ActiveKnitting() {
@@ -215,7 +215,7 @@ export default function ActiveKnitting() {
         )}
         <div className={styles.instrNav}>
           <div className={styles.splitBtn}>
-            <button className={styles.splitMain} onClick={handlePrev} disabled={!canGoBack}>← Prev</button>
+            <button className={styles.splitMain} onClick={handlePrev} disabled={!canGoBack}><ChevronLeftIcon size={14}/></button>
             <button
               className={styles.splitArrow}
               onClick={() => setBackMenuOpen(o => !o)}
@@ -224,7 +224,7 @@ export default function ActiveKnitting() {
             {backMenuOpen && (
               <div className={styles.backMenu}>
                 <button className={styles.backMenuItem} onClick={() => { handlePrev(); setBackMenuOpen(false) }} disabled={!canGoBack}>
-                  ← Go back one row
+                  <ChevronLeftIcon size={12}/>Go back one row
                 </button>
                 <button className={styles.backMenuItem} onClick={() => { handleReset(); setBackMenuOpen(false) }}>
                   ↺ Reset to row 1
@@ -235,7 +235,7 @@ export default function ActiveKnitting() {
               </div>
             )}
           </div>
-          <button className={styles.nextBtn} onClick={handleNext}>Next ›</button>
+          <button className={styles.nextBtn} onClick={handleNext}><ChevronRightIcon size={14}/></button>
         </div>
 
         {/* Jump to row picker */}
@@ -274,7 +274,7 @@ export default function ActiveKnitting() {
                   })
                   setJumpMenuOpen(false)
                   setBackMenuOpen(false)
-                }}>Go to Row →</button>
+                }}>Go to Row</button>
               </div>
             </div>
           </div>

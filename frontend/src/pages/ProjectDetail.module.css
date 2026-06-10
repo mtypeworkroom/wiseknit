@@ -283,6 +283,9 @@
   border: none;
   font-family: var(--font-sans);
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 4px;
 }
 
 /* inline edit forms */
@@ -371,20 +374,13 @@
 .chartRow {
   display: flex;
   align-items: center;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
   gap: 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink-mid);
 }
 .chartRow:last-of-type { border-bottom: none; }
-.chartThumb {
-  width: 36px; height: 36px;
-  object-fit: contain;
-  border-radius: 3px;
-  background: #fff;
-  border: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.chartRowName { flex: 1; font-size: 13px; color: var(--ink); font-weight: 500; }
+.chartRowName { flex: 1; font-size: 13px; color: var(--ink); }
 .chartRowActions { display: flex; align-items: center; gap: 4px; width: 54px; flex-shrink: 0; }
 .chartRowMeta { font-size: 11px; color: var(--ink-light); font-family: var(--font-mono); flex-shrink: 0; width: 58px; text-align: right; }
 .chartDeleteBtn {
@@ -418,17 +414,6 @@
   flex-shrink: 0;
 }
 
-.chartImportRow {
-  padding: 10px 14px 6px;
-}
-.chartImportBtn {
-  height: 32px; padding: 0 14px;
-  border: 1px dashed var(--border); border-radius: 4px;
-  background: transparent; color: var(--ink-mid);
-  font-family: var(--font-sans); font-size: 12px; font-weight: 500;
-  cursor: pointer; transition: all 0.15s;
-}
-.chartImportBtn:hover { border-color: var(--accent); color: var(--accent); }
 
 /* sessions */
 .sessionRow {

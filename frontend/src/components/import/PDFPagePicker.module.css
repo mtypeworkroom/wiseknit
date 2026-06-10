@@ -409,6 +409,7 @@
   font-family: var(--font-sans); font-size: 14px; font-weight: 600;
   cursor: pointer; transition: opacity 0.15s;
   align-self: flex-end;
+  display: flex; align-items: center; gap: 4px;
 }
 .confirmBtn:hover { opacity: 0.88; }
 .confirmBtn:disabled { opacity: 0.35; cursor: default; }
@@ -536,6 +537,7 @@
   border: 1px solid var(--border); border-radius: 4px;
   background: transparent; color: var(--ink-mid);
   font-family: var(--font-sans); font-size: 12px; cursor: pointer;
+  display: flex; align-items: center; gap: 4px;
 }
 .cancelBtn:hover { border-color: var(--danger); color: var(--danger); }
 

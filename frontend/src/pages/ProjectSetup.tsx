@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from 'react'
-import { UploadIcon, FileCheckIcon } from '../components/icons'
+import { UploadIcon, FileCheckIcon, ChevronLeftIcon, ChevronRightIcon, PencilIcon } from '../components/icons'
 import { savePDF, saveImage } from '../store/imageStore'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
@@ -386,7 +386,7 @@ export default function ProjectSetup() {
                     <button className={styles.changeFile} onClick={() => fileInputRef.current?.click()}>Change</button>
                     <div className={styles.patternBarSep} />
                     {pageSelections.filter(s => s.role === 'chart').length === 0 ? (
-                      <button className={styles.selectPagesBtn} onClick={() => setShowPagePicker(true)}>Select pages →</button>
+                      <button className={styles.selectPagesBtn} onClick={() => setShowPagePicker(true)}>Select pages</button>
                     ) : (
                       <button className={styles.selectPagesBtn} onClick={() => setShowPagePicker(true)}>
                         {pageSelections.filter(s => s.role === 'chart').length} chart{pageSelections.filter(s => s.role === 'chart').length !== 1 ? 's' : ''} · Edit selection
@@ -411,7 +411,7 @@ export default function ProjectSetup() {
                       <div key={chart.id} className={styles.chartRow}>
                         <span className={styles.chartRowName}>{displayName}</span>
                         <span className={styles.chartRowPage}>{displayRows} rows · {displaySts} sts</span>
-                        <button className={styles.chartEditBtn} onClick={() => setEditModalChart({ ...chart, ...edits })}>Edit</button>
+                        <button className={styles.chartEditBtn} onClick={() => setEditModalChart({ ...chart, ...edits })} aria-label="Edit chart"><PencilIcon size={13}/></button>
                         <button className={styles.chartDeleteBtn} onClick={() => setDeletedChartIds(s => new Set([...s, chart.id]))}>✕</button>
                       </div>
                     )
@@ -582,7 +582,7 @@ export default function ProjectSetup() {
                   <div key={label} className={styles.reviewRow}>
                     <span className={styles.reviewLabel}>{label}</span>
                     <span className={styles.reviewVal}>{val}</span>
-                    <button className={styles.reviewEdit} onClick={() => setStep(s)}>Edit</button>
+                    <button className={styles.reviewEdit} onClick={() => setStep(s)} aria-label="Edit"><PencilIcon size={13}/></button>
                   </div>
                 ))}
               </div>
@@ -595,7 +595,7 @@ export default function ProjectSetup() {
       {/* Bottom bar */}
       <div className={styles.bottomBar}>
         {step > 0 && (
-          <button className={styles.btnBack} onClick={prevStep}>← Back</button>
+          <button className={styles.btnBack} onClick={prevStep} aria-label="Back"><ChevronLeftIcon size={16}/></button>
         )}
         <button className={styles.btnDiscard} onClick={() => navigate('/dashboard')}>Discard & Exit</button>
         {step < 4 && step !== 3 && (
@@ -607,10 +607,10 @@ export default function ProjectSetup() {
         )}
         {step < 4
           ? <button className={styles.btnPrimary} onClick={nextStep} disabled={step === 0 && !form.name}>
-              Next →
+              <ChevronRightIcon size={16}/>
             </button>
           : <button className={styles.btnPrimary} onClick={handleCreate} disabled={!form.name}>
-              Start Knitting →
+              Start Knitting
             </button>
         }
       </div>

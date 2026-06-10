@@ -1,5 +1,6 @@
 import type { Project } from '../../types'
 import { selectLastSessionLabel } from '../../store/projectStore'
+import { PlayIcon } from '../icons'
 import styles from './ResumeStrip.module.css'
 
 interface ResumeStripProps {
@@ -20,7 +21,7 @@ export default function ResumeStrip({ project, onResume }: ResumeStripProps) {
         </div>
       </div>
       <button className={styles.btn} onClick={onResume} aria-label={isNew ? 'Begin' : 'Resume'}>
-        →
+        <PlayIcon size={16}/>
       </button>
     </div>
   )

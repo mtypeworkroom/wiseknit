@@ -5,20 +5,11 @@ import type { Gauge, Yarn, Needle, NeedleType, YarnWeight, ProjectChart } from '
 import ChartEditModal from '../components/import/ChartEditModal'
 import PDFViewer from '../components/reader/PDFViewer'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
-import { loadPDF, saveImage, loadImage } from '../store/imageStore'
-import { ArchiveIcon, TrashIcon, FileIcon, ImageIcon } from '../components/icons'
+import { loadPDF, saveImage } from '../store/imageStore'
+import { ArchiveIcon, TrashIcon, FileIcon, ImageIcon, PencilIcon, BookOpenIcon, ChartGridIcon } from '../components/icons'
 import { CATEGORY_GROUPS, ALL_CATEGORIES } from '../data/categories'
 import styles from './ProjectDetail.module.css'
 
-function ChartThumb({ chart }: { chart: ProjectChart }) {
-  const [src, setSrc] = useState(chart.imageBase64 ?? '')
-  useEffect(() => {
-    if (!chart.imageKey) return
-    loadImage(chart.imageKey).then(b64 => { if (b64) setSrc(b64) })
-  }, [chart.imageKey])
-  if (!src) return null
-  return <img src={src} alt="" className={styles.chartThumb} />
-}
 
 type EditingField = null | 'name' | 'category' | 'gauge' | 'yarn' | 'needle' | 'notes'
 
@@ -302,7 +293,7 @@ export default function ProjectDetail() {
                   {project.pdfPageCount && (
                     <span className={styles.pdfRowMeta}>{project.pdfPageCount} pages</span>
                   )}
-                  <button className={styles.addBtn} onClick={() => setPdfViewerOpen(true)}>Read →</button>
+                  <button className={styles.addBtn} onClick={() => setPdfViewerOpen(true)} aria-label="Read PDF"><BookOpenIcon size={14}/></button>
                 </div>
               )}
               {project.pdfKey && (
@@ -312,8 +303,8 @@ export default function ProjectDetail() {
                   {project.photoKey && (
                     <span className={styles.pdfRowMeta}>set</span>
                   )}
-                  <button className={styles.addBtn} onClick={openPhotoPicker}>
-                    {project.photoKey ? 'Update' : 'Add →'}
+                  <button className={styles.addBtn} onClick={openPhotoPicker} aria-label={project.photoKey ? 'Update photo' : 'Add photo'}>
+                    {project.photoKey ? <PencilIcon size={14}/> : 'Add'}
                   </button>
                 </div>
               )}
@@ -322,15 +313,13 @@ export default function ProjectDetail() {
               ) : (
                 project.charts!.map(chart => (
                   <div key={chart.id} className={styles.chartRow}>
-                    {(chart.imageKey || chart.imageBase64) && (
-                      <ChartThumb chart={chart} />
-                    )}
+                    <ChartGridIcon size={14}/>
                     <span className={styles.chartRowName}>{chart.name}</span>
                     {chart.totalRows > 0 && (
                       <span className={styles.chartRowMeta}>{chart.totalRows}r</span>
                     )}
                     <div className={styles.chartRowActions}>
-                      <button className={styles.addBtn} onClick={() => setEditModalChart(chart)}>Edit</button>
+                      <button className={styles.addBtn} onClick={() => setEditModalChart(chart)} aria-label="Edit chart"><PencilIcon size={14}/></button>
                       <button className={styles.chartDeleteBtn} onClick={() => deleteChart(chart.id)}>
                         <TrashIcon size={12}/>
                       </button>
@@ -338,11 +327,6 @@ export default function ProjectDetail() {
                   </div>
                 ))
               )}
-              <div className={styles.chartImportRow}>
-                <button className={styles.chartImportBtn} onClick={() => navigate(`/project/${project.id}/setup`)}>
-                  + Import PDF
-                </button>
-              </div>
             </div>
           </div>
 
@@ -354,7 +338,7 @@ export default function ProjectDetail() {
               <div className={styles.detailRow}>
                 <span className={styles.detailLabel}>Name</span>
                 <span className={styles.detailVal}>{project.name}</span>
-                <button className={styles.addBtn} onClick={() => openEdit('name')}>Edit</button>
+                <button className={styles.addBtn} onClick={() => openEdit('name')} aria-label="Edit name"><PencilIcon size={14}/></button>
               </div>
               {editingField === 'name' && (
                 <div className={styles.inlineForm}>
@@ -375,8 +359,8 @@ export default function ProjectDetail() {
               <div className={styles.detailRow}>
                 <span className={styles.detailLabel}>Category</span>
                 <span className={styles.detailVal}>{project.category ?? <span className={styles.missing}>Not set</span>}</span>
-                <button className={styles.addBtn} onClick={() => openEdit('category')}>
-                  {project.category ? 'Edit' : 'Add'}
+                <button className={styles.addBtn} onClick={() => openEdit('category')} aria-label="Edit category">
+                  {project.category ? <PencilIcon size={14}/> : 'Add'}
                 </button>
               </div>
               {editingField === 'category' && (
@@ -409,8 +393,8 @@ export default function ProjectDetail() {
                     ? `${NEEDLE_SIZES.find(n => n.mm === project.needle!.sizeMm)?.label ?? `${project.needle.sizeMm}mm`} · ${project.needle.type.replace(/-/g, ' ')}`
                     : <span className={styles.missing}>Not recorded</span>}
                 </span>
-                <button className={styles.addBtn} onClick={() => openEdit('needle')}>
-                  {project.needle ? 'Edit' : 'Add'}
+                <button className={styles.addBtn} onClick={() => openEdit('needle')} aria-label="Edit needle">
+                  {project.needle ? <PencilIcon size={14}/> : 'Add'}
                 </button>
               </div>
               {editingField === 'needle' && (
@@ -448,8 +432,8 @@ export default function ProjectDetail() {
                     ? `${project.gauge.stitchesPer10cm} sts / ${project.gauge.rowsPer10cm} rows per 10cm`
                     : <span className={styles.missing}>Not recorded</span>}
                 </span>
-                <button className={styles.addBtn} onClick={() => openEdit('gauge')}>
-                  {project.gauge ? 'Edit' : 'Add'}
+                <button className={styles.addBtn} onClick={() => openEdit('gauge')} aria-label="Edit gauge">
+                  {project.gauge ? <PencilIcon size={14}/> : 'Add'}
                 </button>
               </div>
               {editingField === 'gauge' && (
@@ -487,8 +471,8 @@ export default function ProjectDetail() {
                     ? `${project.yarn.brand ?? ''} ${project.yarn.name}`.trim()
                     : <span className={styles.missing}>Not recorded</span>}
                 </span>
-                <button className={styles.addBtn} onClick={() => openEdit('yarn')}>
-                  {project.yarn?.name ? 'Edit' : 'Add'}
+                <button className={styles.addBtn} onClick={() => openEdit('yarn')} aria-label="Edit yarn">
+                  {project.yarn?.name ? <PencilIcon size={14}/> : 'Add'}
                 </button>
               </div>
               {editingField === 'yarn' && (
@@ -547,8 +531,8 @@ export default function ProjectDetail() {
             <div className={styles.sectionHeaderRow}>
               <div className="section-label">Notes</div>
               {editingField !== 'notes' && (
-                <button className={styles.addBtn} onClick={() => openEdit('notes')}>
-                  {project.notes ? 'Edit' : 'Add'}
+                <button className={styles.addBtn} onClick={() => openEdit('notes')} aria-label="Edit notes">
+                  {project.notes ? <PencilIcon size={14}/> : 'Add'}
                 </button>
               )}
             </div>

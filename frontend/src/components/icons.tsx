@@ -2,6 +2,66 @@ import type { SVGProps } from 'react'
 
 type IconProps = { size?: number } & SVGProps<SVGSVGElement>
 
+// ─── Chart Grid ──────────────────────────────────────────────────────────────
+
+export function ChartGridIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M12 9v12" />
+    </svg>
+  )
+}
+
+// ─── Book / Read ─────────────────────────────────────────────────────────────
+
+export function BookOpenIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>
+  )
+}
+
+// ─── Pencil / Edit ───────────────────────────────────────────────────────────
+
+export function PencilIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  )
+}
+
+// ─── Play / Resume ───────────────────────────────────────────────────────────
+
+export function PlayIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" {...props}>
+      <path d="M4.5 2.5v11l9-5.5-9-5.5z"/>
+    </svg>
+  )
+}
+
+// ─── Navigation chevrons (Heroicons micro solid) ─────────────────────────────
+
+export function ChevronLeftIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L6.56 8.5l3.22 3.22a.75.75 0 1 1-1.06 1.06l-3.75-3.75a.75.75 0 0 1 0-1.06l3.75-3.75a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+    </svg>
+  )
+}
+
+export function ChevronRightIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.75 3.75a.75.75 0 0 1 0 1.06l-3.75 3.75a.75.75 0 1 1-1.06-1.06L9.44 8.5 6.22 5.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+    </svg>
+  )
+}
+
 // ─── Solid-fill action icons ──────────────────────────────────────────────────
 
 export function TrashIcon({ size, ...props }: IconProps) {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
+import { ChevronLeftIcon, ChevronRightIcon, PencilIcon } from '../icons'
 import styles from './PDFPagePicker.module.css'
 
 export interface PageSelection {
@@ -220,7 +221,7 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
               <div key={`crop-${sel.pageNumber}`} className={`${styles.pageCard} ${styles.pageChart}`}>
                 <div className={styles.pageBtns}>
                   <span className={styles.chartCropLabel}>✓ Chart from page {sel.pageNumber}</span>
-                  <button className={styles.pageBtn} onClick={() => setExpandedIndex(sel.pageNumber - 1)}>Edit ›</button>
+                  <button className={styles.pageBtn} onClick={() => setExpandedIndex(sel.pageNumber - 1)} aria-label="Edit crop"><PencilIcon size={13}/></button>
                 </div>
                 <div className={styles.pageNum}>{sel.chartName}</div>
                 {sel.croppedBase64 && (
@@ -248,7 +249,7 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
               disabled={!canComplete}
               onClick={() => onComplete(selections.filter(s => s.role !== null), totalPages)}
             >
-              Done →
+              Done
             </button>
           </div>
         </div>
@@ -417,7 +418,7 @@ function CropRefinePanel({ imageData, initialBounds, chartName, onBack, onConfir
       </div>
 
       <div className={styles.refineActions}>
-        <button className={styles.cancelBtn} onClick={onBack}>← Back</button>
+        <button className={styles.cancelBtn} onClick={onBack}><ChevronLeftIcon size={16}/></button>
         <button className={styles.confirmBtn} onClick={handleConfirm}>Confirm Chart ✓</button>
       </div>
     </div>
@@ -471,7 +472,7 @@ function PhotoCropPanel({ src, imageData, onConfirm, onCancel }: PhotoCropPanelP
         </ReactCrop>
       </div>
       <div className={styles.refineActions}>
-        <button className={styles.cancelBtn} onClick={onCancel}>← Back</button>
+        <button className={styles.cancelBtn} onClick={onCancel}><ChevronLeftIcon size={16}/></button>
         <button className={styles.confirmBtn} disabled={!crop} onClick={handleConfirm}>
           Confirm Photo ✓
         </button>
@@ -657,7 +658,7 @@ function ChartSetupOverlay({ src, imageData, sel, pageNum, onChange, onConfirm, 
   return (
     <div ref={overlayRef} className={styles.chartOverlay}>
       <div className={styles.chartOverlayHeader}>
-        <button className={styles.cancelBtn} onClick={onBack}>← Back</button>
+        <button className={styles.cancelBtn} onClick={onBack}><ChevronLeftIcon size={16}/></button>
         <input
           className={styles.headerNameInput}
           value={sel.chartName ?? ''}
@@ -729,7 +730,7 @@ function ChartSetupOverlay({ src, imageData, sel, pageNum, onChange, onConfirm, 
           </div>
 
           <button className={styles.confirmBtn} style={{ marginTop: 'auto' }} disabled={!canProceed} onClick={handlePreview}>
-            Preview &amp; Refine →
+            Preview &amp; Refine <ChevronRightIcon size={12}/>
           </button>
         </div>
 

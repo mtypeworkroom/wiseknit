@@ -235,7 +235,7 @@ export default function ChartEditModal({ chart, onSave, onClose }: Props) {
             disabled={!crop || pageLoading}
             onClick={handleRedetect}
           >
-            Detect →
+            Detect
           </button>
         </div>
       </div>,

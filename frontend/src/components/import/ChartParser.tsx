@@ -132,7 +132,7 @@ export default function ChartParser({ file, selections, provider, apiKey, onComp
             <div className={styles.actions}>
               <button className={styles.skipBtn} onClick={onSkip}>Skip for now</button>
               <button className={styles.parseBtn} onClick={startParsing}>
-                Parse {chartSelections.length} Chart{chartSelections.length !== 1 ? 's' : ''} →
+                Parse {chartSelections.length} Chart{chartSelections.length !== 1 ? 's' : ''}
               </button>
             </div>
           </>
@@ -192,7 +192,7 @@ export default function ChartParser({ file, selections, provider, apiKey, onComp
             )}
             <div className={styles.actions}>
               <button className={styles.parseBtn} onClick={() => onComplete(results)}>
-                {results.length > 0 ? 'Start Knitting →' : 'Continue Without Charts →'}
+                {results.length > 0 ? 'Start Knitting' : 'Continue Without Charts'}
               </button>
             </div>
           </>
