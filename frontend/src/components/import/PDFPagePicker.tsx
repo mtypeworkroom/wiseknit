@@ -658,11 +658,16 @@ function ChartSetupOverlay({ src, imageData, sel, pageNum, onChange, onConfirm, 
     <div ref={overlayRef} className={styles.chartOverlay}>
       <div className={styles.chartOverlayHeader}>
         <button className={styles.cancelBtn} onClick={onBack}>← Back</button>
-        <span className={styles.chartOverlayTitle}>Page {pageNum}</span>
-        {zoom > 1
-          ? <><span className={styles.zoomHint}>{zoom.toFixed(1)}×</span>
-              <button className={styles.zoomReset} onClick={() => { zoomRef.current = 1; setZoom(1) }}>Reset zoom</button></>
-          : <span className={styles.zoomHint}>Ctrl+scroll to zoom</span>
+        <input
+          className={styles.headerNameInput}
+          value={sel.chartName ?? ''}
+          onChange={e => onChange({ chartName: e.target.value })}
+          placeholder="Chart name…"
+          autoFocus
+        />
+        {crop
+          ? <span className={styles.cropStatusReady}>Chart crop ✓</span>
+          : <span className={styles.cropStatusEmpty}>Chart crop — draw a box on the left</span>
         }
       </div>
 
@@ -689,57 +694,38 @@ function ChartSetupOverlay({ src, imageData, sel, pageNum, onChange, onConfirm, 
 
         {/* Right: compact form panel */}
         <div className={styles.chartOverlayRight}>
-          <div className={styles.setupSection}>
-            <div className={styles.setupLabel}>Chart name</div>
-            <input
-              className={styles.setupInput}
-              value={sel.chartName ?? ''}
-              onChange={e => onChange({ chartName: e.target.value })}
-              placeholder="e.g. Body Chart…"
-              autoFocus
-            />
-          </div>
-
-          <div className={styles.setupSection}>
-            <div className={styles.setupLabel}>Construction</div>
-            <div className={styles.toggleRow}>
-              <button type="button" className={`${styles.toggleBtn} ${!sel.workedInRound ? styles.toggleBtnActive : ''}`} onClick={() => onChange({ workedInRound: false })}>
-                Flat (RS / WS)
-              </button>
-              <button type="button" className={`${styles.toggleBtn} ${sel.workedInRound ? styles.toggleBtnActive : ''}`} onClick={() => onChange({ workedInRound: true })}>
-                In the round
-              </button>
+          <div className={styles.setupRowCombined}>
+            <div className={styles.setupSection}>
+              <div className={styles.setupLabel}>Construction</div>
+              <div className={styles.toggleRow}>
+                <button type="button" className={`${styles.toggleBtn} ${!sel.workedInRound ? styles.toggleBtnActive : ''}`} onClick={() => onChange({ workedInRound: false })}>
+                  Flat
+                </button>
+                <button type="button" className={`${styles.toggleBtn} ${sel.workedInRound ? styles.toggleBtnActive : ''}`} onClick={() => onChange({ workedInRound: true })}>
+                  Round
+                </button>
+              </div>
             </div>
-          </div>
-
-          <div className={styles.setupSection}>
-            <div className={styles.setupLabel}>Total rows</div>
-            <input
-              className={styles.setupInputSmall}
-              type="number" min={1}
-              value={sel.totalRows ?? ''}
-              onChange={e => { const v = parseInt(e.target.value); onChange({ totalRows: isNaN(v) ? undefined : Math.max(1, v) }) }}
-              placeholder="Count rows"
-            />
-          </div>
-
-          <div className={styles.setupSection}>
-            <div className={styles.setupLabel}>Stitches / row</div>
-            <input
-              className={styles.setupInputSmall}
-              type="number" min={1}
-              value={sel.totalStitches ?? ''}
-              onChange={e => { const v = parseInt(e.target.value); onChange({ totalStitches: isNaN(v) ? undefined : Math.max(1, v) }) }}
-              placeholder="Count stitches"
-            />
-          </div>
-
-          <div className={styles.setupSection}>
-            <div className={styles.setupLabel}>
-              Chart crop
-              {crop && <span className={styles.cropDone}> ✓ Ready</span>}
+            <div className={styles.setupSection}>
+              <div className={styles.setupLabel}>Rows</div>
+              <input
+                className={styles.setupInputSmall}
+                type="number" min={1}
+                value={sel.totalRows ?? ''}
+                onChange={e => { const v = parseInt(e.target.value); onChange({ totalRows: isNaN(v) ? undefined : Math.max(1, v) }) }}
+                placeholder="—"
+              />
             </div>
-            <div className={styles.setupHint}>Draw a box around the chart area on the left. Ctrl + scroll to zoom in.</div>
+            <div className={styles.setupSection}>
+              <div className={styles.setupLabel}>Sts / row</div>
+              <input
+                className={styles.setupInputSmall}
+                type="number" min={1}
+                value={sel.totalStitches ?? ''}
+                onChange={e => { const v = parseInt(e.target.value); onChange({ totalStitches: isNaN(v) ? undefined : Math.max(1, v) }) }}
+                placeholder="—"
+              />
+            </div>
           </div>
 
           <button className={styles.confirmBtn} style={{ marginTop: 'auto' }} disabled={!canProceed} onClick={handlePreview}>

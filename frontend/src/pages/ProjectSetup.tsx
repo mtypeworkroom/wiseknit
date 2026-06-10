@@ -123,8 +123,11 @@ export default function ProjectSetup() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (pdfFile && file.name !== pdfFile.name) {
+      setPageSelections([])
+      setPdfPageCount(0)
+    }
     setPdfFile(file)
-    // Auto-fill name from filename if not set
     if (!form.name) {
       const name = file.name.replace('.pdf', '').replace(/[-_]/g, ' ')
       set('name', name.charAt(0).toUpperCase() + name.slice(1))
