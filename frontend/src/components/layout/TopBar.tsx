@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import logo from '../../assets/mtype_workroom_logo_circle_512.svg'
+import logoDark from '../../assets/mtype_workroom_logo_circle_512.svg'
+import logoLight from '../../assets/mtype_workroom_logo_circle_512_light.svg'
+import { useThemeStore } from '../../store/themeStore'
 import { ChevronLeftIcon } from '../icons'
 import styles from './TopBar.module.css'
 
@@ -21,6 +23,9 @@ export default function TopBar({
   rightContent,
 }: TopBarProps) {
   const navigate = useNavigate()
+  const { mode } = useThemeStore()
+  const isLight = mode === 'light' || (mode === 'auto' && !window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const logo = isLight ? logoLight : logoDark
 
   const handleBack = () => {
     if (backTo) navigate(backTo)

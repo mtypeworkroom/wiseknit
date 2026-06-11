@@ -43,6 +43,124 @@
   margin-bottom: 10px;
 }
 
+/* count badge next to "All Projects" when filtered */
+.filterCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: var(--accent-lt);
+  color: var(--accent-text);
+  font-size: 10px;
+  font-weight: 600;
+  vertical-align: middle;
+  font-style: normal;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ── Header right side: filter + sort buttons ── */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Filter dropdown ── */
+.filterWrap {
+  position: relative;
+}
+
+.filterBtn {
+  font-size: 12px;
+  color: var(--ink-mid);
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 3px 8px;
+  transition: all 0.15s;
+}
+.filterBtn:hover { border-color: var(--accent); color: var(--accent); }
+.filterBtnActive {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-lt);
+}
+
+.filterDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 100;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  min-width: 200px;
+  max-width: 280px;
+  overflow: hidden;
+}
+
+.filterDropdownInner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.filterTagChip {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--ink-mid);
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  transition: all 0.12s;
+}
+.filterTagChip:hover { border-color: var(--accent); color: var(--accent); }
+.filterTagChipOn {
+  background: var(--accent-lt);
+  border-color: var(--accent-lt);
+  color: var(--accent-text);
+}
+
+.filterClear {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  text-align: center;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--ink-light);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+.filterClear:hover { background: var(--surface2); color: var(--ink); }
+
+/* ── Sort dropdown ── */
+.sortWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .sortBtn {
   font-size: 12px;
   color: var(--accent);
@@ -51,8 +169,65 @@
   border: none;
   font-family: var(--font-sans);
   font-weight: 500;
+  white-space: nowrap;
 }
 .sortBtn:hover { opacity: 0.75; }
+
+.sortDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 100;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  min-width: 130px;
+  overflow: hidden;
+}
+
+.sortOption {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.sortOption:last-child { border-bottom: none; }
+.sortOption:hover { background: var(--surface2); }
+.sortOptionActive { color: var(--accent); font-weight: 600; }
+
+/* ── Empty filter state ── */
+.emptyFilter {
+  grid-column: 1 / -1;
+  padding: 24px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-light);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.emptyFilterClear {
+  font-size: 12px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-style: normal;
+}
 
 .projectGrid {
   display: grid;

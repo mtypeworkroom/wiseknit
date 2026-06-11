@@ -110,6 +110,23 @@
   -webkit-box-orient: vertical;
 }
 
+/* ── Tag chips ── */
+.tags {
+  padding: 0 7px 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.tagChip {
+  font-size: 9px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: var(--accent-lt);
+  color: var(--accent-text);
+  white-space: nowrap;
+}
+
 /* ── Stats strip ── */
 .stats {
   padding: 5px 7px 6px;

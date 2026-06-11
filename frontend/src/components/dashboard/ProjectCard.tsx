@@ -70,6 +70,14 @@ export default function ProjectCard({ project, onClick, onArchive, onDelete }: P
             )}
           </div>
 
+          {project.tags?.length ? (
+            <div className={styles.tags}>
+              {project.tags.map(t => (
+                <span key={t} className={styles.tagChip}>{t}</span>
+              ))}
+            </div>
+          ) : null}
+
           <div className={styles.stats}>
             <div className={styles.statItem}>
               <span className={styles.statLbl}>rows worked</span>

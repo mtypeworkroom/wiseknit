@@ -79,13 +79,101 @@
   position: relative;
 }
 
-.pageImg {
-  max-width: 100%;
-  max-height: 100%;
-  display: block;
+/* Wraps the img and receives the zoom/pan transform so absolutely-positioned
+   markers (children) move with the page content */
+.pageFrame {
+  position: relative;
+  display: inline-block;
   transform-origin: center center;
   will-change: transform;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.pageImg {
+  display: block;
+  /* Viewport-unit constraints work correctly because the viewer is always a
+     fixed full-screen overlay (topBar 48px + hint ~24px = 72px) */
+  max-width: 100vw;
+  max-height: calc(100dvh - 72px);
   pointer-events: none;
+}
+
+.sectionMarker {
+  position: absolute;
+  pointer-events: none;
+  color: #E05500;
+  /* Centred on the tap coords set by JS */
+  transform: translate(-50%, -50%);
+}
+
+.placingOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.drawingOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+
+/* Saved highlight rect — colors set inline per-rect */
+.readingRect {
+  position: absolute;
+  pointer-events: none;
+  border: 2px solid transparent;
+  border-radius: 2px;
+}
+
+/* Charging animation while user holds down to remove */
+.readingRectPressing {
+  animation: longPressCharge 0.6s linear forwards;
+  cursor: wait;
+}
+
+@keyframes longPressCharge {
+  from { box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0); }
+  to   { box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.75); }
+}
+
+/* Live preview while dragging — colors set inline from current selection */
+.rectPreview {
+  position: absolute;
+  pointer-events: none;
+  border: 2px dashed transparent;
+  border-radius: 2px;
+  z-index: 7;
+}
+
+.colorPalette {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.colorSwatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: transform 0.1s, border-color 0.1s;
+}
+.colorSwatch:hover { transform: scale(1.15); }
+.colorSwatchActive {
+  border-color: #fff;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.4);
+  transform: scale(1.15);
 }
 
 .spinner {
@@ -120,6 +208,75 @@
   color: rgba(255, 255, 255, 0.5);
   line-height: 1.6;
   padding: 0 24px;
+}
+
+.tagBtn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.88);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.tagBtn:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+
+.placingHint {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.03em;
+}
+
+.tagInput {
+  flex: 1;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 13px;
+  padding: 0 10px;
+  outline: none;
+}
+.tagInput::placeholder { color: rgba(255, 255, 255, 0.3); }
+.tagInput:focus { border-color: rgba(255, 255, 255, 0.45); }
+
+.tagSaveBtn {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 4px;
+  border: none;
+  background: var(--accent, #1a6a8a);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 1;
+  transition: opacity 0.15s;
+}
+.tagSaveBtn:disabled { opacity: 0.35; cursor: default; }
+
+.tagCancelBtn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .hint {

@@ -14,6 +14,53 @@ export function ChartGridIcon({ size = 16, ...props }: IconProps) {
   )
 }
 
+// ─── Section Marker (solid bookmark) ─────────────────────────────────────────
+
+export function SectionMarkerIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={Math.round(size * 2 / 3)} height={size} viewBox="0 0 16 24" fill="currentColor" stroke="white" strokeWidth="1.5" strokeLinejoin="round" {...props}>
+      <path d="M14 0H2C.9 0 0 .9 0 2v22l8-3.5 8 3.5V2C16 .9 15.1 0 14 0Z"/>
+    </svg>
+  )
+}
+
+// ─── Stitch Marker / Reading Position ────────────────────────────────────────
+
+export function StitchMarkerIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M12 22a5 5 0 0 0 5-5c0-2-2-4-3-6V4a2 2 0 0 0-4 0v7c-1 2-3 4-3 6a5 5 0 0 0 5 5z" />
+      <line x1="10" y1="4" x2="14" y2="4" />
+    </svg>
+  )
+}
+
+// ─── Knitting Needles ─────────────────────────────────────────────────────────
+
+export function KnittingNeedlesIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" {...props}>
+      {/* Needle 2 — under: split at crossing (≈12,12) so needle 1 reads as over */}
+      <circle cx="20.5" cy="3.5" r="2" fill="currentColor" stroke="none" />
+      <line x1="18.8" y1="5.2" x2="13.4" y2="10.6" />
+      <line x1="10.6" y1="13.4" x2="3" y2="21" />
+      {/* Needle 1 — over */}
+      <circle cx="3.5" cy="3.5" r="2" fill="currentColor" stroke="none" />
+      <line x1="5.2" y1="5.2" x2="21" y2="21" />
+    </svg>
+  )
+}
+
+// ─── Bookmark / Tag ──────────────────────────────────────────────────────────
+
+export function BookmarkIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+    </svg>
+  )
+}
+
 // ─── Book / Read ─────────────────────────────────────────────────────────────
 
 export function BookOpenIcon({ size = 16, ...props }: IconProps) {

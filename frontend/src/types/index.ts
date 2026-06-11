@@ -37,6 +37,26 @@ export type StitchType =
   | 'sl'
   | 'empty'
 
+// ── PDF SECTION ──────────────────────
+
+export interface PdfReadingRect {
+  id: string
+  page: number
+  x1Pct: number
+  y1Pct: number
+  x2Pct: number
+  y2Pct: number
+  color: string
+}
+
+export interface PdfSection {
+  label: string
+  page: number
+  markXPct?: number
+  markYPct?: number
+  readingRects?: PdfReadingRect[]
+}
+
 // ── PROJECT ──────────────────────────
 
 export interface Project {
@@ -44,6 +64,8 @@ export interface Project {
   name: string
   status: ProjectStatus
   category?: string
+  designer?: string
+  tags?: string[]
   patternId?: string
   currentRow: number
   totalRows: number
@@ -63,6 +85,7 @@ export interface Project {
   photoKey?: string     // IndexedDB key for the project photo crop
   pdfKey?: string       // IndexedDB key for the attached PDF file
   pdfPageCount?: number // total pages in the attached PDF
+  pdfSections?: PdfSection[]
 }
 
 // ── PROJECT CHART ────────────────────

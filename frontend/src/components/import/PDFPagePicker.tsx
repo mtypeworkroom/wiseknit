@@ -493,7 +493,7 @@ interface ChartSetupOverlayProps {
   onBack: () => void
 }
 
-function ChartSetupOverlay({ src, imageData, sel, pageNum, onChange, onConfirm, onBack }: ChartSetupOverlayProps) {
+function ChartSetupOverlay({ src, imageData, sel, onChange, onConfirm, onBack }: ChartSetupOverlayProps) {
   const [crop, setCrop] = useState<Crop>({ unit: '%', x: 10, y: 10, width: 80, height: 80 })
   const [phase, setPhase] = useState<'select' | 'refine'>('select')
   const [detectedBounds, setDetectedBounds] = useState<PixelBounds | null>(null)
@@ -514,7 +514,7 @@ function ChartSetupOverlay({ src, imageData, sel, pageNum, onChange, onConfirm, 
 
   // Always-current refs so event handlers (registered once) can read latest values without stale closure
   const baseWidthRef = useRef(0)
-  const cropRef = useRef<PercentCrop | undefined>(undefined)
+  const cropRef = useRef<Crop | undefined>(undefined)
   baseWidthRef.current = baseWidth
   cropRef.current = crop
 

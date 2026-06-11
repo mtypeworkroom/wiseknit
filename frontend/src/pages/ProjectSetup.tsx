@@ -2,7 +2,7 @@ import { useState, useRef, useMemo } from 'react'
 import { UploadIcon, FileCheckIcon, ChevronLeftIcon, ChevronRightIcon, PencilIcon } from '../components/icons'
 import { savePDF, saveImage } from '../store/imageStore'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useProjectStore } from '../store/projectStore'
+import { useProjectStore, selectTagList } from '../store/projectStore'
 import type { Project, NeedleType, YarnWeight, ProjectChart } from '../types'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
 import ChartEditModal from '../components/import/ChartEditModal'
@@ -13,6 +13,7 @@ interface SetupState {
   name: string
   category: string
   designer: string
+  tags: string[]
   totalRows: number
   chartRepeatStartRow: number
   yarnBrand: string
@@ -33,7 +34,7 @@ interface SetupState {
 }
 
 const INITIAL: SetupState = {
-  name: '', category: 'Sweaters', designer: '',
+  name: '', category: 'Sweaters', designer: '', tags: [],
   totalRows: 16, chartRepeatStartRow: 1,
   yarnBrand: '', yarnName: '', yarnWeight: '', colorway: '',
   fiberContent: '', dyeLot: '', skeins: '', yardsPerSkein: '', supplier: '',
@@ -71,6 +72,7 @@ export default function ProjectSetup() {
   const navigate = useNavigate()
   const { id: editId } = useParams<{ id: string }>()
   const { projects, addProject, updateProject } = useProjectStore()
+  const tagList = selectTagList(projects)
 
   const existingProject = useMemo(
     () => editId ? projects.find(p => p.id === editId) : undefined,
@@ -83,7 +85,8 @@ export default function ProjectSetup() {
     return {
       name: p.name ?? '',
       category: p.category ?? 'Sweaters',
-      designer: '',
+      designer: p.designer ?? '',
+      tags: p.tags ?? [],
       totalRows: p.totalRows ?? 16,
       chartRepeatStartRow: p.chartRepeatStartRow ?? 1,
       yarnBrand: p.yarn?.brand ?? '',
@@ -106,6 +109,7 @@ export default function ProjectSetup() {
 
   const [step, setStep] = useState(0)
   const [form, setForm] = useState<SetupState>(initialForm)
+  const [tagInput, setTagInput] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [showPagePicker, setShowPagePicker] = useState(false)
   const [pageSelections, setPageSelections] = useState<PageSelection[]>([])
@@ -141,11 +145,23 @@ export default function ProjectSetup() {
     nextStep()
   }
 
+  const commitPendingTagInput = () => {
+    if (!tagInput.trim()) return form.tags
+    const parts = tagInput.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+    const merged = [...new Set([...form.tags, ...parts])]
+    set('tags', merged)
+    setTagInput('')
+    return merged
+  }
+
   const handleSaveDraft = async () => {
+    const finalTags = commitPendingTagInput()
     const draftFields = {
       name: form.name || 'Untitled Draft',
       status: 'waiting' as const,
       category: form.category,
+      designer: form.designer || undefined,
+      tags: finalTags.length > 0 ? finalTags : undefined,
       totalRows: form.totalRows,
       chartRepeatStartRow: form.chartRepeatStartRow,
       notes: form.notes || undefined,
@@ -166,6 +182,7 @@ export default function ProjectSetup() {
   }
 
   const handleCreate = async () => {
+    const createTags = commitPendingTagInput()
     const now = new Date().toISOString()
     const projectId = existingProject ? existingProject.id : `proj-${Date.now()}`
 
@@ -212,6 +229,8 @@ export default function ProjectSetup() {
       name: form.name || 'Untitled Project',
       status: 'active',
       category: form.category,
+      designer: form.designer || undefined,
+      tags: createTags.length > 0 ? createTags : undefined,
       currentRow: 1,
       totalRows: projectCharts[0]?.totalRows || form.totalRows,
       totalRowsWorked: 0,
@@ -344,6 +363,48 @@ export default function ProjectSetup() {
                   <input className={styles.input} value={form.designer}
                     onChange={e => set('designer', e.target.value)}
                     placeholder="e.g. Audrey Borrego, self-designed…" />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.fieldLabel}>Tags <span className={styles.optional}>optional</span></label>
+                  {form.tags.length > 0 && (
+                    <div className={styles.tagEditRow} style={{ marginBottom: 6 }}>
+                      {form.tags.map(t => (
+                        <span key={t} className={styles.tagEditChip}>
+                          {t}
+                          <button type="button" className={styles.tagChipRemove}
+                            onClick={() => set('tags', form.tags.filter((x: string) => x !== t))}>×</button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {tagList.filter(t => !form.tags.includes(t)).length > 0 && (
+                    <div className={styles.tagPickerSection} style={{ marginBottom: 6 }}>
+                      <span className={styles.tagPickerLabel}>Existing:</span>
+                      {tagList.filter(t => !form.tags.includes(t)).map(t => (
+                        <button key={t} type="button" className={styles.tagPickerChip}
+                          onClick={() => set('tags', [...form.tags, t])}>
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <input
+                    className={styles.tagAddInput}
+                    value={tagInput}
+                    onChange={e => setTagInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        const parts = tagInput.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+                        const newTags = parts.filter(t => !form.tags.includes(t))
+                        if (newTags.length) set('tags', [...form.tags, ...newTags])
+                        setTagInput('')
+                      }
+                    }}
+                    placeholder="New tag — comma to add several"
+                    autoComplete="off"
+                    style={{ width: '100%' }}
+                  />
                 </div>
               </div>
             </div>

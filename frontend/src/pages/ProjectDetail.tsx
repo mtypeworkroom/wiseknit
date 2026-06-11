@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useProjectStore } from '../store/projectStore'
-import type { Gauge, Yarn, Needle, NeedleType, YarnWeight, ProjectChart } from '../types'
+import { useProjectStore, selectTagList } from '../store/projectStore'
+import type { Gauge, Yarn, Needle, NeedleType, YarnWeight, ProjectChart, PdfSection, PdfReadingRect } from '../types'
 import ChartEditModal from '../components/import/ChartEditModal'
 import PDFViewer from '../components/reader/PDFViewer'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
@@ -11,7 +11,7 @@ import { CATEGORY_GROUPS, ALL_CATEGORIES } from '../data/categories'
 import styles from './ProjectDetail.module.css'
 
 
-type EditingField = null | 'name' | 'category' | 'gauge' | 'yarn' | 'needle' | 'notes'
+type EditingField = null | 'name' | 'category' | 'designer' | 'gauge' | 'yarn' | 'needle' | 'notes' | 'tags'
 
 const NEEDLE_SIZES: { label: string; mm: number }[] = [
   { label: 'US 0000 (1.25mm)', mm: 1.25 },
@@ -42,13 +42,20 @@ export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { projects, sessions, deleteProject, updateProject } = useProjectStore()
+  const tagList = selectTagList(projects)
 
   const [editingField, setEditingField] = useState<EditingField>(null)
   const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
+  const [pdfInitialPage, setPdfInitialPage] = useState(1)
+  const [pdfActiveSection, setPdfActiveSection] = useState<PdfSection | undefined>(undefined)
+  const [pdfActiveSectionIdx, setPdfActiveSectionIdx] = useState<number | null>(null)
   const [pdfPickerFile, setPdfPickerFile] = useState<File | null>(null)
   const [nameForm, setNameForm] = useState('')
   const [categoryForm, setCategoryForm] = useState('')
+  const [designerForm, setDesignerForm] = useState('')
   const [notesForm, setNotesForm] = useState('')
+  const [tagsForm, setTagsForm] = useState<string[]>([])
+  const [tagInput, setTagInput] = useState('')
   const [gaugeForm, setGaugeForm] = useState<Gauge>({ stitchesPer10cm: 0, rowsPer10cm: 0 })
   const [yarnForm, setYarnForm] = useState<Partial<Yarn>>({})
   const [needleForm, setNeedleForm] = useState<Partial<Needle>>({ sizeMm: 4.0, type: 'circular-fixed' })
@@ -79,10 +86,12 @@ export default function ProjectDetail() {
   const openEdit = (field: EditingField) => {
     if (field === 'name')     setNameForm(project.name)
     if (field === 'category') setCategoryForm(project.category ?? '')
+    if (field === 'designer') setDesignerForm(project.designer ?? '')
     if (field === 'gauge')    setGaugeForm(project.gauge ?? { stitchesPer10cm: 0, rowsPer10cm: 0 })
     if (field === 'yarn')     setYarnForm(project.yarn ?? {})
     if (field === 'needle')   setNeedleForm(project.needle ?? { sizeMm: 4.0, type: 'circular-fixed' })
     if (field === 'notes')    setNotesForm(project.notes ?? '')
+    if (field === 'tags')     { setTagsForm([...(project.tags ?? [])]); setTagInput('') }
     setEditingField(field)
   }
 
@@ -91,14 +100,73 @@ export default function ProjectDetail() {
     setEditingField(null)
   }
 
+  const addTagFromInput = (currentForm = tagsForm) => {
+    const parts = tagInput.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+    const newTags = parts.filter(t => !currentForm.includes(t))
+    if (newTags.length) setTagsForm([...currentForm, ...newTags])
+    setTagInput('')
+    return newTags.length ? [...currentForm, ...newTags] : currentForm
+  }
+
+  const saveTags = () => {
+    const parts = tagInput.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+    const finalTags = [...new Set([...tagsForm, ...parts.filter(t => !tagsForm.includes(t))])]
+    updateProject(project.id, { tags: finalTags.length > 0 ? finalTags : undefined })
+    setEditingField(null)
+    setTagInput('')
+  }
+
   const saveName = () => {
     if (nameForm.trim()) updateProject(project.id, { name: nameForm.trim() })
+    setEditingField(null)
+  }
+
+  const saveDesigner = () => {
+    updateProject(project.id, { designer: designerForm.trim() || undefined })
     setEditingField(null)
   }
 
   const saveCategory = () => {
     updateProject(project.id, { category: categoryForm.trim() || undefined })
     setEditingField(null)
+  }
+
+  const openPdfAt = (page: number, section?: PdfSection, sectionIdx?: number) => {
+    setPdfInitialPage(page)
+    setPdfActiveSection(section)
+    setPdfActiveSectionIdx(sectionIdx ?? null)
+    setPdfViewerOpen(true)
+  }
+
+  const handleSaveSection = (label: string, page: number, markXPct?: number, markYPct?: number) => {
+    const existing = project.pdfSections ?? []
+    updateProject(project.id, {
+      pdfSections: [...existing, { label, page, markXPct, markYPct }].sort((a, b) => a.page - b.page),
+    })
+  }
+
+  const handleSaveReadingRect = (page: number, x1Pct: number, y1Pct: number, x2Pct: number, y2Pct: number, color: string) => {
+    if (pdfActiveSectionIdx == null || !project.pdfSections) return
+    const newRect: PdfReadingRect = { id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, page, x1Pct, y1Pct, x2Pct, y2Pct, color }
+    const sections = project.pdfSections.map((s, i) =>
+      i === pdfActiveSectionIdx ? { ...s, readingRects: [...(s.readingRects ?? []), newRect] } : s
+    )
+    updateProject(project.id, { pdfSections: sections })
+    setPdfActiveSection(sections[pdfActiveSectionIdx])
+  }
+
+  const handleRemoveReadingRect = (id: string) => {
+    if (pdfActiveSectionIdx == null || !project.pdfSections) return
+    const sections = project.pdfSections.map((s, i) =>
+      i === pdfActiveSectionIdx ? { ...s, readingRects: (s.readingRects ?? []).filter(r => r.id !== id) } : s
+    )
+    updateProject(project.id, { pdfSections: sections })
+    setPdfActiveSection(sections[pdfActiveSectionIdx])
+  }
+
+  const removeSection = (idx: number) => {
+    const updated = (project.pdfSections ?? []).filter((_, i) => i !== idx)
+    updateProject(project.id, { pdfSections: updated })
   }
 
   const openPhotoPicker = async () => {
@@ -172,7 +240,15 @@ export default function ProjectDetail() {
   return (
     <div className="page-scroll no-top-nav">
       {pdfViewerOpen && project.pdfKey && (
-        <PDFViewer pdfKey={project.pdfKey} onClose={() => setPdfViewerOpen(false)} />
+        <PDFViewer
+          pdfKey={project.pdfKey}
+          initialPage={pdfInitialPage}
+          activeSection={pdfActiveSection}
+          onSaveSection={handleSaveSection}
+          onSaveReadingRect={pdfActiveSectionIdx != null ? handleSaveReadingRect : undefined}
+          onRemoveReadingRect={pdfActiveSectionIdx != null ? handleRemoveReadingRect : undefined}
+          onClose={() => setPdfViewerOpen(false)}
+        />
       )}
 
       {pdfPickerFile && (
@@ -293,7 +369,17 @@ export default function ProjectDetail() {
                   {project.pdfPageCount && (
                     <span className={styles.pdfRowMeta}>{project.pdfPageCount} pages</span>
                   )}
-                  <button className={styles.addBtn} onClick={() => setPdfViewerOpen(true)} aria-label="Read PDF"><BookOpenIcon size={14}/></button>
+                  <button className={styles.addBtn} onClick={() => openPdfAt(1)} aria-label="Read PDF"><BookOpenIcon size={14}/></button>
+                </div>
+              )}
+              {project.pdfKey && (project.pdfSections?.length ?? 0) > 0 && (
+                <div className={styles.sectionChips}>
+                  {project.pdfSections!.map((s, i) => (
+                    <span key={i} className={styles.sectionChip}>
+                      <button className={styles.sectionChipLabel} onClick={() => openPdfAt(s.page, s, i)}>{s.label}</button>
+                      <button className={styles.sectionChipRemove} onClick={() => removeSection(i)} aria-label={`Remove ${s.label}`}>✕</button>
+                    </span>
+                  ))}
                 </div>
               )}
               {project.pdfKey && (
@@ -385,12 +471,40 @@ export default function ProjectDetail() {
                   </div>
                 </div>
               )}
+
+              {/* Designer */}
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Designer</span>
+                <span className={styles.detailVal}>{project.designer ?? <span className={styles.missing}>Not recorded</span>}</span>
+                <button className={styles.addBtn} onClick={() => openEdit('designer')} aria-label="Edit designer">
+                  {project.designer ? <PencilIcon size={14}/> : 'Add'}
+                </button>
+              </div>
+              {editingField === 'designer' && (
+                <div className={styles.inlineForm}>
+                  <label className={styles.inlineLabel} style={{ flex: 1 }}>
+                    Designer
+                    <input type="text" className={styles.inlineInput} style={{ width: '100%' }}
+                      value={designerForm} onChange={e => setDesignerForm(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && saveDesigner()}
+                      placeholder="e.g. Audrey Borrego, self-designed…" />
+                  </label>
+                  <div className={styles.inlineActions}>
+                    <button className={styles.inlineSave} onClick={saveDesigner}>Save</button>
+                    <button className={styles.inlineCancel} onClick={() => setEditingField(null)}>Cancel</button>
+                  </div>
+                </div>
+              )}
               {/* Needle */}
               <div className={styles.detailRow}>
                 <span className={styles.detailLabel}>Needle</span>
                 <span className={styles.detailVal}>
                   {project.needle
-                    ? `${NEEDLE_SIZES.find(n => n.mm === project.needle!.sizeMm)?.label ?? `${project.needle.sizeMm}mm`} · ${project.needle.type.replace(/-/g, ' ')}`
+                    ? [
+                        NEEDLE_SIZES.find(n => n.mm === project.needle!.sizeMm)?.label ?? `${project.needle.sizeMm}mm`,
+                        project.needle.type.replace(/-/g, ' '),
+                        project.needle.cableLength ? `${project.needle.cableLength}cm cable` : null,
+                      ].filter(Boolean).join(' · ')
                     : <span className={styles.missing}>Not recorded</span>}
                 </span>
                 <button className={styles.addBtn} onClick={() => openEdit('needle')} aria-label="Edit needle">
@@ -416,6 +530,14 @@ export default function ProjectDetail() {
                     {(['circular-fixed','circular-interchangeable','straight','dpn','magic-loop'] as NeedleType[]).map(t => (
                       <option key={t} value={t}>{t.replace(/-/g, ' ')}</option>
                     ))}
+                  </select>
+                  <select
+                    className={styles.inlineSelect}
+                    value={needleForm.cableLength ?? ''}
+                    onChange={e => setNeedleForm(f => ({ ...f, cableLength: e.target.value ? parseInt(e.target.value) : undefined }))}
+                  >
+                    <option value="">No cable</option>
+                    {[40, 60, 80, 100, 120].map(l => <option key={l} value={l}>{l}cm cable</option>)}
                   </select>
                   <div className={styles.inlineActions}>
                     <button className={styles.inlineSave} onClick={saveNeedle}>Save</button>
@@ -467,55 +589,81 @@ export default function ProjectDetail() {
               <div className={styles.detailRow}>
                 <span className={styles.detailLabel}>Yarn</span>
                 <span className={styles.detailVal}>
-                  {project.yarn?.name
-                    ? `${project.yarn.brand ?? ''} ${project.yarn.name}`.trim()
+                  {project.yarn
+                    ? [
+                        [project.yarn.brand, project.yarn.name].filter(Boolean).join(' ') || undefined,
+                        project.yarn.weight,
+                        project.yarn.colorway,
+                      ].filter(Boolean).join(' · ')
                     : <span className={styles.missing}>Not recorded</span>}
                 </span>
                 <button className={styles.addBtn} onClick={() => openEdit('yarn')} aria-label="Edit yarn">
-                  {project.yarn?.name ? <PencilIcon size={14}/> : 'Add'}
+                  {project.yarn ? <PencilIcon size={14}/> : 'Add'}
                 </button>
               </div>
               {editingField === 'yarn' && (
                 <div className={styles.inlineForm}>
                   <label className={styles.inlineLabel}>
                     Brand
-                    <input
-                      type="text"
-                      className={styles.inlineInput}
+                    <input type="text" className={styles.inlineInput}
                       value={yarnForm.brand ?? ''}
-                      onChange={e => setYarnForm(f => ({ ...f, brand: e.target.value }))}
-                    />
+                      onChange={e => setYarnForm(f => ({ ...f, brand: e.target.value }))} />
                   </label>
                   <label className={styles.inlineLabel}>
                     Name
-                    <input
-                      type="text"
-                      className={styles.inlineInput}
+                    <input type="text" className={styles.inlineInput}
                       value={yarnForm.name ?? ''}
-                      onChange={e => setYarnForm(f => ({ ...f, name: e.target.value }))}
-                    />
-                  </label>
-                  <label className={styles.inlineLabel}>
-                    Colorway
-                    <input
-                      type="text"
-                      className={styles.inlineInput}
-                      value={yarnForm.colorway ?? ''}
-                      onChange={e => setYarnForm(f => ({ ...f, colorway: e.target.value }))}
-                    />
+                      onChange={e => setYarnForm(f => ({ ...f, name: e.target.value }))} />
                   </label>
                   <label className={styles.inlineLabel}>
                     Weight
-                    <select
-                      className={styles.inlineSelect}
+                    <select className={styles.inlineSelect}
                       value={yarnForm.weight ?? ''}
-                      onChange={e => setYarnForm(f => ({ ...f, weight: e.target.value as YarnWeight || undefined }))}
-                    >
+                      onChange={e => setYarnForm(f => ({ ...f, weight: e.target.value as YarnWeight || undefined }))}>
                       <option value="">— select —</option>
                       {(['lace','fingering','sport','dk','worsted','aran','bulky','super-bulky'] as YarnWeight[]).map(w => (
-                        <option key={w} value={w}>{w}</option>
+                        <option key={w} value={w}>{w.charAt(0).toUpperCase() + w.slice(1)}</option>
                       ))}
                     </select>
+                  </label>
+                  <label className={styles.inlineLabel}>
+                    Colorway
+                    <input type="text" className={styles.inlineInput}
+                      value={yarnForm.colorway ?? ''}
+                      onChange={e => setYarnForm(f => ({ ...f, colorway: e.target.value }))} />
+                  </label>
+                  <label className={styles.inlineLabel}>
+                    Fibre Content
+                    <input type="text" className={styles.inlineInput}
+                      value={yarnForm.fiberContent ?? ''}
+                      onChange={e => setYarnForm(f => ({ ...f, fiberContent: e.target.value }))}
+                      placeholder="e.g. 100% Merino" />
+                  </label>
+                  <label className={styles.inlineLabel}>
+                    Dye Lot
+                    <input type="text" className={styles.inlineInput}
+                      value={yarnForm.dyeLot ?? ''}
+                      onChange={e => setYarnForm(f => ({ ...f, dyeLot: e.target.value }))}
+                      placeholder="e.g. DL-4821" />
+                  </label>
+                  <label className={styles.inlineLabel}>
+                    Skeins
+                    <input type="number" min={1} className={styles.inlineInput}
+                      value={yarnForm.skeins ?? ''}
+                      onChange={e => setYarnForm(f => ({ ...f, skeins: e.target.value ? parseInt(e.target.value) : undefined }))} />
+                  </label>
+                  <label className={styles.inlineLabel}>
+                    Yards / Skein
+                    <input type="number" min={1} className={styles.inlineInput}
+                      value={yarnForm.yardsPerSkein ?? ''}
+                      onChange={e => setYarnForm(f => ({ ...f, yardsPerSkein: e.target.value ? parseInt(e.target.value) : undefined }))} />
+                  </label>
+                  <label className={styles.inlineLabel}>
+                    Supplier
+                    <input type="text" className={styles.inlineInput}
+                      value={yarnForm.supplier ?? ''}
+                      onChange={e => setYarnForm(f => ({ ...f, supplier: e.target.value }))}
+                      placeholder="e.g. local yarn store…" />
                   </label>
                   <div className={styles.inlineActions}>
                     <button className={styles.inlineSave} onClick={saveYarn}>Save</button>
@@ -556,6 +704,65 @@ export default function ProjectDetail() {
                 <div className={styles.notes}>{project.notes}</div>
               ) : (
                 <div className={styles.emptyState}>No notes yet</div>
+              )}
+
+              {/* Tags */}
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Tags</span>
+                <span className={styles.detailVal}>
+                  {project.tags?.length ? (
+                    <span className={styles.tagChips}>
+                      {project.tags.map(t => (
+                        <span key={t} className={styles.tagChip}>{t}</span>
+                      ))}
+                    </span>
+                  ) : (
+                    <span className={styles.missing}>None</span>
+                  )}
+                </span>
+                <button className={styles.addBtn} onClick={() => openEdit('tags')} aria-label="Edit tags">
+                  {project.tags?.length ? <PencilIcon size={14}/> : 'Add'}
+                </button>
+              </div>
+              {editingField === 'tags' && (
+                <div className={styles.inlineForm} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 10 }}>
+                  {tagsForm.length > 0 && (
+                    <div className={styles.tagEditRow}>
+                      {tagsForm.map(t => (
+                        <span key={t} className={styles.tagEditChip}>
+                          {t}
+                          <button className={styles.tagChipRemove} onClick={() => setTagsForm(f => f.filter(x => x !== t))}>×</button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {tagList.filter(t => !tagsForm.includes(t)).length > 0 && (
+                    <div className={styles.tagPickerSection}>
+                      <span className={styles.tagPickerLabel}>Existing:</span>
+                      {tagList.filter(t => !tagsForm.includes(t)).map(t => (
+                        <button key={t} type="button" className={styles.tagPickerChip}
+                          onClick={() => setTagsForm(f => [...f, t])}>
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <input
+                    className={styles.tagAddInput}
+                    style={{ width: '100%', maxWidth: 280 }}
+                    value={tagInput}
+                    onChange={e => setTagInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') { e.preventDefault(); addTagFromInput() }
+                    }}
+                    placeholder="New tag — comma to add several"
+                    autoComplete="off"
+                  />
+                  <div className={styles.inlineActions}>
+                    <button className={styles.inlineSave} onClick={saveTags}>Save</button>
+                    <button className={styles.inlineCancel} onClick={() => { setEditingField(null); setTagInput('') }}>Cancel</button>
+                  </div>
+                </div>
               )}
             </div>
           </div>

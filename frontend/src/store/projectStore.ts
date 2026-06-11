@@ -94,8 +94,12 @@ export const useProjectStore = create<ProjectStore>()(
   )
 )
 
+// Derived selectors
 export const selectActiveProjects = (projects: Project[]) =>
   projects.filter((p) => p.status === 'active' || p.status === 'waiting')
+
+export const selectTagList = (projects: Project[]): string[] =>
+  [...new Set(projects.flatMap(p => p.tags ?? []))].sort()
 
 export const selectProgressPct = (project: Project) =>
   project.totalRows > 0
