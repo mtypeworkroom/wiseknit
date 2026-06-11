@@ -37,6 +37,26 @@ export type StitchType =
   | 'sl'
   | 'empty'
 
+// ── PDF SECTION ──────────────────────
+
+export interface PdfReadingRect {
+  id: string
+  page: number
+  x1Pct: number
+  y1Pct: number
+  x2Pct: number
+  y2Pct: number
+  color: string
+}
+
+export interface PdfSection {
+  label: string
+  page: number
+  markXPct?: number
+  markYPct?: number
+  readingRects?: PdfReadingRect[]
+}
+
 // ── PROJECT ──────────────────────────
 
 export interface Project {
@@ -44,6 +64,8 @@ export interface Project {
   name: string
   status: ProjectStatus
   category?: string
+  designer?: string
+  tags?: string[]
   patternId?: string
   currentRow: number
   totalRows: number
@@ -57,8 +79,13 @@ export interface Project {
   yarn?: Yarn
   gauge?: Gauge
   notes?: string
-  photo?: string  // URL or base64 image from pattern
-  charts?: ProjectChart[]  // parsed charts from AI
+  photo?: string
+  charts?: ProjectChart[]
+  activeChartId?: string  // persisted chart selection
+  photoKey?: string     // IndexedDB key for the project photo crop
+  pdfKey?: string       // IndexedDB key for the attached PDF file
+  pdfPageCount?: number // total pages in the attached PDF
+  pdfSections?: PdfSection[]
 }
 
 // ── PROJECT CHART ────────────────────
@@ -79,8 +106,13 @@ export interface ProjectChart {
   workedInRound: boolean
   symbols: ProjectChartSymbol[]
   notes?: string
+  rowNotes?: Record<number, string>  // per-row instructions keyed by row number
   flags: string[]
-  imageBase64?: string  // the original chart page image
+  imageKey?: string      // IndexedDB key for cropped chart image
+  pageKey?: string       // IndexedDB key for full page image
+  imageBase64?: string   // legacy — superseded by imageKey
+  pageBase64?: string    // legacy — superseded by pageKey
+  textInstructions?: string  // text-only instructions when no chart image
 }
 
 // ── PATTERN ──────────────────────────

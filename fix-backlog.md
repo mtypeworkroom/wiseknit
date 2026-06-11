@@ -1,120 +1,59 @@
 # WiseKnit — Known Issues & Fixes Needed
 
 ## UI & Visual
+### Project Dashboard - beter branding
+I'd like better branding without it being too much in your face.  The logo is currently unreadable and alignment wiht the rest of the page is not good. I can modify the logo in inkscape if needed.  Part of hte issue is the current image still has text on it.  I thought I provided logos without the text, just the circle.
 
-### Contrast
-Some text/background combinations in dark mode and light mode do not meet contrast requirements.
-For example on the dashboard, the project card has rows worked and last session, which are not readable. The All Project text above the cards also is not readable.
-Audit all pages for text that becomes unreadable in dark and light mode and ensure sufficient contrast ratio (WCAG AA minimum 4.5:1 for normal text).
+### Select & Set Up Chart Page - Page Picker
+When there are multiple charts, need a selector so the user can decide on which chart to start with.
 
-### Project Setup — Back Button Placement
-The Back button sits top-left while Next sits bottom-right. These should be
-co-located. Move Back button to sit beside the Next button in the same bottom
-action row, with matching formatting/style.
+### Project Dashboard - project cards
+On a phone in portrait mode we need to only show one project at a time
 
-### Project Detail — Edit Button
-Current placement and presentation of the Edit button is unsatisfactory.
-Needs repositioning and proper wiring. Exact target placement TBD during redesign.
+### Project Detail - Pattern section alignmnet
+Right align the text from all the rows.  left align the actions.
 
-### Project Detail — Archive & Delete Buttons
-Archive and Delete actions require scrolling to access. These should be accessible
-without scrolling — consider placing in a header action menu (⋯) or a fixed
-footer action bar.
+### Project Detail - Yarn
+Show all the yarn information, not just the name. Also will need to add this as a table, projects will have multiple different yarns.
 
-### Project Detail — Resume Knitting Button
-The Resume Knitting / Play button spans the full width of the screen which is
-visually heavy. Reduce width — either auto-width centered, or a fixed comfortable
-width (e.g. 60-70% max) centered on screen.
+### Project Details - Category List
+Expand out the category list.
+#### idea list
+ AccessoriesHeadwear: Beanies, slouchy toques, berets, tams, balaclavas, bonnets, and earwarmers.Neck & Torso: Scarves, infinity cowls, triangular shawls, rectangular wraps, ponchos, and capes.Hands & Arms: Full mittens, fingerless mitts, convertible gloves, cuffs, and wrist gauntlets.Feet & Legs: Mid-calf socks, ankle socks, thigh-highs, legwarmers, slippers, and boot toppers.Bags: Market totes, slouchy shoulder bags, backpacks, zippered clutches, and laptop sleeves.Jewelry: Knit bracelets, statement necklaces, earrings, and headbands.2. ClothingSweaters: Pullovers, cardigans, shrugs, boleros, and vests.Tops: Casual tees, sleeveless tanks, camisoles, and crop tops.Bottoms: Skirts, shorts, knit pants, leggings, and lounge trousers.Dresses & Suits: Full-length dresses, tunics, robes, and continuous onesies.Intimate Apparel: Bralettes, sleepwear, and knit underwear.Outerwear: Heavy coats, structured jackets, and duster cardigans.3. Home Decor & UtilityBlankets: Large bedspreads, couch throws, lapghans, and stroller blankets.Cleaning: Textured washcloths, durable dishcloths, bath mitts, and pot holders.Tabletop: Coasters, placemats, table runners, and decorative mug cozies.Containers: Nesting storage bowls, tissue box covers, and plant pot sleeves.Pillows: Accent cushion covers, bolster pillows, and floor poufs.4. Toys, Pets, & NoveltiesAmigurumi & Toys: Stuffed animals, soft dolls, play food, and puppets.Pet Items: Dog coats, cat sweaters, pet beds, and interactive catnip toys.Holiday & Seasonal: Christmas stockings, Easter egg cozies, pumpkins, and hanging ornaments.Components: Appliqués, knit flowers, standalone pockets, and decorative fringe trims.
 
-### Project Detail - Pattern
-We need place on the page to edit the chart, need to be able to re-select in case the set up need to be adjusted.
-
-### Project Detail - Guage and Yarn
-Need to implement the Add button and change that text to Edit if those details were already entered.
-
-### Active Kintting - Chart
-Need to rename the "back" button of the chart ot Previous so it doesn't look like a page back button
-
----
-
-## Project Setup — Needle Size Selector
-
-Current selector is missing small needle sizes and does not show US/mm pairing.
-
-**Required changes:**
-- Add missing small sizes: 0000, 000, 00, 0, and 1 (US)
-- Display both US size name and mm equivalent together for every size
-- Suggested format: `US 0 (2.0mm)`, `US 1 (2.25mm)`, `US 2 (2.75mm)` etc.
-
-**Complete US needle size reference:**
-| US Size | mm    |
-|---------|-------|
-| 0000    | 1.25  |
-| 000     | 1.5   |
-| 00      | 1.75  |
-| 0       | 2.0   |
-| 1       | 2.25  |
-| 2       | 2.75  |
-| 3       | 3.25  |
-| 4       | 3.5   |
-| 5       | 3.75  |
-| 6       | 4.0   |
-| 7       | 4.5   |
-| 8       | 5.0   |
-| 9       | 5.5   |
-| 10      | 6.0   |
-| 10.5    | 6.5   |
-| 11      | 8.0   |
-| 13      | 9.0   |
-| 15      | 10.0  |
-| 17      | 12.0  |
-| 19      | 15.0  |
-| 35      | 19.0  |
-| 50      | 25.0  |
-
----
-
-### Active Knitting — RS/WS vs Worked in the Round
-The bottom bar shows RS/WS based on row parity. Charts knitted in the round have no WS rows — every row is a right-side round. Currently `workedInRound` exists on `ProjectChart` but there is no UI in Project Setup to set it.
-
-**Required work:**
-- Add a "Worked in the round / flat" toggle to the chart setup step in Project Setup
-- Wire the toggle to `workedInRound` on `ProjectChart`
-- The bottom bar already reads `chart.workedInRound` and will show "Rnd" once it is set correctly
-
----
-
-### Active Knitting — Per-Row Instructions
-The instruction slot in the bottom bar currently shows a computed RS/WS/Rnd indicator and stitch count.
-The full feature requires per-row instruction text to be stored and displayed.
-
-**Required work:**
-- Add a `rowNotes: Record<number, string>` (or similar) field to `ProjectChart`
-- Add UI during setup (or inline while knitting) to enter per-row notes
-- Display the note for the current row in the instruction slot
-- Fall back to RS/WS/Rnd + stitch count when no note exists for a row
-
----
+### Project Detail - Add tags
+Add tag entered and kept by the user. If the user adds a tag it should be kept in a database and the user allowed to select it the next time adding tags.  
+#### Tag idea list
+By Fabric Texture & Stitch PatternsKnit & Purl Textures: Garter stitch, stockinette stitch, seed stitch, moss stitch, and basketweave patterns.Ribbing Styles: Standard 1x1 or 2x2 rib, twisted rib, broken rib, and fisherman's rib.Cables & Arans: Twisted rope cables, braids, honeycombs, and intricate Celtic knots.Lace & Openwork: Eyelets, mesh, feather and fan, and traditional Shetland or Estonian lace sheets.Brioche & Tuck Stitches: Fluffy, ultra-thick, reversible structures using slipped stitches and yarn overs.Slip-Stitch Textures: Linen stitch, waffle patterns, and structural mock-cables.By Colorwork TechniqueStranded Colorwork: Traditional Fair Isle, Nordic stars, and Cowichan designs where multiple yarn colors run across a single row.Intarsia: Isolated blocks of color worked from individual bobbins, common for pictorial motifs or graphic geometric shapes.Mosaic Knitting: A structured method that creates two-color geometric graphics by slipping specific stitches without carrying floats.Double Knitting: Creating a thick, completely reversible fabric with inverted colorways on opposite sides.Stripes & Shadow Knitting: Simple alternating rows, jogless stripes, or illusion patterns that reveal hidden images from specific angles.By Construction ArchitectureTop-Down Seamless: Sweaters or socks built from the top opening down, allowing for intermediate fit adjustments.Bottom-Up Seamed: Traditional methods where pieces (front, back, sleeves) are knit flat separately and sewn together.Flat vs. Circular: Working back-and-forth on straight needles vs. tubular, seamless knitting on circular or double-pointed needles.Modular / Entrelac: Basketweave diamond patterns or patchwork squares where individual modules connect as you knit them.
 
 ## Wiring & Functionality
 
-### Dashboard card, add a smae archive and delete button on the card.
+#### Select & Set Up Chart Pages 
+selection page should show the entire pdf page so no scrolling is needed.
 
-### Project Photo — Selected Image Not Wired Up
-The image selection UI exists but the selected photo is not being saved or
-displayed correctly. Needs to be wired into the project store and displayed
-on the Project Detail page and Dashboard card.
+### Select & Set Up Chart Pages
+When click Preview and Refine and we are taken back to the page screen the focus is not on the chart page, you must scroll again to find it.
 
-### Edit Project — Not Wired Up
-Edit button on Project Detail page needs to be connected to an edit flow.
-Should pre-populate the setup wizard (or a simplified edit form) with existing
-project data and save changes back to the store.
+### Pattern Detail - Import PDF
+If the pdf has already been imported do we need the Import PDF button? Can we add an edit button somewhere instead?  Also We wil need a way to add additional charts wihtout going through the entire wizard.  Essentially we should only get a wizard the very first time we set up a project.  Then we should be able to pinpoint areas for updates or additions.
 
-### Archive Project — Not Wired Up
-Archive action needs to update project status in the store and remove the
-project from the active projects list, placing it in an archived view.
+### Pattern Detail - Notes
+The text in the Notes says tap Edit to add some
+Need to fix that text and actually wire up the notes.
 
-### Delete Project — Not Wired Up
-Delete action needs to remove the project from the store, delete associated
-chart images from IndexedDB, and return the user to the Dashboard.
-Should include a confirmation dialog before executing.
+### Active Knitting - Chart
+Need to add Zoom feature on the chart.
+
+### Active Knitting - Text
+Need to add options for text only instructions wihtout a chart.
+
+### Active Knitting - Chart Selection
+I see the chart selector and that works but it is not remebered.  If I go back and start knitting again it just defaults to the first chart.  Also we need to move the selector to the Project Detail page, it takes up too much screen space in the Active Knitting page.  Might consider a dropdown in the Knit button, but it would still need to default to the last chart that was used.
+
+### Project Dashboard - filter function
+Once we have tags add a filter function to the dashboard next to the sort function
+
+### Project Dashboard - sort fucntion
+Wire up the sorting function and make it useable
+
+

@@ -2,10 +2,10 @@
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--hero-border);
   border-radius: 5px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -17,7 +17,7 @@
 }
 
 .name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--hero-ink);
   white-space: nowrap;
@@ -27,27 +27,30 @@
 }
 
 .detail {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--hero-mid);
   font-family: var(--font-mono);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  opacity: 0.8;
 }
 
 .btn {
+  width: 28px;
   height: 28px;
-  padding: 0 12px;
   background: var(--accent);
   color: var(--bg);
   border: none;
   border-radius: 3px;
   font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  white-space: nowrap;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: opacity 0.15s;
 }
 .btn:hover { opacity: 0.85; }

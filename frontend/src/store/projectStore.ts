@@ -67,15 +67,14 @@ export const useProjectStore = create<ProjectStore>()(
             if (p.id !== id) return p
             const chartRows = p.totalRows
             const repeatStart = p.chartRepeatStartRow ?? 1
-            const totalWorked = (p.totalRowsWorked ?? 0) + 1
-            // If at end of chart, loop back to repeatStart
             const isAtEnd = p.currentRow >= chartRows
             const nextRow = isAtEnd ? repeatStart : p.currentRow + 1
-            console.log(`advanceRow: current=${p.currentRow} total=${chartRows} atEnd=${isAtEnd} next=${nextRow}`)
+            const current = p.totalRowsWorked ?? 0
+            const next = current + 1
             return {
               ...p,
               currentRow: nextRow,
-              totalRowsWorked: totalWorked,
+              totalRowsWorked: next,
               updatedAt: new Date().toISOString(),
             }
           }),
@@ -95,8 +94,12 @@ export const useProjectStore = create<ProjectStore>()(
   )
 )
 
+// Derived selectors
 export const selectActiveProjects = (projects: Project[]) =>
   projects.filter((p) => p.status === 'active' || p.status === 'waiting')
+
+export const selectTagList = (projects: Project[]): string[] =>
+  [...new Set(projects.flatMap(p => p.tags ?? []))].sort()
 
 export const selectProgressPct = (project: Project) =>
   project.totalRows > 0

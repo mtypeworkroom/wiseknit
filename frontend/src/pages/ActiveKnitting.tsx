@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import ChartGrid from '../components/knitting/ChartGrid'
+import { GearIcon, InfoIcon, PhoneIcon, RotateArrowIcon, RepeatIcon, ChevronLeftIcon, ChevronRightIcon } from '../components/icons'
 import styles from './ActiveKnitting.module.css'
 
 export default function ActiveKnitting() {
@@ -12,6 +13,7 @@ export default function ActiveKnitting() {
 
   const [panelOpen, setPanelOpen] = useState<'legend' | 'tools' | null>(null)
   const [backMenuOpen, setBackMenuOpen] = useState(false)
+  const [zoom, setZoom] = useState<'S' | 'M' | 'L' | 'XL'>('M')
   const chartAreaRef = useRef<HTMLDivElement>(null)
   const [jumpMenuOpen, setJumpMenuOpen] = useState(false)
 
@@ -41,7 +43,11 @@ export default function ActiveKnitting() {
   if (!project) return null
 
   const pct = Math.round((project.currentRow / project.totalRows) * 100)
-  const chart = project.charts?.[0]
+  const totalRowsWorked = (project as any).totalRowsWorked ?? 0
+  const repeatNum = Math.floor(totalRowsWorked / project.totalRows) + 1
+  const charts = project.charts ?? []
+  const chartIndex = Math.max(0, charts.findIndex(c => c.id === project.activeChartId))
+  const chart = charts[chartIndex] ?? charts[0]
 
   const getRowSide = () => {
     if (!chart) return null
@@ -64,13 +70,14 @@ export default function ActiveKnitting() {
   }
 
   const handlePrev = () => {
-    if (project.currentRow > 1) {
-      updateProject(project.id, {
-        currentRow: project.currentRow - 1,
-        // totalRowsWorked unchanged — going back doesn't un-knit rows
-      })
-    }
+    const worked = project.totalRowsWorked ?? 0
+    if (worked === 0) return
+    const repeatStart = project.chartRepeatStartRow ?? 1
+    const prevRow = project.currentRow <= repeatStart ? project.totalRows : project.currentRow - 1
+    updateProject(project.id, { currentRow: prevRow, totalRowsWorked: worked - 1 })
   }
+
+  const canGoBack = (project.totalRowsWorked ?? 0) > 0
 
   const togglePanel = (panel: 'legend' | 'tools') => {
     setPanelOpen(panelOpen === panel ? null : panel)
@@ -80,16 +87,8 @@ export default function ActiveKnitting() {
     <div className={styles.shell}>
       {/* Rotate overlay — phones in portrait only */}
       <div className={styles.rotateOverlay}>
-        <svg className={styles.rotateIcon} viewBox="0 0 24 24" fill="none" stroke="#3CCFEF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="4" y="2" width="16" height="20" rx="2"/>
-          <path d="M9 22h6"/>
-          <path d="M12 17v.01"/>
-        </svg>
-        <svg className={styles.rotateArrow} viewBox="0 0 24 24" fill="none" stroke="#3CCFEF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M9 3H5a2 2 0 0 0-2 2v4m0 6v4a2 2 0 0 0 2 2h4"/>
-          <path d="M21 12V7a2 2 0 0 0-2-2h-4"/>
-          <path d="m3 16 4 4 4-4"/>
-        </svg>
+        <PhoneIcon className={styles.rotateIcon}/>
+        <RotateArrowIcon className={styles.rotateArrow}/>
         <div className={styles.rotateTitle}>Rotate your device</div>
         <div className={styles.rotateSub}>WiseKnit's chart view works best in landscape mode</div>
         <div className={styles.rotateBrand}>WiseKnit by MType Workroom</div>
@@ -101,25 +100,31 @@ export default function ActiveKnitting() {
           Back
         </button>
         <span className={styles.tbPattern}>{project.name}</span>
+        {/* Chip 1: chart row position */}
+        <div className={styles.tbChip}>
+          <span className={styles.tbChipLabel}>row</span>
+          <span className={styles.tbChipNum}>{project.currentRow}</span>
+          <span className={styles.tbChipSep}>/</span>
+          <span className={styles.tbChipSub}>{project.totalRows}</span>
+        </div>
+        {/* Chip 2: total worked + repeat icon */}
+        <div className={styles.tbChip}>
+          <span className={styles.tbChipNum}>{totalRowsWorked}</span>
+          <RepeatIcon className={styles.tbRepeatIcon}/>
+          <span className={styles.tbRepeatNum}>{repeatNum}</span>
+        </div>
         <div className={styles.tbRight}>
           <button
             className={`${styles.tbIcon} ${panelOpen === 'tools' ? styles.tbIconActive : ''}`}
             onClick={() => togglePanel('tools')}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
-            </svg>
+            <GearIcon size={14}/>
           </button>
           <button
             className={`${styles.tbIcon} ${panelOpen === 'legend' ? styles.tbIconActive : ''}`}
             onClick={() => togglePanel('legend')}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
+            <InfoIcon size={14}/>
           </button>
         </div>
       </div>
@@ -133,7 +138,8 @@ export default function ActiveKnitting() {
         <ChartGrid
           currentRow={project.currentRow}
           totalRows={project.totalRows}
-          chart={project.charts?.[0]}
+          chart={chart}
+          zoom={zoom}
         />
       </div>
 
@@ -169,9 +175,15 @@ export default function ActiveKnitting() {
       {/* Tools panel */}
       <div className={`${styles.panel} ${panelOpen === 'tools' ? styles.panelOpen : ''}`}>
         <div className={styles.panelTitle}>Chart Tools</div>
-        {['Add section line', 'Color a section', 'Reset highlights', 'Fit to screen'].map((label) => (
-          <button key={label} className={styles.toolBtn}>{label}</button>
-        ))}
+        <div className={styles.zoomRow}>
+          {(['S', 'M', 'L', 'XL'] as const).map(z => (
+            <button
+              key={z}
+              className={`${styles.zoomBtn} ${zoom === z ? styles.zoomBtnActive : ''}`}
+              onClick={() => setZoom(z)}
+            >{z}</button>
+          ))}
+        </div>
         <button className={styles.resetBtn} onClick={handleReset}>
           ↺ Start Over — Reset to Row 1
         </button>
@@ -187,66 +199,51 @@ export default function ActiveKnitting() {
         </div>
       </div>
 
-      {/* Bottom bar */}
+
+      {/* Instructions + nav bar — instructions wrap left, buttons anchored right */}
       <div className={styles.bottomBar}>
-        <div className={styles.rowInfo}>
-          <span className={styles.rowLabel}>Row</span>
-          <span className={styles.rowNum}>{project.currentRow}</span>
-          <span className={styles.rowOf}>/ {project.totalRows}</span>
-        </div>
-        <div className={styles.separator} />
-        <div className={styles.rowInfo}>
-          <span className={styles.rowLabel}>Total</span>
-          <span className={styles.rowNum}>{(project as any).totalRowsWorked ?? 0}</span>
-        </div>
-
-        <div className={styles.separator} />
-
         {getRowSide() && (
-          <>
-            <div className={styles.instrWrap}>
-              <span className={styles.rowSidePill}>{getRowSide()}</span>
-              {chart?.totalStitches ? (
-                <span className={styles.instrText}>{chart.totalStitches} sts</span>
-              ) : null}
-              {chart?.notes ? (
-                <span className={styles.instrNotes}>{chart.notes}</span>
-              ) : null}
-            </div>
-            <div className={styles.separator} />
-          </>
+          <div className={styles.instrContent}>
+            <span className={styles.rowSidePill}>{getRowSide()}</span>
+            {chart?.totalStitches ? (
+              <span className={styles.instrText}>{chart.totalStitches} sts</span>
+            ) : null}
+            {chart?.notes ? (
+              <span className={styles.instrNotes}>{chart.notes}</span>
+            ) : null}
+          </div>
         )}
-
-        {/* Split back button */}
-        <div className={styles.splitBtn}>
-          <button className={styles.splitMain} onClick={handlePrev}>← Back</button>
-          <button
-            className={styles.splitArrow}
-            onClick={() => setBackMenuOpen(o => !o)}
-            aria-label="More options"
-          >▾</button>
-          {backMenuOpen && (
-            <div className={styles.backMenu}>
-              <button className={styles.backMenuItem} onClick={() => { handlePrev(); setBackMenuOpen(false) }}>
-                ← Go back one row
-              </button>
-              <button className={styles.backMenuItem} onClick={() => { handleReset(); setBackMenuOpen(false) }}>
-                ↺ Reset to row 1
-              </button>
-              <button className={styles.backMenuItem} style={{color: 'var(--accent)'}} onClick={() => { setJumpMenuOpen(true); setBackMenuOpen(false) }}>
-                ⤷ Go to specific row
-              </button>
-            </div>
-          )}
+        <div className={styles.instrNav}>
+          <div className={styles.splitBtn}>
+            <button className={styles.splitMain} onClick={handlePrev} disabled={!canGoBack}><ChevronLeftIcon size={14}/></button>
+            <button
+              className={styles.splitArrow}
+              onClick={() => setBackMenuOpen(o => !o)}
+              aria-label="More options"
+            >▾</button>
+            {backMenuOpen && (
+              <div className={styles.backMenu}>
+                <button className={styles.backMenuItem} onClick={() => { handlePrev(); setBackMenuOpen(false) }} disabled={!canGoBack}>
+                  <ChevronLeftIcon size={12}/>Go back one row
+                </button>
+                <button className={styles.backMenuItem} onClick={() => { handleReset(); setBackMenuOpen(false) }}>
+                  ↺ Reset to row 1
+                </button>
+                <button className={styles.backMenuItem} style={{color: 'var(--accent)'}} onClick={() => { setJumpMenuOpen(true); setBackMenuOpen(false) }}>
+                  ⤷ Go to specific row
+                </button>
+              </div>
+            )}
+          </div>
+          <button className={styles.nextBtn} onClick={handleNext}><ChevronRightIcon size={14}/></button>
         </div>
-        <button className={styles.nextBtn} onClick={handleNext}>Next Row ›</button>
 
         {/* Jump to row picker */}
         {jumpMenuOpen && (
           <div className={styles.jumpOverlay} onClick={() => setJumpMenuOpen(false)}>
             <div className={styles.jumpModal} onClick={e => e.stopPropagation()}>
               <div className={styles.jumpTitle}>Go Back to Total Row</div>
-              <div className={styles.jumpSubtitle}>You have worked {project.totalRowsWorked ?? 0} rows total</div>
+              <div className={styles.jumpSubtitle}>You have worked {totalRowsWorked} rows total</div>
               <div className={styles.jumpInputWrap}>
                 <input
                   type="number"
@@ -277,7 +274,7 @@ export default function ActiveKnitting() {
                   })
                   setJumpMenuOpen(false)
                   setBackMenuOpen(false)
-                }}>Go to Row →</button>
+                }}>Go to Row</button>
               </div>
             </div>
           </div>

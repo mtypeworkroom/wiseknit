@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
+import { ChevronLeftIcon, ChevronRightIcon, PencilIcon } from '../icons'
 import styles from './PDFPagePicker.module.css'
 
 export interface PageSelection {
@@ -11,12 +12,13 @@ export interface PageSelection {
   croppedBase64?: string     // cropped chart area
   totalRows?: number
   totalStitches?: number
+  workedInRound?: boolean
   confirmed?: boolean
 }
 
 interface PDFPagePickerProps {
   file: File
-  onComplete: (selections: PageSelection[]) => void
+  onComplete: (selections: PageSelection[], totalPages: number) => void
   onCancel: () => void
 }
 
@@ -28,7 +30,22 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
   const [loadingPage, setLoadingPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
-  const chartInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
+  const pageCardRefs = useRef<Record<number, HTMLDivElement | null>>({})
+  const lastConfirmedRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (expandedIndex !== null) {
+      setTimeout(() => {
+        pageCardRefs.current[expandedIndex]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      }, 50)
+    } else if (lastConfirmedRef.current !== null) {
+      const idx = lastConfirmedRef.current
+      lastConfirmedRef.current = null
+      setTimeout(() => {
+        pageCardRefs.current[idx]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      }, 50)
+    }
+  }, [expandedIndex])
 
   useEffect(() => { renderPDF() }, [file])
 
@@ -94,13 +111,7 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
         return { ...s, role: null, chartName: undefined, confirmed: false }
       }
       const chartCount = prev.filter(x => x.role === 'chart').length + 1
-      if (role === 'chart') {
-        setExpandedIndex(index)
-        setTimeout(() => {
-          chartInputRefs.current[index]?.focus()
-          chartInputRefs.current[index]?.select()
-        }, 100)
-      }
+      setExpandedIndex(index)
       return { ...s, role, chartName: role === 'chart' ? `Chart ${chartCount}` : undefined, confirmed: false }
     }))
   }
@@ -109,12 +120,16 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
     setSelections(prev => prev.map((s, i) => i === index ? { ...s, ...patch } : s))
 
   const confirmChart = (index: number) => {
+    lastConfirmedRef.current = index
     updateSel(index, { confirmed: true })
     setExpandedIndex(null)
   }
 
   const selectedCharts = selections.filter(s => s.role === 'chart')
-  const allConfirmed = selectedCharts.length > 0 && selectedCharts.every(s => s.confirmed)
+  const photoSel = selections.find(s => s.role === 'photo')
+  const canComplete = !loading
+    && (selectedCharts.length === 0 || selectedCharts.every(s => s.confirmed))
+    && (!photoSel || photoSel.confirmed)
 
   return (
     <div className={styles.overlay}>
@@ -132,16 +147,18 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
           </div>
         ) : (
           <div className={styles.pageGrid}>
+
+            {/* ── PDF pages — original always visible ── */}
             {pages.map((src, i) => {
               const sel = selections[i]
               const isChart = sel.role === 'chart'
               const isPhoto = sel.role === 'photo'
-              const isExpanded = expandedIndex === i
+              // Photos expand inline; charts open the full-screen overlay
+              const isPhotoExpanded = expandedIndex === i && isPhoto
 
               return (
-                <div key={i} className={`${styles.pageCard} ${isChart ? styles.pageChart : ''} ${isPhoto ? styles.pagePhoto : ''} ${isExpanded ? styles.pageExpanded : ''}`}>
+                <div key={i} ref={el => { pageCardRefs.current[i] = el }} className={`${styles.pageCard} ${isChart ? styles.pageChart : ''} ${isPhoto ? styles.pagePhoto : ''} ${isPhotoExpanded ? styles.pageExpanded : ''}`}>
 
-                  {/* Buttons */}
                   <div className={styles.pageBtns}>
                     <button className={`${styles.pageBtn} ${isChart ? styles.pageBtnActive : ''}`} onClick={() => toggleRole(i, 'chart')}>
                       {isChart ? (sel.confirmed ? '✓ Chart' : '● Chart') : 'Chart'}
@@ -153,35 +170,44 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
 
                   <div className={styles.pageNum}>Page {i + 1}</div>
 
-                  {/* Chart setup panel — shown when expanded */}
-                  {isChart && isExpanded && pageImageDatas[i] && (
-                    <ChartSetupPanel
+                  {/* Photo crop panel — inline expand */}
+                  {isPhotoExpanded && pageImageDatas[i] && (
+                    <PhotoCropPanel
                       src={src}
                       imageData={pageImageDatas[i]}
-                      sel={sel}
-                      inputRef={el => { chartInputRefs.current[i] = el }}
-                      onChange={patch => updateSel(i, patch)}
-                      onConfirm={() => confirmChart(i)}
+                      onConfirm={(croppedBase64) => {
+                        const updated = selections.map((s2, i2) =>
+                          i2 === i ? { ...s2, croppedBase64, confirmed: true } : s2
+                        )
+                        setSelections(updated)
+                        setExpandedIndex(null)
+                        const charts = updated.filter(s2 => s2.role === 'chart')
+                        if (charts.length === 0 || charts.every(s2 => s2.confirmed)) {
+                          onComplete(updated.filter(s2 => s2.role !== null), totalPages)
+                        }
+                      }}
+                      onCancel={() => setExpandedIndex(null)}
                     />
                   )}
 
-                  {/* Confirmed summary */}
-                  {isChart && !isExpanded && sel.confirmed && (
-                    <div className={styles.confirmedSummary} onClick={() => setExpandedIndex(i)}>
-                      <div className={styles.confirmedName}>{sel.chartName}</div>
-                      <div className={styles.confirmedDetail}>
-                        {sel.totalRows ?? '?'} rows · {sel.totalStitches ?? '?'} sts
-                      </div>
-                      <div className={styles.confirmedEdit}>Edit ›</div>
-                    </div>
-                  )}
-
-                  {/* Collapsed unconfirmed — show thumbnail */}
-                  {(!isChart || (!isExpanded && !sel.confirmed)) && (
-                    <div className={styles.pageImgWrap} onClick={isChart ? () => setExpandedIndex(i) : undefined}>
+                  {/* Thumbnail — always shown (charts never expand the card) */}
+                  {!isPhotoExpanded && (
+                    <div
+                      className={styles.pageImgWrap}
+                      onClick={((isChart || isPhoto) && !sel.confirmed) ? () => setExpandedIndex(i) : undefined}
+                    >
                       <img src={src} alt={`Page ${i + 1}`} className={styles.pageImg} />
-                      {isChart && (
+                      {isChart && !sel.confirmed && (
                         <div className={styles.tapToSetup}>Tap to set up chart</div>
+                      )}
+                      {isChart && sel.confirmed && (
+                        <div className={styles.confirmedOverlay}>✓ {sel.chartName}</div>
+                      )}
+                      {isPhoto && !sel.confirmed && (
+                        <div className={styles.tapToSetup}>Tap to crop photo</div>
+                      )}
+                      {isPhoto && sel.confirmed && (
+                        <div className={styles.confirmedOverlay}>✓ Photo</div>
                       )}
                     </div>
                   )}
@@ -189,6 +215,24 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
                 </div>
               )
             })}
+
+            {/* ── Confirmed chart crops — appear at the end ── */}
+            {selections.filter(s => s.role === 'chart' && s.confirmed).map((sel) => (
+              <div key={`crop-${sel.pageNumber}`} className={`${styles.pageCard} ${styles.pageChart}`}>
+                <div className={styles.pageBtns}>
+                  <span className={styles.chartCropLabel}>✓ Chart from page {sel.pageNumber}</span>
+                  <button className={styles.pageBtn} onClick={() => setExpandedIndex(sel.pageNumber - 1)} aria-label="Edit crop"><PencilIcon size={13}/></button>
+                </div>
+                <div className={styles.pageNum}>{sel.chartName}</div>
+                {sel.croppedBase64 && (
+                  <div className={styles.pageImgWrap}>
+                    <img src={sel.croppedBase64} alt={sel.chartName} className={styles.pageImg} />
+                  </div>
+                )}
+                <div className={styles.cropDetail}>{sel.totalRows} rows · {sel.totalStitches} sts</div>
+              </div>
+            ))}
+
           </div>
         )}
 
@@ -196,36 +240,50 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
           <div className={styles.footerInfo}>
             {selectedCharts.length} chart{selectedCharts.length !== 1 ? 's' : ''} selected
             {selectedCharts.filter(s => s.confirmed).length > 0 && ` · ${selectedCharts.filter(s => s.confirmed).length} confirmed`}
-            {selections.find(s => s.role === 'photo') ? ' · 1 photo' : ''}
+            {photoSel ? (photoSel.confirmed ? ' · 1 photo ✓' : ' · 1 photo — tap to crop') : ''}
           </div>
           <div className={styles.footerActions}>
             <button className={styles.cancelBtn} onClick={onCancel}>Cancel</button>
             <button
               className={styles.proceedBtn}
-              disabled={!allConfirmed}
-              onClick={() => onComplete(selections.filter(s => s.role !== null))}
+              disabled={!canComplete}
+              onClick={() => onComplete(selections.filter(s => s.role !== null), totalPages)}
             >
-              Done →
+              Done
             </button>
           </div>
         </div>
 
       </div>
+
+      {/* Chart setup overlay — full-screen, opens when a chart page is active */}
+      {expandedIndex !== null && selections[expandedIndex]?.role === 'chart' && pageImageDatas[expandedIndex] && (
+        <ChartSetupOverlay
+          src={pages[expandedIndex]}
+          imageData={pageImageDatas[expandedIndex]}
+          sel={selections[expandedIndex]}
+          pageNum={expandedIndex + 1}
+          onChange={patch => updateSel(expandedIndex, patch)}
+          onConfirm={() => confirmChart(expandedIndex)}
+          onBack={() => setExpandedIndex(null)}
+        />
+      )}
+
     </div>
   )
 }
 
 // ── Types ──────────────────────────────────────────────────────
 
-interface PixelBounds { x: number; y: number; w: number; h: number }
-interface NudgeOffsets { top: number; bottom: number; left: number; right: number }
+export interface PixelBounds { x: number; y: number; w: number; h: number }
+export interface NudgeOffsets { top: number; bottom: number; left: number; right: number }
 
 // ── detectChartBounds ─────────────────────────────────────────
 // Finds tight content bounds within a crop region using adaptive density
 // thresholding. Handles normal, inverted (dark-bg), colorwork, and no-stitch
 // charts by setting threshold at 25% of the peak row density in the region.
 
-function detectChartBounds(
+export function detectChartBounds(
   data: Uint8ClampedArray, srcWidth: number,
   ox: number, oy: number, w: number, h: number
 ): { x: number; y: number; x2: number; y2: number } {
@@ -251,10 +309,11 @@ function detectChartBounds(
     return c / w
   })
 
-  // Adaptive threshold: 25% of peak row density.
-  // This adapts to chart type (colorwork peak ~90%, B&W symbol peak ~40%).
+  // Adaptive threshold: 5% of peak row density.
+  // Low threshold so sparse symbol/dot rows are included even when a highlighted
+  // repeat column drives peak density very high (~10× the surrounding rows).
   const peakRow = Math.max(...rowDensities)
-  const rowThresh = Math.max(0.05, peakRow * 0.25)
+  const rowThresh = Math.max(0.02, peakRow * 0.05)
 
   let top = h - 1, bottom = 0
   for (let dy = 0; dy < h; dy++) { if (rowDensities[dy] >= rowThresh) { top = dy; break } }
@@ -268,7 +327,7 @@ function detectChartBounds(
   })
 
   const peakCol = Math.max(...colDensities)
-  const colThresh = Math.max(0.03, peakCol * 0.15)
+  const colThresh = Math.max(0.01, peakCol * 0.05)
 
   let left = w - 1, right = 0
   for (let dx = 0; dx < w; dx++) { if (colDensities[dx] >= colThresh) { left = dx; break } }
@@ -283,7 +342,7 @@ function detectChartBounds(
 // Applies nudge offsets to initial bounds, clamped to image extents.
 // Positive offset = expand that edge outward; negative = shrink inward.
 
-function computeBounds(
+export function computeBounds(
   initial: PixelBounds, offsets: NudgeOffsets, imgW: number, imgH: number
 ): PixelBounds {
   const x = Math.max(0, initial.x - offsets.left)
@@ -336,13 +395,19 @@ function CropRefinePanel({ imageData, initialBounds, chartName, onBack, onConfir
 
   return (
     <div className={styles.refinePanel}>
-      <div className={styles.refineTitle}>{chartName} — Fine-tune crop</div>
-      <div className={styles.refineHint}>Use + to expand each edge outward, − to shrink it inward</div>
+      <div className={styles.refineHeader}>
+        <span className={styles.refineTitle}>{chartName} — Fine-tune crop</span>
+        <span className={styles.refineHint}>+ expands edge outward, − shrinks inward</span>
+      </div>
 
-      <div className={styles.refineNudgeRow}>
-        <span className={styles.refineEdgeLabel}>Top</span>
-        <button className={styles.nudgeBtn} onClick={() => nudge('top', NUDGE_PX)}>▲ +</button>
-        <button className={styles.nudgeBtn} onClick={() => nudge('top', -NUDGE_PX)}>▼ −</button>
+      <div className={styles.nudgeGrid}>
+        {(['top','bottom','left','right'] as const).map(edge => (
+          <div key={edge} className={styles.nudgeGroup}>
+            <span className={styles.nudgeEdgeLabel}>{edge}</span>
+            <button className={styles.nudgeBtn} onClick={() => nudge(edge, NUDGE_PX)}>+</button>
+            <button className={styles.nudgeBtn} onClick={() => nudge(edge, -NUDGE_PX)}>−</button>
+          </div>
+        ))}
       </div>
 
       <div className={styles.refinePreviewWrap}>
@@ -352,53 +417,203 @@ function CropRefinePanel({ imageData, initialBounds, chartName, onBack, onConfir
         }
       </div>
 
-      <div className={styles.refineNudgeRow}>
-        <span className={styles.refineEdgeLabel}>Bottom</span>
-        <button className={styles.nudgeBtn} onClick={() => nudge('bottom', NUDGE_PX)}>▼ +</button>
-        <button className={styles.nudgeBtn} onClick={() => nudge('bottom', -NUDGE_PX)}>▲ −</button>
-      </div>
-
-      <div className={styles.refineNudgeRow}>
-        <span className={styles.refineEdgeLabel}>Left</span>
-        <button className={styles.nudgeBtn} onClick={() => nudge('left', NUDGE_PX)}>◄ +</button>
-        <button className={styles.nudgeBtn} onClick={() => nudge('left', -NUDGE_PX)}>► −</button>
-        <span className={styles.refineEdgeSep} />
-        <span className={styles.refineEdgeLabel}>Right</span>
-        <button className={styles.nudgeBtn} onClick={() => nudge('right', NUDGE_PX)}>► +</button>
-        <button className={styles.nudgeBtn} onClick={() => nudge('right', -NUDGE_PX)}>◄ −</button>
-      </div>
-
       <div className={styles.refineActions}>
-        <button className={styles.cancelBtn} onClick={onBack}>← Back</button>
+        <button className={styles.cancelBtn} onClick={onBack}><ChevronLeftIcon size={16}/></button>
         <button className={styles.confirmBtn} onClick={handleConfirm}>Confirm Chart ✓</button>
       </div>
     </div>
   )
 }
 
-// ── Chart Setup Panel ─────────────────────────────────────────
+// ── Photo Crop Panel ──────────────────────────────────────────
 
-interface ChartSetupPanelProps {
+interface PhotoCropPanelProps {
   src: string
   imageData: ImageData
-  sel: PageSelection
-  inputRef: (el: HTMLInputElement | null) => void
-  onChange: (patch: Partial<PageSelection>) => void
-  onConfirm: () => void
+  onConfirm: (croppedBase64: string) => void
+  onCancel: () => void
 }
 
-function ChartSetupPanel({ src, imageData, sel, inputRef, onChange, onConfirm }: ChartSetupPanelProps) {
+function PhotoCropPanel({ src, imageData, onConfirm, onCancel }: PhotoCropPanelProps) {
   const [crop, setCrop] = useState<Crop>()
-  const [phase, setPhase] = useState<'select' | 'refine'>('select')
-  const [detectedBounds, setDetectedBounds] = useState<PixelBounds | null>(null)
 
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget
     setCrop(centerCrop(
-      makeAspectCrop({ unit: '%', width: 80 }, width / height, width, height),
+      makeAspectCrop({ unit: '%', width: 55 }, 4 / 5, width, height),
       width, height
     ))
   }
+
+  const handleConfirm = () => {
+    if (!crop) return
+    const cropX = Math.round((crop.x / 100) * imageData.width)
+    const cropY = Math.round((crop.y / 100) * imageData.height)
+    const cropW = Math.round((crop.width / 100) * imageData.width)
+    const cropH = Math.round((crop.height / 100) * imageData.height)
+    if (cropW <= 0 || cropH <= 0) return
+    const canvas = document.createElement('canvas')
+    canvas.width = cropW
+    canvas.height = cropH
+    canvas.getContext('2d', { willReadFrequently: true })!
+      .putImageData(imageData, -cropX, -cropY, cropX, cropY, cropW, cropH)
+    onConfirm(canvas.toDataURL('image/jpeg', 0.85))
+  }
+
+  return (
+    <div className={styles.setupPanel}>
+      <div className={styles.setupSection}>
+        <div className={styles.setupLabel}>
+          Drag to crop the project photo (4:5 portrait)
+          {crop && <span className={styles.cropDone}> ✓ Ready</span>}
+        </div>
+        <ReactCrop crop={crop} onChange={(_c, pc) => setCrop(pc)} aspect={4 / 5} className={styles.cropWrap}>
+          <img src={src} alt="Page" className={styles.cropImg} onLoad={onImageLoad} />
+        </ReactCrop>
+      </div>
+      <div className={styles.refineActions}>
+        <button className={styles.cancelBtn} onClick={onCancel}><ChevronLeftIcon size={16}/></button>
+        <button className={styles.confirmBtn} disabled={!crop} onClick={handleConfirm}>
+          Confirm Photo ✓
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Chart Setup Overlay (full-screen) ────────────────────────
+
+interface ChartSetupOverlayProps {
+  src: string
+  imageData: ImageData
+  sel: PageSelection
+  pageNum: number
+  onChange: (patch: Partial<PageSelection>) => void
+  onConfirm: () => void
+  onBack: () => void
+}
+
+function ChartSetupOverlay({ src, imageData, sel, onChange, onConfirm, onBack }: ChartSetupOverlayProps) {
+  const [crop, setCrop] = useState<Crop>({ unit: '%', x: 10, y: 10, width: 80, height: 80 })
+  const [phase, setPhase] = useState<'select' | 'refine'>('select')
+  const [detectedBounds, setDetectedBounds] = useState<PixelBounds | null>(null)
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 })
+  const [zoom, setZoom] = useState(1)
+  const zoomRef = useRef(1)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const viewportRef = useRef<HTMLDivElement>(null)
+
+  // displayWidth: pixel width that shows the full page at zoom=1, scales linearly with zoom
+  const baseWidth = containerSize.w > 0 && containerSize.h > 0
+    ? Math.round(imageData.width * Math.min(
+        containerSize.w / imageData.width,
+        containerSize.h / imageData.height,
+      ))
+    : 0
+  const displayWidth = baseWidth > 0 ? Math.round(baseWidth * zoom) : 0
+
+  // Always-current refs so event handlers (registered once) can read latest values without stale closure
+  const baseWidthRef = useRef(0)
+  const cropRef = useRef<Crop | undefined>(undefined)
+  baseWidthRef.current = baseWidth
+  cropRef.current = crop
+
+  // Measure the left panel so we can compute a pixel display width that fits the full page
+  useLayoutEffect(() => {
+    const el = viewportRef.current
+    if (!el) return
+    const measure = () => setContainerSize({ w: el.clientWidth, h: el.clientHeight })
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  // After each zoom change, center the viewport on the crop selection midpoint
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => {
+    const el = viewportRef.current
+    if (!el || zoom <= 1) return
+    const bw = baseWidthRef.current
+    if (!bw) return
+    const c = cropRef.current
+    const dispW = bw * zoom
+    const dispH = dispW * (imageData.height / imageData.width)
+    const cx = c && c.width > 0 ? (c.x + c.width / 2) / 100 : 0.5
+    const cy = c && c.height > 0 ? (c.y + c.height / 2) / 100 : 0.5
+    el.scrollLeft = Math.max(0, cx * dispW - el.clientWidth / 2)
+    el.scrollTop  = Math.max(0, cy * dispH - el.clientHeight / 2)
+  }, [zoom])
+
+  useEffect(() => {
+    const overlay = overlayRef.current
+    const viewport = viewportRef.current
+    if (!overlay || !viewport) return
+    let lastTouchDist: number | null = null
+
+    const doZoom = (pixels: number) => {
+      const factor = Math.pow(1.003, -pixels)
+      const cur = zoomRef.current
+      const next = Math.max(1, Math.min(20, cur * factor))
+      if (Math.abs(next - cur) < 0.001) return
+      zoomRef.current = next
+      setZoom(next)
+    }
+
+    // All scroll on the chart panel is intercepted: plain scroll is suppressed,
+    // Ctrl+scroll zooms and centers on the crop selection.
+    const handleViewportWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (!e.ctrlKey && !e.metaKey) return
+      const raw = e.deltaMode === 1 ? e.deltaY * 30 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY
+      const clamped = Math.max(-200, Math.min(200, raw))
+      if (Math.abs(clamped) < 10) return
+      doZoom(clamped)
+    }
+
+    // Block browser page-zoom from Ctrl+scroll on any part of the overlay
+    const handleOverlayWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) e.preventDefault()
+    }
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2)
+        lastTouchDist = Math.hypot(
+          e.touches[1].clientX - e.touches[0].clientX,
+          e.touches[1].clientY - e.touches[0].clientY,
+        )
+    }
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2 || lastTouchDist === null) return
+      e.preventDefault()
+      const dist = Math.hypot(
+        e.touches[1].clientX - e.touches[0].clientX,
+        e.touches[1].clientY - e.touches[0].clientY,
+      )
+      const cur = zoomRef.current
+      const next = Math.max(1, Math.min(20, cur * (dist / lastTouchDist)))
+      if (Math.abs(next - cur) > 0.001) {
+        zoomRef.current = next
+        setZoom(next)
+      }
+      lastTouchDist = dist
+    }
+    const handleTouchEnd = () => { lastTouchDist = null }
+
+    viewport.addEventListener('wheel', handleViewportWheel, { passive: false })
+    overlay.addEventListener('wheel', handleOverlayWheel, { passive: false })
+    overlay.addEventListener('touchstart', handleTouchStart, { passive: true })
+    overlay.addEventListener('touchmove', handleTouchMove, { passive: false })
+    overlay.addEventListener('touchend', handleTouchEnd)
+    return () => {
+      viewport.removeEventListener('wheel', handleViewportWheel)
+      overlay.removeEventListener('wheel', handleOverlayWheel)
+      overlay.removeEventListener('touchstart', handleTouchStart)
+      overlay.removeEventListener('touchmove', handleTouchMove)
+      overlay.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [])
 
   const handlePreview = () => {
     if (!crop) return
@@ -423,81 +638,103 @@ function ChartSetupPanel({ src, imageData, sel, inputRef, onChange, onConfirm }:
     onConfirm()
   }
 
+  const canProceed = !!sel.chartName && !!sel.totalRows && sel.totalRows > 0
+    && !!sel.totalStitches && sel.totalStitches > 0
+
   if (phase === 'refine' && detectedBounds) {
     return (
-      <CropRefinePanel
-        imageData={imageData}
-        initialBounds={detectedBounds}
-        chartName={sel.chartName ?? 'Chart'}
-        onBack={() => setPhase('select')}
-        onConfirm={handleRefineConfirm}
-      />
+      <div className={styles.chartOverlay}>
+        <CropRefinePanel
+          imageData={imageData}
+          initialBounds={detectedBounds}
+          chartName={sel.chartName ?? 'Chart'}
+          onBack={() => setPhase('select')}
+          onConfirm={handleRefineConfirm}
+        />
+      </div>
     )
   }
 
-  const canProceed = !!sel.chartName && !!sel.totalRows && sel.totalRows > 0
-    && !!sel.totalStitches && sel.totalStitches > 0 && !!crop
-
   return (
-    <div className={styles.setupPanel}>
-      <div className={styles.setupSection}>
-        <div className={styles.setupLabel}>Chart name</div>
+    <div ref={overlayRef} className={styles.chartOverlay}>
+      <div className={styles.chartOverlayHeader}>
+        <button className={styles.cancelBtn} onClick={onBack}><ChevronLeftIcon size={16}/></button>
         <input
-          ref={inputRef}
-          className={styles.setupInput}
+          className={styles.headerNameInput}
           value={sel.chartName ?? ''}
           onChange={e => onChange({ chartName: e.target.value })}
-          placeholder="e.g. Body Chart, Sleeve Chart…"
+          placeholder="Chart name…"
+          autoFocus
         />
+        {crop
+          ? <span className={styles.cropStatusReady}>Chart crop ✓</span>
+          : <span className={styles.cropStatusEmpty}>Chart crop — draw a box on the left</span>
+        }
       </div>
 
-      <div className={styles.setupSection}>
-        <div className={styles.setupLabel}>
-          Drag to crop just the chart area
-          {crop && <span className={styles.cropDone}> ✓ Ready</span>}
-        </div>
-        <ReactCrop crop={crop} onChange={(_c, pc) => setCrop(pc)} className={styles.cropWrap}>
-          <img
-            src={src}
-            alt="Page"
-            className={styles.cropImg}
-            onLoad={onImageLoad}
-          />
-        </ReactCrop>
-      </div>
+      <div className={styles.chartOverlayBody}>
 
-      <div className={styles.setupRow}>
-        <div className={styles.setupSection}>
-          <div className={styles.setupLabel}>Total rows</div>
-          <input
-            className={styles.setupInputSmall}
-            type="number"
-            min={1}
-            value={sel.totalRows ?? ''}
-            onChange={e => onChange({ totalRows: parseInt(e.target.value) || undefined })}
-            placeholder="e.g. 28"
-          />
+        {/* Left: PDF page + crop tool.
+            displayWidth drives zoom: at zoom=1 the image fits the panel exactly (full page visible).
+            Ctrl+scroll zooms; viewport auto-centers on the crop selection midpoint. */}
+        <div ref={viewportRef} className={styles.chartOverlayLeft}>
+          <div style={displayWidth ? { width: displayWidth } : { width: '100%' }}>
+            <ReactCrop
+              crop={crop}
+              onChange={(_c, pc) => setCrop(pc)}
+              className={styles.cropWrap}
+            >
+              <img
+                src={src}
+                alt="Page"
+                className={styles.cropImg}
+              />
+            </ReactCrop>
+          </div>
         </div>
-        <div className={styles.setupSection}>
-          <div className={styles.setupLabel}>Stitches per row</div>
-          <input
-            className={styles.setupInputSmall}
-            type="number"
-            min={1}
-            value={sel.totalStitches ?? ''}
-            onChange={e => onChange({ totalStitches: parseInt(e.target.value) || undefined })}
-            placeholder="e.g. 14"
-          />
-        </div>
-      </div>
 
-      <button
-        className={styles.confirmBtn}
-        disabled={!canProceed}
-        onClick={handlePreview}
-      >
-        Preview &amp; Refine →
-      </button>
+        {/* Right: compact form panel */}
+        <div className={styles.chartOverlayRight}>
+          <div className={styles.setupRowCombined}>
+            <div className={styles.setupSection}>
+              <div className={styles.setupLabel}>Construction</div>
+              <div className={styles.toggleRow}>
+                <button type="button" className={`${styles.toggleBtn} ${!sel.workedInRound ? styles.toggleBtnActive : ''}`} onClick={() => onChange({ workedInRound: false })}>
+                  Flat
+                </button>
+                <button type="button" className={`${styles.toggleBtn} ${sel.workedInRound ? styles.toggleBtnActive : ''}`} onClick={() => onChange({ workedInRound: true })}>
+                  Round
+                </button>
+              </div>
+            </div>
+            <div className={styles.setupSection}>
+              <div className={styles.setupLabel}>Rows</div>
+              <input
+                className={styles.setupInputSmall}
+                type="number" min={1}
+                value={sel.totalRows ?? ''}
+                onChange={e => { const v = parseInt(e.target.value); onChange({ totalRows: isNaN(v) ? undefined : Math.max(1, v) }) }}
+                placeholder="—"
+              />
+            </div>
+            <div className={styles.setupSection}>
+              <div className={styles.setupLabel}>Sts / row</div>
+              <input
+                className={styles.setupInputSmall}
+                type="number" min={1}
+                value={sel.totalStitches ?? ''}
+                onChange={e => { const v = parseInt(e.target.value); onChange({ totalStitches: isNaN(v) ? undefined : Math.max(1, v) }) }}
+                placeholder="—"
+              />
+            </div>
+          </div>
+
+          <button className={styles.confirmBtn} style={{ marginTop: 'auto' }} disabled={!canProceed} onClick={handlePreview}>
+            Preview &amp; Refine <ChevronRightIcon size={12}/>
+          </button>
+        </div>
+
+      </div>
     </div>
   )
 }

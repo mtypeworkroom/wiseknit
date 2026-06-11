@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import TopBar from '../components/layout/TopBar'
 import SettingsAI from './SettingsAI'
+import { useThemeStore } from '../store/themeStore'
+import { GearIcon, AppearanceIcon, BellIcon, DownloadIcon } from '../components/icons'
 import styles from './Settings.module.css'
 
 type SubPage = null | 'ai' | 'appearance' | 'notifications' | 'data'
@@ -10,49 +12,28 @@ const MENU_ITEMS = [
     key: 'ai' as SubPage,
     label: 'AI Provider',
     sub: 'Gemini, Claude — configure your API key',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
-      </svg>
-    ),
+    icon: <GearIcon size={18} stroke="var(--accent)"/>,
     iconBg: 'var(--accent-lt)',
   },
   {
     key: 'appearance' as SubPage,
     label: 'Appearance',
     sub: 'Theme, chart size, font',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-mid)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="M12 2a10 10 0 0 1 0 20c-2.76 0-5-2.24-5-5 0-1.66.88-3 2-4l3-3"/>
-      </svg>
-    ),
+    icon: <AppearanceIcon size={18} stroke="var(--ink-mid)"/>,
     iconBg: 'var(--surface2)',
   },
   {
     key: 'notifications' as SubPage,
     label: 'Notifications',
     sub: 'Row reminders, cable alerts',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-      </svg>
-    ),
+    icon: <BellIcon size={18} stroke="var(--warn)"/>,
     iconBg: 'var(--warn-lt)',
   },
   {
     key: 'data' as SubPage,
     label: 'Backup & Data',
     sub: 'Export, backup, reset',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-mid)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="8 17 12 21 16 17"/>
-        <line x1="12" y1="12" x2="12" y2="21"/>
-        <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
-      </svg>
-    ),
+    icon: <DownloadIcon size={18} stroke="var(--ink-mid)"/>,
     iconBg: 'var(--surface2)',
   },
 ]
@@ -66,6 +47,7 @@ const SUB_TITLES: Record<string, string> = {
 
 export default function Settings() {
   const [subPage, setSubPage] = useState<SubPage>(null)
+  const { mode, setMode } = useThemeStore()
 
   const title = subPage ? SUB_TITLES[subPage] : 'Settings'
 
@@ -75,7 +57,7 @@ export default function Settings() {
         title={title}
         showBrand={!subPage}
         showBack={!!subPage}
-        backLabel="← Settings"
+        backLabel="Settings"
       />
 
       <div className="page-scroll">
@@ -126,7 +108,27 @@ export default function Settings() {
         {subPage === 'ai' && <SettingsAI />}
         {subPage === 'appearance' && (
           <div className={styles.page}>
-            <div className={styles.comingSoon}>Appearance settings — coming soon</div>
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>Theme</div>
+              <div className="card">
+                {(['light', 'dark', 'auto'] as const).map((opt, i, arr) => (
+                  <div
+                    key={opt}
+                    className={`card-row ${styles.menuRow}`}
+                    onClick={() => setMode(opt)}
+                    style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}
+                  >
+                    <div className={styles.rowLeft}>
+                      <div className={styles.rowLabel}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</div>
+                      <div className={styles.rowSub}>
+                        {opt === 'light' ? 'Always light' : opt === 'dark' ? 'Always dark' : 'Follow system setting'}
+                      </div>
+                    </div>
+                    {mode === opt && <span style={{ color: 'var(--accent)', fontSize: 18 }}>✓</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
         {subPage === 'notifications' && (

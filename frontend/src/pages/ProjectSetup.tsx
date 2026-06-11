@@ -1,14 +1,19 @@
-import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useProjectStore } from '../store/projectStore'
+import { useState, useRef, useMemo } from 'react'
+import { UploadIcon, FileCheckIcon, ChevronLeftIcon, ChevronRightIcon, PencilIcon } from '../components/icons'
+import { savePDF, saveImage } from '../store/imageStore'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useProjectStore, selectTagList } from '../store/projectStore'
 import type { Project, NeedleType, YarnWeight, ProjectChart } from '../types'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
+import ChartEditModal from '../components/import/ChartEditModal'
+import { CATEGORY_GROUPS } from '../data/categories'
 import styles from './ProjectSetup.module.css'
 
 interface SetupState {
   name: string
   category: string
   designer: string
+  tags: string[]
   totalRows: number
   chartRepeatStartRow: number
   yarnBrand: string
@@ -29,7 +34,7 @@ interface SetupState {
 }
 
 const INITIAL: SetupState = {
-  name: '', category: 'Sweater / Jumper', designer: '',
+  name: '', category: 'Sweaters', designer: '', tags: [],
   totalRows: 16, chartRepeatStartRow: 1,
   yarnBrand: '', yarnName: '', yarnWeight: '', colorway: '',
   fiberContent: '', dyeLot: '', skeins: '', yardsPerSkein: '', supplier: '',
@@ -37,17 +42,81 @@ const INITIAL: SetupState = {
   gaugeStitches: '', gaugeRows: '', notes: '',
 }
 
-const NEEDLE_SIZES = [2, 2.5, 3, 3.25, 3.5, 3.75, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 10, 12]
+const NEEDLE_SIZES: { label: string; mm: number }[] = [
+  { label: 'US 0000 (1.25mm)', mm: 1.25 },
+  { label: 'US 000 (1.5mm)',   mm: 1.5  },
+  { label: 'US 00 (1.75mm)',   mm: 1.75 },
+  { label: 'US 0 (2.0mm)',     mm: 2.0  },
+  { label: 'US 1 (2.25mm)',    mm: 2.25 },
+  { label: 'US 2 (2.75mm)',    mm: 2.75 },
+  { label: 'US 3 (3.25mm)',    mm: 3.25 },
+  { label: 'US 4 (3.5mm)',     mm: 3.5  },
+  { label: 'US 5 (3.75mm)',    mm: 3.75 },
+  { label: 'US 6 (4.0mm)',     mm: 4.0  },
+  { label: 'US 7 (4.5mm)',     mm: 4.5  },
+  { label: 'US 8 (5.0mm)',     mm: 5.0  },
+  { label: 'US 9 (5.5mm)',     mm: 5.5  },
+  { label: 'US 10 (6.0mm)',    mm: 6.0  },
+  { label: 'US 10.5 (6.5mm)', mm: 6.5  },
+  { label: 'US 11 (8.0mm)',    mm: 8.0  },
+  { label: 'US 13 (9.0mm)',    mm: 9.0  },
+  { label: 'US 15 (10.0mm)',   mm: 10.0 },
+  { label: 'US 17 (12.0mm)',   mm: 12.0 },
+  { label: 'US 19 (15.0mm)',   mm: 15.0 },
+  { label: 'US 35 (19.0mm)',   mm: 19.0 },
+  { label: 'US 50 (25.0mm)',   mm: 25.0 },
+]
 const STEPS = ['Basics', 'Yarn', 'Needles', 'Pattern', 'Review']
 
 export default function ProjectSetup() {
   const navigate = useNavigate()
-  const { addProject } = useProjectStore()
+  const { id: editId } = useParams<{ id: string }>()
+  const { projects, addProject, updateProject } = useProjectStore()
+  const tagList = selectTagList(projects)
+
+  const existingProject = useMemo(
+    () => editId ? projects.find(p => p.id === editId) : undefined,
+    [editId, projects]
+  )
+
+  const initialForm = useMemo<SetupState>(() => {
+    if (!existingProject) return INITIAL
+    const p = existingProject
+    return {
+      name: p.name ?? '',
+      category: p.category ?? 'Sweaters',
+      designer: p.designer ?? '',
+      tags: p.tags ?? [],
+      totalRows: p.totalRows ?? 16,
+      chartRepeatStartRow: p.chartRepeatStartRow ?? 1,
+      yarnBrand: p.yarn?.brand ?? '',
+      yarnName: p.yarn?.name ?? '',
+      yarnWeight: p.yarn?.weight ?? '',
+      colorway: p.yarn?.colorway ?? '',
+      fiberContent: p.yarn?.fiberContent ?? '',
+      dyeLot: p.yarn?.dyeLot ?? '',
+      skeins: p.yarn?.skeins?.toString() ?? '',
+      yardsPerSkein: p.yarn?.yardsPerSkein?.toString() ?? '',
+      supplier: p.yarn?.supplier ?? '',
+      needleSizeMm: p.needle?.sizeMm ?? 4,
+      needleType: p.needle?.type ?? 'circular-fixed',
+      cableLength: p.needle?.cableLength?.toString() ?? '',
+      gaugeStitches: p.gauge?.stitchesPer10cm?.toString() ?? '',
+      gaugeRows: p.gauge?.rowsPer10cm?.toString() ?? '',
+      notes: p.notes ?? '',
+    }
+  }, [existingProject])
+
   const [step, setStep] = useState(0)
-  const [form, setForm] = useState<SetupState>(INITIAL)
+  const [form, setForm] = useState<SetupState>(initialForm)
+  const [tagInput, setTagInput] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [showPagePicker, setShowPagePicker] = useState(false)
   const [pageSelections, setPageSelections] = useState<PageSelection[]>([])
+  const [pdfPageCount, setPdfPageCount] = useState(0)
+  const [chartEdits, setChartEdits] = useState<Record<string, Partial<ProjectChart>>>({})
+  const [deletedChartIds, setDeletedChartIds] = useState<Set<string>>(new Set())
+  const [editModalChart, setEditModalChart] = useState<ProjectChart | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const set = (key: keyof SetupState, value: any) =>
@@ -58,67 +127,110 @@ export default function ProjectSetup() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (pdfFile && file.name !== pdfFile.name) {
+      setPageSelections([])
+      setPdfPageCount(0)
+    }
     setPdfFile(file)
-    // Auto-fill name from filename if not set
     if (!form.name) {
       const name = file.name.replace('.pdf', '').replace(/[-_]/g, ' ')
       set('name', name.charAt(0).toUpperCase() + name.slice(1))
     }
   }
 
-  const handlePagePickerComplete = (selections: PageSelection[]) => {
+  const handlePagePickerComplete = (selections: PageSelection[], totalPages: number) => {
     setPageSelections(selections)
+    setPdfPageCount(totalPages)
     setShowPagePicker(false)
     nextStep()
   }
 
+  const commitPendingTagInput = () => {
+    if (!tagInput.trim()) return form.tags
+    const parts = tagInput.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+    const merged = [...new Set([...form.tags, ...parts])]
+    set('tags', merged)
+    setTagInput('')
+    return merged
+  }
+
   const handleSaveDraft = async () => {
-    const now = new Date().toISOString()
-    const draft: Project = {
-      id: `draft-${Date.now()}`,
+    const finalTags = commitPendingTagInput()
+    const draftFields = {
       name: form.name || 'Untitled Draft',
-      status: 'waiting',
+      status: 'waiting' as const,
       category: form.category,
-      currentRow: 1,
+      designer: form.designer || undefined,
+      tags: finalTags.length > 0 ? finalTags : undefined,
       totalRows: form.totalRows,
-      totalRowsWorked: 0,
       chartRepeatStartRow: form.chartRepeatStartRow,
-      createdAt: now,
-      updatedAt: now,
       notes: form.notes || undefined,
-      needle: form.needleSizeMm ? {
-        sizeMm: form.needleSizeMm,
-        type: form.needleType,
-      } : undefined,
+      needle: form.needleSizeMm ? { sizeMm: form.needleSizeMm, type: form.needleType } : undefined,
       yarn: (form.yarnBrand || form.yarnName) ? {
         brand: form.yarnBrand || undefined,
         name: form.yarnName || undefined,
       } : undefined,
     }
-    addProject(draft)
-    navigate('/dashboard')
+    if (existingProject) {
+      updateProject(existingProject.id, draftFields)
+      navigate(`/project/${existingProject.id}`)
+    } else {
+      const now = new Date().toISOString()
+      addProject({ id: `draft-${Date.now()}`, currentRow: 1, totalRowsWorked: 0, createdAt: now, updatedAt: now, ...draftFields })
+      navigate('/dashboard')
+    }
   }
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    const createTags = commitPendingTagInput()
     const now = new Date().toISOString()
+    const projectId = existingProject ? existingProject.id : `proj-${Date.now()}`
+
+    let pdfKey: string | undefined = existingProject?.pdfKey
+    let finalPageCount: number = existingProject?.pdfPageCount ?? pdfPageCount
+    if (pdfFile) {
+      pdfKey = `pdf-${projectId}`
+      finalPageCount = pdfPageCount
+      const ab = await pdfFile.arrayBuffer()
+      await savePDF(pdfKey, ab)
+    }
+
+    let photoKey: string | undefined = existingProject?.photoKey
+    const photoSel = pageSelections.find(s => s.role === 'photo' && s.croppedBase64)
+    if (photoSel?.croppedBase64) {
+      photoKey = `photo-${projectId}`
+      await saveImage(photoKey, photoSel.croppedBase64)
+    }
+
     const confirmedSelections = pageSelections.filter(s => s.role === 'chart' && s.confirmed)
-    const projectCharts: ProjectChart[] = confirmedSelections.map((sel, i) => ({
-      id: `chart-${Date.now()}-${i}`,
-      name: sel.chartName ?? `Chart ${i + 1}`,
-      totalRows: sel.totalRows ?? 0,
-      totalStitches: sel.totalStitches ?? 0,
-      repeatStartRow: 1,
-      workedInRound: false,
-      symbols: [],
-      flags: [],
-      imageBase64: sel.croppedBase64 || sel.imageBase64,
+    const projectCharts: ProjectChart[] = await Promise.all(confirmedSelections.map(async (sel, i) => {
+      const chartId = `chart-${Date.now()}-${i}`
+      const imageSrc = sel.croppedBase64 || sel.imageBase64
+      const imageKey = imageSrc ? `chart-img-${chartId}` : undefined
+      const pageKey = sel.imageBase64 ? `chart-page-${chartId}` : undefined
+      if (imageKey && imageSrc) await saveImage(imageKey, imageSrc)
+      if (pageKey && sel.imageBase64) await saveImage(pageKey, sel.imageBase64)
+      return {
+        id: chartId,
+        name: sel.chartName ?? `Chart ${i + 1}`,
+        totalRows: sel.totalRows ?? 0,
+        totalStitches: sel.totalStitches ?? 0,
+        repeatStartRow: 1,
+        workedInRound: sel.workedInRound ?? false,
+        symbols: [],
+        flags: [],
+        imageKey,
+        pageKey,
+      }
     }))
 
     const newProject: Project = {
-      id: `proj-${Date.now()}`,
+      id: projectId,
       name: form.name || 'Untitled Project',
       status: 'active',
       category: form.category,
+      designer: form.designer || undefined,
+      tags: createTags.length > 0 ? createTags : undefined,
       currentRow: 1,
       totalRows: projectCharts[0]?.totalRows || form.totalRows,
       totalRowsWorked: 0,
@@ -128,8 +240,10 @@ export default function ProjectSetup() {
       lastSessionAt: now.split('T')[0],
       startedAt: now.split('T')[0],
       notes: form.notes || undefined,
-      photo: undefined,
+      photoKey: photoKey,
       charts: projectCharts.length > 0 ? projectCharts : undefined,
+      pdfKey: pdfKey,
+      pdfPageCount: finalPageCount || undefined,
       needle: {
         sizeMm: form.needleSizeMm,
         type: form.needleType,
@@ -151,8 +265,25 @@ export default function ProjectSetup() {
         rowsPer10cm: parseFloat(form.gaugeRows),
       } : undefined,
     }
-    addProject(newProject)
-    navigate(`/project/${newProject.id}`)
+    if (existingProject) {
+      updateProject(existingProject.id, {
+        ...newProject,
+        id: existingProject.id,
+        createdAt: existingProject.createdAt,
+        currentRow: existingProject.currentRow,
+        totalRowsWorked: existingProject.totalRowsWorked,
+        charts: (() => {
+          const merged = (existingProject.charts ?? [])
+            .filter(c => !deletedChartIds.has(c.id))
+            .map(c => chartEdits[c.id] ? { ...c, ...chartEdits[c.id] } : c)
+          return projectCharts.length > 0 ? [...merged, ...projectCharts] : merged
+        })(),
+      })
+      navigate(`/project/${existingProject.id}`)
+    } else {
+      addProject(newProject)
+      navigate(`/project/${newProject.id}`)
+    }
   }
 
   return (
@@ -167,12 +298,21 @@ export default function ProjectSetup() {
         />
       )}
 
+      {/* Chart edit modal */}
+      {editModalChart && (
+        <ChartEditModal
+          chart={editModalChart}
+          onSave={(updates) => {
+            setChartEdits(x => ({ ...x, [editModalChart.id]: { ...(x[editModalChart.id] ?? {}), ...updates } }))
+            setEditModalChart(null)
+          }}
+          onClose={() => setEditModalChart(null)}
+        />
+      )}
+
       {/* Top bar */}
       <div className={styles.topbar}>
-        <button className={styles.tbBack} onClick={() => step === 0 ? navigate('/dashboard') : prevStep()}>
-          ← {step === 0 ? 'Dashboard' : 'Back'}
-        </button>
-        <span className={styles.tbTitle}>New Project — {STEPS[step]}</span>
+        <span className={styles.tbTitle}>{existingProject ? 'Edit Project' : 'New Project'} — {STEPS[step]}</span>
       </div>
 
       {/* Step indicators */}
@@ -199,7 +339,7 @@ export default function ProjectSetup() {
           {/* ── STEP 0: BASICS ── */}
           {step === 0 && (
             <div className={styles.stepPanel}>
-              <div className={styles.stepHeading}>Start a new project</div>
+              <div className={styles.stepHeading}>{existingProject ? 'Edit project details' : 'Start a new project'}</div>
               <div className={styles.stepSub}>Give it a name and choose a category</div>
               <div className={styles.card}>
                 <div className={styles.field}>
@@ -211,8 +351,10 @@ export default function ProjectSetup() {
                 <div className={styles.field}>
                   <label className={styles.fieldLabel}>Category</label>
                   <select className={styles.select} value={form.category} onChange={e => set('category', e.target.value)}>
-                    {['Sweater / Jumper','Cardigan','Hat','Mittens / Gloves','Socks','Cowl / Scarf','Shawl','Blanket','Other'].map(c => (
-                      <option key={c}>{c}</option>
+                    {CATEGORY_GROUPS.map(({ group, options }) => (
+                      <optgroup key={group} label={group}>
+                        {options.map(o => <option key={o} value={o}>{o}</option>)}
+                      </optgroup>
                     ))}
                   </select>
                 </div>
@@ -222,6 +364,48 @@ export default function ProjectSetup() {
                     onChange={e => set('designer', e.target.value)}
                     placeholder="e.g. Audrey Borrego, self-designed…" />
                 </div>
+                <div className={styles.field}>
+                  <label className={styles.fieldLabel}>Tags <span className={styles.optional}>optional</span></label>
+                  {form.tags.length > 0 && (
+                    <div className={styles.tagEditRow} style={{ marginBottom: 6 }}>
+                      {form.tags.map(t => (
+                        <span key={t} className={styles.tagEditChip}>
+                          {t}
+                          <button type="button" className={styles.tagChipRemove}
+                            onClick={() => set('tags', form.tags.filter((x: string) => x !== t))}>×</button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {tagList.filter(t => !form.tags.includes(t)).length > 0 && (
+                    <div className={styles.tagPickerSection} style={{ marginBottom: 6 }}>
+                      <span className={styles.tagPickerLabel}>Existing:</span>
+                      {tagList.filter(t => !form.tags.includes(t)).map(t => (
+                        <button key={t} type="button" className={styles.tagPickerChip}
+                          onClick={() => set('tags', [...form.tags, t])}>
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <input
+                    className={styles.tagAddInput}
+                    value={tagInput}
+                    onChange={e => setTagInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        const parts = tagInput.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+                        const newTags = parts.filter(t => !form.tags.includes(t))
+                        if (newTags.length) set('tags', [...form.tags, ...newTags])
+                        setTagInput('')
+                      }
+                    }}
+                    placeholder="New tag — comma to add several"
+                    autoComplete="off"
+                    style={{ width: '100%' }}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -229,11 +413,15 @@ export default function ProjectSetup() {
           {/* ── STEP 3: PATTERN UPLOAD ── */}
           {step === 3 && (
             <div className={styles.stepPanel}>
-              <div className={styles.stepHeading}>Upload your pattern</div>
-              <div className={styles.stepSub}>Upload a PDF then select which pages contain charts</div>
+              <div className={styles.stepHeading}>Import PDF</div>
+              <div className={styles.stepSub}>
+                {existingProject?.charts?.length
+                  ? 'Add more charts or re-import the pattern PDF'
+                  : 'Upload your pattern PDF then mark which pages contain charts'}
+              </div>
 
-              {/* PDF Upload */}
-              <div className={styles.card}>
+              {/* Set up pattern — slim full-width bar */}
+              <div className={styles.patternImportBar}>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -242,65 +430,73 @@ export default function ProjectSetup() {
                   style={{ display: 'none' }}
                 />
 
-                {!pdfFile ? (
-                  <div className={styles.uploadZone} onClick={() => fileInputRef.current?.click()}>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--ink-light)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="17 8 12 3 7 8"/>
-                      <line x1="12" y1="3" x2="12" y2="15"/>
-                    </svg>
-                    <div className={styles.uploadTitle}>Tap to upload PDF</div>
-                    <div className={styles.uploadSub}>Your pattern file</div>
-                  </div>
+                {existingProject?.charts?.length && !pdfFile ? (
+                  <>
+                    <span className={styles.patternBarMsg}>Pattern PDF already imported</span>
+                    <button className={styles.reimportBtn} onClick={() => fileInputRef.current?.click()}>Re-import PDF</button>
+                  </>
+                ) : !pdfFile ? (
+                  <button className={styles.patternUploadBtn} onClick={() => fileInputRef.current?.click()}>
+                    <UploadIcon size={16}/>
+                    Upload pattern PDF
+                  </button>
                 ) : (
-                  <div className={styles.fileSelected}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <polyline points="14 2 14 8 20 8"/>
-                    </svg>
-                    <div className={styles.fileName}>{pdfFile.name}</div>
+                  <>
+                    <FileCheckIcon size={16} stroke="var(--ok)"/>
+                    <span className={styles.patternBarFileName}>{pdfFile.name}</span>
                     <button className={styles.changeFile} onClick={() => fileInputRef.current?.click()}>Change</button>
-                  </div>
+                    <div className={styles.patternBarSep} />
+                    {pageSelections.filter(s => s.role === 'chart').length === 0 ? (
+                      <button className={styles.selectPagesBtn} onClick={() => setShowPagePicker(true)}>Select pages</button>
+                    ) : (
+                      <button className={styles.selectPagesBtn} onClick={() => setShowPagePicker(true)}>
+                        {pageSelections.filter(s => s.role === 'chart').length} chart{pageSelections.filter(s => s.role === 'chart').length !== 1 ? 's' : ''} · Edit selection
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
 
-              {/* Chart page selection — only shown after PDF upload */}
-              {pdfFile && (
-                <div className={styles.card}>
-                  <div className={styles.cardTitle}>Chart Pages</div>
-                  {pageSelections.filter(s => s.role === 'chart').length === 0 ? (
-                    <div className={styles.noCharts}>
-                      <div className={styles.noChartsText}>Select which pages contain charts — AI will read them after setup</div>
-                      <button className={styles.selectPagesBtn} onClick={() => setShowPagePicker(true)}>
-                        Select Pages from PDF →
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      {pageSelections.filter(s => s.role === 'chart').map(s => (
-                        <div key={s.pageNumber} className={styles.chartRow}>
-                          <span className={styles.chartRowName}>{s.chartName ?? `Chart (p.${s.pageNumber})`}</span>
-                          <span className={styles.chartRowPage}>Page {s.pageNumber}</span>
-                        </div>
-                      ))}
-                      {pageSelections.find(s => s.role === 'photo') && (
-                        <div className={styles.chartRow}>
-                          <span className={styles.chartRowName} style={{ color: 'var(--warn)' }}>Project photo selected</span>
-                          <span className={styles.chartRowPage}>Page {pageSelections.find(s => s.role === 'photo')?.pageNumber}</span>
-                        </div>
-                      )}
-                      <div className={styles.parseNote}>
-                        AI will parse {pageSelections.filter(s => s.role === 'chart').length} chart{pageSelections.filter(s => s.role === 'chart').length !== 1 ? 's' : ''} after you tap Start Knitting
+              {/* Charts list */}
+              <div className={styles.card}>
+                <div className={styles.cardTitle}>Charts</div>
+
+                {existingProject?.charts && existingProject.charts.length > 0 && existingProject.charts
+                  .filter(c => !deletedChartIds.has(c.id))
+                  .map((chart) => {
+                    const edits = chartEdits[chart.id] ?? {}
+                    const displayName = edits.name ?? chart.name
+                    const displayRows = edits.totalRows ?? chart.totalRows
+                    const displaySts = edits.totalStitches ?? chart.totalStitches
+                    return (
+                      <div key={chart.id} className={styles.chartRow}>
+                        <span className={styles.chartRowName}>{displayName}</span>
+                        <span className={styles.chartRowPage}>{displayRows} rows · {displaySts} sts</span>
+                        <button className={styles.chartEditBtn} onClick={() => setEditModalChart({ ...chart, ...edits })} aria-label="Edit chart"><PencilIcon size={13}/></button>
+                        <button className={styles.chartDeleteBtn} onClick={() => setDeletedChartIds(s => new Set([...s, chart.id]))}>✕</button>
                       </div>
-                      <button className={styles.selectPagesBtn} onClick={() => setShowPagePicker(true)}>
-                        Change Selection
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
+                    )
+                  })
+                }
 
+                {pageSelections.filter(s => s.role === 'chart').map(s => (
+                  <div key={s.pageNumber} className={styles.chartRow}>
+                    <span className={styles.chartRowName}>{s.chartName ?? `Chart (p.${s.pageNumber})`}</span>
+                    <span className={styles.chartRowPage}>p.{s.pageNumber} · new</span>
+                  </div>
+                ))}
 
+                {pageSelections.find(s => s.role === 'photo') && (
+                  <div className={styles.chartRow}>
+                    <span className={styles.chartRowName} style={{ color: 'var(--warn)' }}>Project photo</span>
+                    <span className={styles.chartRowPage}>p.{pageSelections.find(s => s.role === 'photo')?.pageNumber}</span>
+                  </div>
+                )}
+
+                {(!existingProject?.charts?.length && pageSelections.filter(s => s.role === 'chart').length === 0) && (
+                  <div className={styles.noChartsText} style={{ padding: '8px 0' }}>No charts yet — upload a PDF to get started</div>
+                )}
+              </div>
             </div>
           )}
 
@@ -370,14 +566,18 @@ export default function ProjectSetup() {
               <div className={styles.stepSub}>Used for project details and compatibility checks</div>
               <div className={styles.card}>
                 <div className={styles.cardTitle}>Needle Size</div>
-                <div className={styles.pillRow}>
-                  {NEEDLE_SIZES.map(size => (
-                    <button key={size}
-                      className={`${styles.pill} ${form.needleSizeMm === size ? styles.pillSel : ''}`}
-                      onClick={() => set('needleSizeMm', size)}>
-                      {size}mm
-                    </button>
-                  ))}
+                <div className={styles.fieldRow}>
+                  <div className={styles.field}>
+                    <select
+                      className={styles.select}
+                      value={form.needleSizeMm}
+                      onChange={e => set('needleSizeMm', parseFloat(e.target.value))}
+                    >
+                      {NEEDLE_SIZES.map(n => (
+                        <option key={n.mm} value={n.mm}>{n.label}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className={styles.fieldRow} style={{ marginTop: 12 }}>
                   <div className={styles.field}>
@@ -404,11 +604,11 @@ export default function ProjectSetup() {
                 <div className={styles.fieldRow}>
                   <div className={styles.field}>
                     <label className={styles.fieldLabel}>Stitches per 10cm</label>
-                    <input className={styles.input} type="number" value={form.gaugeStitches} onChange={e => set('gaugeStitches', e.target.value)} placeholder="22" />
+                    <input className={styles.input} type="number" value={form.gaugeStitches} onChange={e => set('gaugeStitches', e.target.value)} placeholder="e.g. 22" />
                   </div>
                   <div className={styles.field}>
                     <label className={styles.fieldLabel}>Rows per 10cm</label>
-                    <input className={styles.input} type="number" value={form.gaugeRows} onChange={e => set('gaugeRows', e.target.value)} placeholder="28" />
+                    <input className={styles.input} type="number" value={form.gaugeRows} onChange={e => set('gaugeRows', e.target.value)} placeholder="e.g. 28" />
                   </div>
                 </div>
               </div>
@@ -438,12 +638,12 @@ export default function ProjectSetup() {
                     ? pageSelections.filter(s => s.role === 'chart').map(s => s.chartName ?? `p.${s.pageNumber}`).join(', ')
                     : `${form.totalRows} rows (manual)`, s: 3 },
                   { label: 'Yarn', val: form.yarnBrand || form.yarnName ? `${form.yarnBrand} ${form.yarnName}`.trim() : 'Not set', s: 1 },
-                  { label: 'Needle', val: `${form.needleSizeMm}mm · ${form.needleType.replace(/-/g, ' ')}`, s: 2 },
+                  { label: 'Needle', val: `${NEEDLE_SIZES.find(n => n.mm === form.needleSizeMm)?.label ?? `${form.needleSizeMm}mm`} · ${form.needleType.replace(/-/g, ' ')}`, s: 2 },
                 ].map(({ label, val, s }) => (
                   <div key={label} className={styles.reviewRow}>
                     <span className={styles.reviewLabel}>{label}</span>
                     <span className={styles.reviewVal}>{val}</span>
-                    <button className={styles.reviewEdit} onClick={() => setStep(s)}>Edit</button>
+                    <button className={styles.reviewEdit} onClick={() => setStep(s)} aria-label="Edit"><PencilIcon size={13}/></button>
                   </div>
                 ))}
               </div>
@@ -455,19 +655,23 @@ export default function ProjectSetup() {
 
       {/* Bottom bar */}
       <div className={styles.bottomBar}>
-        {step < 4 && step !== 3 && (
-          <button className={styles.skipBtn} onClick={nextStep}>Skip for now</button>
+        {step > 0 && (
+          <button className={styles.btnBack} onClick={prevStep} aria-label="Back"><ChevronLeftIcon size={16}/></button>
         )}
+        <button className={styles.btnDiscard} onClick={() => navigate('/dashboard')}>Discard & Exit</button>
+        {step < 4 && step !== 3 && (
+          <button className={styles.skipBtn} onClick={nextStep}>Skip</button>
+        )}
+        <div className={styles.spacer} />
         {form.name && (
           <button className={styles.draftBtn} onClick={handleSaveDraft}>Save Draft</button>
         )}
-        <div className={styles.spacer} />
         {step < 4
           ? <button className={styles.btnPrimary} onClick={nextStep} disabled={step === 0 && !form.name}>
-              Next →
+              <ChevronRightIcon size={16}/>
             </button>
           : <button className={styles.btnPrimary} onClick={handleCreate} disabled={!form.name}>
-              Start Knitting →
+              Start Knitting
             </button>
         }
       </div>

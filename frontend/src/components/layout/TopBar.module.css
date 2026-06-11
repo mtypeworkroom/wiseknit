@@ -4,13 +4,19 @@
   height: 44px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+  z-index: 100;
+  box-shadow: var(--shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.topbarInner {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  height: 100%;
   display: flex;
   align-items: center;
   padding: 0 16px;
   gap: 10px;
-  z-index: 100;
-  box-shadow: var(--shadow);
-  transition: background 0.3s, border-color 0.3s;
 }
 
 .brandWrap {
@@ -22,11 +28,12 @@
 }
 
 .logo {
-  width: 28px;
-  height: 28px;
-  border-radius: 5px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   flex-shrink: 0;
   object-fit: contain;
+  display: block;
 }
 
 .brandText {
@@ -48,7 +55,7 @@
 
 .backBtn {
   height: 28px;
-  padding: 0 10px;
+  padding: 0 7px;
   border: 1px solid var(--border);
   border-radius: 3px;
   background: transparent;
@@ -76,34 +83,3 @@
   flex-shrink: 0;
 }
 
-.themeToggle {
-  width: 44px;
-  height: 24px;
-  border-radius: 12px;
-  background: var(--border);
-  border: none;
-  cursor: pointer;
-  position: relative;
-  transition: background 0.3s;
-}
-
-.themeToggle::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--surface);
-  transition: transform 0.25s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-[data-theme="dark"] .themeToggle {
-  background: var(--accent);
-}
-
-[data-theme="dark"] .themeToggle::after {
-  transform: translateX(20px);
-}

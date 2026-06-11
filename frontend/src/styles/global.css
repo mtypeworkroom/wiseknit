@@ -8,6 +8,14 @@
 :root {
   --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
+  --page-width: 700px;
+}
+
+/* Content rail — constrain content width while backgrounds stay full-bleed */
+.page-rail {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* ── LIGHT THEME ── */
@@ -18,7 +26,7 @@
   --border:       #BDC5CE;
   --ink:          #0D1B2A;
   --ink-mid:      #3A5A6A;
-  --ink-light:    #7A9AAA;
+  --ink-light:    #26455A;
   --accent:       #0A8AAA;
   --accent-lt:    #CCF0FA;
   --accent-text:  #086A88;
@@ -33,7 +41,7 @@
   --shadow:       0 2px 12px rgba(13,27,42,0.12);
     --hero-bg:      #C8D0D8;
     --hero-ink:     rgba(13,27,42,0.90);
-    --hero-mid:     rgba(13,27,42,0.55);
+    --hero-mid:     rgba(13,27,42,0.88);
     --hero-border:  rgba(13,27,42,0.12);
   --progress-track: #BDC5CE;
   --row-hl:       #FFF0A0;
@@ -53,7 +61,7 @@
   --border:       #1E3448;
   --ink:          #E8E8E4;
   --ink-mid:      #8AABB8;
-  --ink-light:    #4A6878;
+  --ink-light:    #9BBAC8;
   --accent:       #3CCFEF;
   --accent-lt:    #0A2535;
   --accent-text:  #3CCFEF;
@@ -68,7 +76,7 @@
   --shadow:       0 2px 20px rgba(0,0,0,0.5);
   --hero-bg:      #080F18;
   --hero-ink:     rgba(232,232,228,0.95);
-  --hero-mid:     rgba(232,232,228,0.45);
+  --hero-mid:     rgba(232,232,228,0.88);
   --hero-border:  rgba(60,207,239,0.12);
   --progress-track: #1E3448;
   --row-hl:       #1A3A48;
@@ -121,7 +129,7 @@ body {
 
 .page-scroll {
   position: fixed;
-  inset: 44px 0 60px 0;
+  inset: 44px 0 48px 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -130,6 +138,14 @@ body {
 
 .page-scroll.no-bottom-nav {
   inset: 44px 0 0 0;
+}
+
+.page-scroll.no-top-nav {
+  inset: 0 0 48px 0;
+}
+
+.page-scroll.no-top-nav.no-bottom-nav {
+  inset: 0;
 }
 
 /* ─────────────────────────────────────
@@ -141,7 +157,7 @@ body {
 }
 
 .section-label {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;

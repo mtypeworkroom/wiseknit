@@ -46,6 +46,58 @@
   text-overflow: ellipsis;
 }
 
+.tbChip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  height: 30px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 6px;
+}
+.tbChipLabel {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-light);
+}
+.tbChipNum {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1;
+}
+.tbChipSep {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-mid);
+}
+.tbChipSub {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-mid);
+}
+.tbRepeatNum {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-left: -2px;
+}
+.tbRepeatIcon {
+  display: block;
+  flex-shrink: 0;
+  width: 12px;
+  height: 16px;
+  color: var(--accent);
+  margin-left: 5px;
+}
+
 .tbRight {
   display: flex;
   align-items: center;
@@ -86,7 +138,7 @@
   position: fixed;
   top: 44px;
   right: 0;
-  bottom: 68px;
+  bottom: 70px;
   width: 272px;
   background: var(--panel-bg, var(--surface));
   border-left: 1px solid var(--border);
@@ -100,7 +152,7 @@
 .panelOpen { transform: translateX(0); }
 
 .panelTitle {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -128,14 +180,14 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   flex-shrink: 0;
   background: var(--surface);
 }
 .symPurl { background: var(--ink); color: var(--bg); }
 .symYo { color: var(--col-yo, var(--accent)); font-weight: 700; font-size: 13px; }
-.symDec { color: var(--col-dec, var(--danger)); font-size: 9px; font-weight: 600; }
-.symCable { color: var(--col-cable, var(--accent)); font-size: 9px; font-weight: 700; }
+.symDec { color: var(--col-dec, var(--danger)); font-size: 11px; font-weight: 600; }
+.symCable { color: var(--col-cable, var(--accent)); font-size: 11px; font-weight: 700; }
 
 .sectionItem {
   display: flex;
@@ -171,6 +223,31 @@
 }
 .toolBtn:hover { background: var(--accent-lt); color: var(--accent-text); border-color: var(--accent); }
 
+.zoomRow {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.zoomBtn {
+  flex: 1;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink-mid);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.zoomBtn:hover { border-color: var(--accent); color: var(--accent); }
+.zoomBtnActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
 .toolProgress { margin-top: 8px; }
 .toolProgRow {
   display: flex;
@@ -180,62 +257,66 @@
   margin-bottom: 6px;
 }
 
-/* ── BOTTOM BAR ── */
+/* ── CHART SELECTOR ── */
+.chartSelector {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.chartTab {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ink-mid);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.chartTabActive {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+/* ── BOTTOM BAR — instructions left, nav right ── */
 .bottomBar {
-  height: 68px;
-  background: var(--bottom-bg);
+  background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex;
-  align-items: flex-end;
-  padding: 0 16px 10px;
+  align-items: center;
+  padding: 4px 12px;
   gap: 10px;
   flex-shrink: 0;
   z-index: 100;
+  min-height: 40px;
 }
 
-.rowInfo {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-  flex-shrink: 0;
-  align-self: flex-end;
-}
-
-.rowLabel {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-}
-
-.rowNum {
-  font-family: var(--font-mono);
-  font-size: 22px;
-  font-weight: 400;
-  color: var(--ink);
-  line-height: 1;
-}
-
-.rowOf {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--ink-mid);
-}
-
-.separator {
-  width: 1px;
-  align-self: stretch;
-  background: var(--border);
-  flex-shrink: 0;
-}
-
-.instrWrap {
+/* Instructions: flex:1, wraps when long */
+.instrContent {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Buttons: always on the right, never wrap */
+.instrNav {
   display: flex;
   align-items: center;
-  gap: 8px;
-  overflow: hidden;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .rowSidePill {
@@ -261,9 +342,7 @@
   font-size: 12px;
   font-family: var(--font-sans);
   color: var(--ink-mid);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .aiPill {
@@ -285,29 +364,31 @@
 }
 
 .splitMain {
-  height: 40px;
+  height: 24px;
   border: 1px solid var(--border);
   border-right: none;
   border-radius: 4px 0 0 4px;
   background: var(--surface2);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
-  padding: 0 12px;
+  padding: 0 6px;
   transition: all 0.15s;
+  display: flex; align-items: center; gap: 4px;
 }
 .splitMain:hover { border-color: var(--accent); color: var(--accent); }
+.splitMain:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
 
 .splitArrow {
-  height: 40px;
-  width: 28px;
+  height: 24px;
+  width: 20px;
   border: 1px solid var(--border);
   border-radius: 0 4px 4px 0;
   background: var(--surface2);
   color: var(--ink-mid);
-  font-size: 11px;
+  font-size: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -352,18 +433,19 @@
 .backMenuItem:last-child:hover { background: var(--danger-lt); }
 
 .nextBtn {
-  height: 40px;
+  height: 24px;
   background: var(--accent);
   color: var(--bg);
   border: none;
   border-radius: 4px;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  padding: 0 20px;
+  padding: 0 8px;
   flex-shrink: 0;
   transition: opacity 0.15s;
+  display: flex; align-items: center; gap: 4px;
 }
 .nextBtn:hover { opacity: 0.88; }
 

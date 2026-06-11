@@ -10,7 +10,7 @@
 .section { display: flex; flex-direction: column; gap: 8px; }
 
 .sectionTitle {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -46,7 +46,7 @@
 }
 
 .freeBadge {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;

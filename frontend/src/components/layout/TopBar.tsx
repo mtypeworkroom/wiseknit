@@ -1,6 +1,8 @@
-import { useThemeStore } from '../../store/themeStore'
 import { useNavigate } from 'react-router-dom'
-import logo from '../../assets/mtype_workroom_logo.svg'
+import logoDark from '../../assets/mtype_workroom_logo_circle_512.svg'
+import logoLight from '../../assets/mtype_workroom_logo_circle_512_light.svg'
+import { useThemeStore } from '../../store/themeStore'
+import { ChevronLeftIcon } from '../icons'
 import styles from './TopBar.module.css'
 
 interface TopBarProps {
@@ -16,12 +18,14 @@ export default function TopBar({
   title = 'WiseKnit',
   showBrand = false,
   showBack = false,
-  backLabel = '← Back',
+  backLabel = 'Back',
   backTo,
   rightContent,
 }: TopBarProps) {
-  const { toggle } = useThemeStore()
   const navigate = useNavigate()
+  const { mode } = useThemeStore()
+  const isLight = mode === 'light' || (mode === 'auto' && !window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const logo = isLight ? logoLight : logoDark
 
   const handleBack = () => {
     if (backTo) navigate(backTo)
@@ -30,24 +34,27 @@ export default function TopBar({
 
   return (
     <div className={styles.topbar}>
-      {showBack && (
-        <button className={styles.backBtn} onClick={handleBack}>
-          {backLabel}
-        </button>
-      )}
+      <div className={styles.topbarInner}>
+        {showBack && (
+          <button className={styles.backBtn} onClick={handleBack} aria-label={backLabel}>
+            <ChevronLeftIcon size={16}/>
+          </button>
+        )}
 
-      {showBrand ? (
-        <div className={styles.brandWrap}>
-          <img src={logo} alt="MType Workroom" className={styles.logo} />
-          <span className={styles.brandText}>{title}</span>
-        </div>
-      ) : (
-        <span className={styles.title}>{title}</span>
-      )}
+        {showBrand ? (
+          <div className={styles.brandWrap}>
+            <img src={logo} alt="MType Workroom" className={styles.logo} />
+            <span className={styles.brandText}>{title}</span>
+          </div>
+        ) : (
+          <span className={styles.title}>{title}</span>
+        )}
 
-      <div className={styles.right}>
-        {rightContent}
-        <button className={styles.themeToggle} onClick={toggle} aria-label="Toggle theme" />
+        {rightContent && (
+          <div className={styles.right}>
+            {rightContent}
+          </div>
+        )}
       </div>
     </div>
   )
