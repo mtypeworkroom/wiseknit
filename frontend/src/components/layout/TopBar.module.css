@@ -27,12 +27,16 @@
   min-width: 0;
 }
 
-.logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
+.owlPill {
+  background: #0D1B2A;
+  border-radius: 100px;
+  padding: 3px 6px;
   flex-shrink: 0;
-  object-fit: contain;
+  display: flex;
+  align-items: center;
+}
+
+.owlIcon {
   display: block;
 }
 

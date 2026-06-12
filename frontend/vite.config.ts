@@ -11,7 +11,7 @@ export default defineConfig({
       manifest: {
         name: 'WiseKnit',
         short_name: 'WiseKnit',
-        description: 'Knit smarter, not harder — by MType Workroom',
+        description: 'Knit smarter, not harder — your AI-powered knitting companion',
         theme_color: '#0D1B2A',
         background_color: '#0D1B2A',
         display: 'standalone',
@@ -19,16 +19,10 @@ export default defineConfig({
         start_url: '/dashboard',
         icons: [
           {
-            src: '/icons/mtype_workroom_logo_192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable',
-          },
-          {
-            src: '/icons/mtype_workroom_logo_512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable',
+            src: '/icons/wiseknit-owl.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any',
           },
         ],
       },

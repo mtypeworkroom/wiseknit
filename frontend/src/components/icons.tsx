@@ -2,6 +2,28 @@ import type { SVGProps } from 'react'
 
 type IconProps = { size?: number } & SVGProps<SVGSVGElement>
 
+// ─── WiseKnit Owl ─────────────────────────────────────────────────────────────
+
+export function OwlIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="-1 -1 26 26" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <defs>
+        <pattern id="owlBodyFill" patternUnits="userSpaceOnUse" width="2.5" height="1.25">
+          <rect width="2.5" height="1.25" fill="#0f2d4a"/>
+          <path fill="#5de8ff" stroke="none" d="M 1.25,1.25 C 1.25,0.5 1.75,0 2.5,0 2.5,0.75 2,1.25 1.25,1.25 Z M 0,0 C 0,0.75 0.5,1.25 1.25,1.25 1.25,0.5 0.75,0 0,0 Z"/>
+        </pattern>
+      </defs>
+      <g transform="translate(-0.5529225,0.22473291)">
+        <path d="M 12.553,22.680802 l -9.177242,0.052530 c -1,0 -1.0008083,-2.012848 -0.8444445,-5.416162 C 2.3917308,11.835411 6.5238675,9.4432116 5.8191919,8.8636363 4.2544323,7.3113232 6.3385532,2.9113353 7.2121212,0.81717172 L 12.553,3.1909091 L 17.893724,0.81717172 C 18.767292,2.9113353 20.851413,7.3113232 19.286653,8.8636363 C 18.581978,9.4432116 22.714114,11.835411 22.574532,17.317170 C 22.730895,20.720484 22.730087,22.733332 21.730087,22.733332 Z" fill="url(#owlBodyFill)" stroke="#e8c84a" strokeWidth="1.8"/>
+        <path d="M 3.375758,22.733332 c -1,0 -1.0008083,-2.012848 -0.8444445,-5.416162 C 2.3917308,11.835411 6.5238675,9.4432116 5.8191919,8.8636363 L 6.1252529,9.2666663 C 9.3558103,13.436729 7.3716825,20.650587 3.5747478,22.626262 Z" fill="#e8c84a"/>
+        <path d="M 21.730087,22.733332 C 22.730087,22.733332 22.730895,20.720484 22.574532,17.317170 C 22.714114,11.835411 18.581978,9.4432116 19.286653,8.8636363 L 18.980591,9.2666663 C 15.750034,13.436729 17.734162,20.650587 21.531096,22.626262 Z" fill="#e8c84a"/>
+        <path d="M 6.1252529,9.2666663 C 9.3558103,13.436729 7.3716825,20.650587 3.5747478,22.626262" stroke="#e8c84a" strokeWidth="1.8"/>
+        <path d="M 18.980591,9.2666663 C 15.750034,13.436729 17.734162,20.650587 21.531096,22.626262" stroke="#e8c84a" strokeWidth="1.8"/>
+      </g>
+    </svg>
+  )
+}
+
 // ─── Chart Grid ──────────────────────────────────────────────────────────────
 
 export function ChartGridIcon({ size = 16, ...props }: IconProps) {
@@ -162,12 +184,37 @@ export function ImageIcon({ size, ...props }: IconProps) {
   )
 }
 
+export function PlusIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" {...props}>
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  )
+}
+
+export function MinusIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" {...props}>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  )
+}
+
 export function UploadIcon({ size, ...props }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
       <polyline points="17 8 12 3 7 8"/>
       <line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+  )
+}
+
+export function CropIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M6.13 1L6 16a2 2 0 0 0 2 2h15" />
+      <path d="M1 6.13L16 6a2 2 0 0 1 2 2v15" />
     </svg>
   )
 }
@@ -321,6 +368,34 @@ export function RowMarkerIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 10 14" width="8" height="12" {...props}>
       <polygon points="0,0 10,7 0,14" fill="#1A6A8A"/>
+    </svg>
+  )
+}
+
+export function ClockIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg viewBox="0 0 16 16" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" {...props}>
+      <circle cx="8" cy="8" r="6" />
+      <path d="M8 5 L8 8 L10.5 9.5" />
+    </svg>
+  )
+}
+
+export function BracketIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg viewBox="0 0 16 16" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" {...props}>
+      <path d="M5 2 L2 2 L2 5" />
+      <path d="M11 2 L14 2 L14 5" />
+      <path d="M2 11 L2 14 L5 14" />
+      <path d="M14 11 L14 14 L11 14" />
+    </svg>
+  )
+}
+
+export function StepsIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <polyline points="4,20 4,16 8,16 8,12 12,12 12,8 16,8 16,4 20,4" />
     </svg>
   )
 }

@@ -1,4 +1,4 @@
-.overlay {
+﻿.overlay {
   position: fixed;
   inset: 0;
   z-index: 2000;
@@ -124,7 +124,7 @@
   user-select: none;
 }
 
-/* Saved highlight rect — colors set inline per-rect */
+/* Saved highlight rect â€” colors set inline per-rect */
 .readingRect {
   position: absolute;
   pointer-events: none;
@@ -143,7 +143,7 @@
   to   { box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.75); }
 }
 
-/* Live preview while dragging — colors set inline from current selection */
+/* Live preview while dragging â€” colors set inline from current selection */
 .rectPreview {
   position: absolute;
   pointer-events: none;
@@ -286,4 +286,42 @@
   color: rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
   letter-spacing: 0.03em;
+}
+
+/* ── Row bracket ── */
+.bracket {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.bCorner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2.5px solid var(--accent);
+  border-radius: 1px;
+  pointer-events: none;
+}
+.bCornerTL { top: 0; left: 0; border-right: none; border-bottom: none; }
+.bCornerTR { top: 0; right: 0; border-left: none; border-bottom: none; }
+.bCornerBL { bottom: 0; left: 0; border-right: none; border-top: none; }
+.bCornerBR { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+.bEdge { position: absolute; z-index: 1; }
+.bEdgeN { top: -5px; left: 14px; right: 14px; height: 14px; cursor: ns-resize; }
+.bEdgeS { bottom: -5px; left: 14px; right: 14px; height: 14px; cursor: ns-resize; }
+.bEdgeW { left: -5px; top: 14px; bottom: 14px; width: 14px; cursor: ew-resize; }
+.bEdgeE { right: -5px; top: 14px; bottom: 14px; width: 14px; cursor: ew-resize; }
+
+.bBody {
+  position: absolute;
+  inset: 8px;
+  cursor: move;
+}
+
+.tagBtnActive {
+  background: var(--accent-lt) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
 }

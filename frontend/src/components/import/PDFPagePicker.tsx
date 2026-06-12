@@ -153,11 +153,9 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
               const sel = selections[i]
               const isChart = sel.role === 'chart'
               const isPhoto = sel.role === 'photo'
-              // Photos expand inline; charts open the full-screen overlay
-              const isPhotoExpanded = expandedIndex === i && isPhoto
 
               return (
-                <div key={i} ref={el => { pageCardRefs.current[i] = el }} className={`${styles.pageCard} ${isChart ? styles.pageChart : ''} ${isPhoto ? styles.pagePhoto : ''} ${isPhotoExpanded ? styles.pageExpanded : ''}`}>
+                <div key={i} ref={el => { pageCardRefs.current[i] = el }} className={`${styles.pageCard} ${isChart ? styles.pageChart : ''} ${isPhoto ? styles.pagePhoto : ''}`}>
 
                   <div className={styles.pageBtns}>
                     <button className={`${styles.pageBtn} ${isChart ? styles.pageBtnActive : ''}`} onClick={() => toggleRole(i, 'chart')}>
@@ -170,47 +168,24 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
 
                   <div className={styles.pageNum}>Page {i + 1}</div>
 
-                  {/* Photo crop panel — inline expand */}
-                  {isPhotoExpanded && pageImageDatas[i] && (
-                    <PhotoCropPanel
-                      src={src}
-                      imageData={pageImageDatas[i]}
-                      onConfirm={(croppedBase64) => {
-                        const updated = selections.map((s2, i2) =>
-                          i2 === i ? { ...s2, croppedBase64, confirmed: true } : s2
-                        )
-                        setSelections(updated)
-                        setExpandedIndex(null)
-                        const charts = updated.filter(s2 => s2.role === 'chart')
-                        if (charts.length === 0 || charts.every(s2 => s2.confirmed)) {
-                          onComplete(updated.filter(s2 => s2.role !== null), totalPages)
-                        }
-                      }}
-                      onCancel={() => setExpandedIndex(null)}
-                    />
-                  )}
-
-                  {/* Thumbnail — always shown (charts never expand the card) */}
-                  {!isPhotoExpanded && (
-                    <div
-                      className={styles.pageImgWrap}
-                      onClick={((isChart || isPhoto) && !sel.confirmed) ? () => setExpandedIndex(i) : undefined}
-                    >
-                      <img src={src} alt={`Page ${i + 1}`} className={styles.pageImg} />
-                      {isChart && !sel.confirmed && (
-                        <div className={styles.tapToSetup}>Tap to set up chart</div>
-                      )}
-                      {isChart && sel.confirmed && (
-                        <div className={styles.confirmedOverlay}>✓ {sel.chartName}</div>
-                      )}
-                      {isPhoto && !sel.confirmed && (
-                        <div className={styles.tapToSetup}>Tap to crop photo</div>
-                      )}
-                      {isPhoto && sel.confirmed && (
-                        <div className={styles.confirmedOverlay}>✓ Photo</div>
-                      )}
-                    </div>
-                  )}
+                  <div
+                    className={styles.pageImgWrap}
+                    onClick={((isChart || isPhoto) && !sel.confirmed) ? () => setExpandedIndex(i) : undefined}
+                  >
+                    <img src={src} alt={`Page ${i + 1}`} className={styles.pageImg} />
+                    {isChart && !sel.confirmed && (
+                      <div className={styles.tapToSetup}>Tap to set up chart</div>
+                    )}
+                    {isChart && sel.confirmed && (
+                      <div className={styles.confirmedOverlay}>✓ {sel.chartName}</div>
+                    )}
+                    {isPhoto && !sel.confirmed && (
+                      <div className={styles.tapToSetup}>Tap to crop photo</div>
+                    )}
+                    {isPhoto && sel.confirmed && (
+                      <div className={styles.confirmedOverlay}>✓ Photo</div>
+                    )}
+                  </div>
 
                 </div>
               )
@@ -266,6 +241,21 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
           onChange={patch => updateSel(expandedIndex, patch)}
           onConfirm={() => confirmChart(expandedIndex)}
           onBack={() => setExpandedIndex(null)}
+        />
+      )}
+
+      {/* Photo crop overlay — full-screen, opens when a photo page is active */}
+      {expandedIndex !== null && selections[expandedIndex]?.role === 'photo' && pages[expandedIndex] && pageImageDatas[expandedIndex] && (
+        <PhotoCropPanel
+          src={pages[expandedIndex]}
+          imageData={pageImageDatas[expandedIndex]}
+          onConfirm={(croppedBase64) => {
+            setSelections(prev => prev.map((s, i) =>
+              i === expandedIndex ? { ...s, croppedBase64, confirmed: true } : s
+            ))
+            setExpandedIndex(null)
+          }}
+          onCancel={() => setExpandedIndex(null)}
         />
       )}
 
@@ -461,17 +451,19 @@ function PhotoCropPanel({ src, imageData, onConfirm, onCancel }: PhotoCropPanelP
   }
 
   return (
-    <div className={styles.setupPanel}>
-      <div className={styles.setupSection}>
-        <div className={styles.setupLabel}>
-          Drag to crop the project photo (4:5 portrait)
-          {crop && <span className={styles.cropDone}> ✓ Ready</span>}
-        </div>
-        <ReactCrop crop={crop} onChange={(_c, pc) => setCrop(pc)} aspect={4 / 5} className={styles.cropWrap}>
-          <img src={src} alt="Page" className={styles.cropImg} onLoad={onImageLoad} />
+    <div className={styles.chartOverlay}>
+      <div className={styles.chartOverlayHeader}>
+        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
+          Crop project photo — drag to reposition (4:5 portrait)
+        </span>
+        {crop && <span className={styles.cropDone}>✓ Ready</span>}
+      </div>
+      <div className={styles.photoCropBody}>
+        <ReactCrop crop={crop} onChange={(_c, pc) => setCrop(pc)} aspect={4 / 5} className={styles.photoCropReact}>
+          <img src={src} alt="Page" className={styles.photoCropImg} onLoad={onImageLoad} />
         </ReactCrop>
       </div>
-      <div className={styles.refineActions}>
+      <div className={styles.photoCropFooter}>
         <button className={styles.cancelBtn} onClick={onCancel}><ChevronLeftIcon size={16}/></button>
         <button className={styles.confirmBtn} disabled={!crop} onClick={handleConfirm}>
           Confirm Photo ✓
@@ -560,12 +552,11 @@ function ChartSetupOverlay({ src, imageData, sel, onChange, onConfirm, onBack }:
       setZoom(next)
     }
 
-    // All scroll on the chart panel is intercepted: plain scroll is suppressed,
-    // Ctrl+scroll zooms and centers on the crop selection.
+    // Ctrl+scroll zooms and centers on the crop selection; plain scroll scrolls normally.
     const handleViewportWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return
       e.preventDefault()
       e.stopPropagation()
-      if (!e.ctrlKey && !e.metaKey) return
       const raw = e.deltaMode === 1 ? e.deltaY * 30 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY
       const clamped = Math.max(-200, Math.min(200, raw))
       if (Math.abs(clamped) < 10) return

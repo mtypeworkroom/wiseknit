@@ -606,14 +606,26 @@
   border-style: solid;
 }
 
-/* danger */
-.dangerRow {
+/* archive / delete buttons at bottom of page */
+.projectActions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0 16px;
+  justify-content: flex-end;
+}
+.pageIconBtn {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-light);
+  cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 12px 14px;
-  cursor: pointer;
-  transition: background 0.15s;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
 }
-.dangerRow:hover { background: var(--danger-lt); }
-.borderTop { border-top: 1px solid var(--border); }
-.dangerLabel { font-size: 13px; color: var(--danger); }
+.pageIconBtn:hover { border-color: var(--ink-mid); color: var(--ink-mid); }
+.pageIconBtnDanger:hover { border-color: var(--danger); color: var(--danger); }

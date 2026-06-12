@@ -58,18 +58,18 @@
 
 | # | Feature | What KC does | WiseKnit today |
 |---|---|---|---|
-| 1 | **Row position marker on written pattern** | Sliding highlight bar spanning the full page width — awkward with multi-column patterns | Only section bookmarks — no way to track which row you're on *within* a written pattern page |
-| 2 | **Row alerts / reminders** | Pop-up at a specific row: "Switch to 3mm needle here", "Add bead" | None |
-| 3 | **Live project timer** | Stopwatch running while you knit; cumulative per project; editable | Session duration recorded after the fact; no live timer in the active knitting screen — **decided: tap to start/stop with editable duration** |
+| 1 | ✅ **Row position marker on written pattern** | Sliding highlight bar spanning the full page width — awkward with multi-column patterns | Built: freely draggable/resizable bracket frame in PDF viewer; position stored as percentages |
+| 2 | ✅ **Row alerts / reminders** | Pop-up at a specific row: "Switch to 3mm needle here", "Add bead" | Built: repeat-relative and absolute types; per-reminder sound override; chime + TTS; settings for default sound, chime tone, and voice gender |
+| 3 | ✅ **Live project timer** | Stopwatch running while you knit; cumulative per project; editable | Built: tap to start/stop chip in active knitting top bar; session save modal with editable duration |
 
 ### Tier 2 — Chart and counter enhancements
 
 | # | Feature | What KC does | WiseKnit today |
 |---|---|---|---|
-| 4 | **Count-by-2 mode** | Row marker advances every 2 rows — skips plain return rows for lace | Not supported; user advances twice manually |
+| 4 | **Count-by-2 mode** | Row marker advances every 2 rows — skips plain return rows for lace | ✅ RS Only toggle in chart setup — display row and total both double; chip 2 also reflects actual rows |
 | 5 | **Linked / secondary counters** | A counter that auto-increments every N main rows (e.g. "increase every 6 rows") | Only one main row counter per project |
 | 6 | **Written + chart linked view** | One tap advances both the written instruction position AND the chart row marker simultaneously | PDF viewer and active knitting chart screen are disconnected |
-| 7 | **Per-row instructions in active knitting** | Written instruction for the current row shown below the chart as it advances | Schema (`rowNotes`) exists but not yet displayed in the active knitting screen |
+| 7 | ✅ **Per-row instructions in active knitting** | Written instruction for the current row shown below the chart as it advances | Built: row note strip in bottom bar; tap to add/edit inline; auto-clears when row advances |
 
 ### Tier 3 — Pattern navigation and annotation
 
@@ -694,12 +694,12 @@ Based on impact vs effort and what would make a knitter switch from KC. Organize
 
 ### Track A — KC Gap Closure (written pattern + active knitting)
 
-1. **Per-row instructions in active knitting** (Tier 2 #7) — `rowNotes` schema exists, strip display not yet wired up; quickest win; something KC doesn't do in this form
-2. **Row position marker on written pattern** (Tier 1 #1) — the bracket; the single biggest KC feature gap; essential for written-pattern knitters
-3. **Live project timer** (Tier 1 #3) — low effort, high polish signal; tap to start/stop with editable duration
-4. **Row alerts / reminders** (Tier 1 #2) — high value for complex patterns; repeat-relative type solves the divisibility problem KC can't
-5. **Count-by-2 mode** (Tier 2 #4) — critical for lace knitters
-6. **Linked / secondary counters** (Tier 2 #5) — up to 5 named counters; auto-increment or manual
+1. ✅ **Per-row instructions in active knitting** (Tier 2 #7) — done
+2. ✅ **Row position marker on written pattern** (Tier 1 #1) — done
+3. ✅ **Live project timer** (Tier 1 #3) — done
+4. ✅ **Row alerts / reminders** (Tier 1 #2) — done
+5. ✅ **Count-by-2 mode** (Tier 2 #4) — RS Only toggle on chart setup; display row, total, and worked rows all correct
+6. **Linked / secondary counters** (Tier 2 #5) — up to 5 named counters; auto-increment or manual ← NEXT
 7. **AI row instruction extraction** — differentiator; Phase 2 of the instruction strip; build after Phase 1 (manual entry) works
 8. **Size highlighting** (Tier 3 #8) — AI-only; high frequency pain point; depends on PDF text extraction
 9. **Inc/Dec evenly calculator** (Tier 4 #12) — commonly needed, self-contained to build

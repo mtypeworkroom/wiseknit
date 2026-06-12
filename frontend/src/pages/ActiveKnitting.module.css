@@ -37,9 +37,9 @@
 .tbBack:hover { border-color: var(--accent); color: var(--accent); }
 
 .tbPattern {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ink-mid);
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -98,6 +98,42 @@
   margin-left: 5px;
 }
 
+.tbTimerChip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tbTimerChip:hover { border-color: var(--accent); }
+.tbTimerRunning { width: auto; padding: 0 8px; }
+.tbTimerRunning {
+  background: var(--accent-lt);
+  border-color: var(--accent);
+}
+.tbTimerIcon {
+  color: var(--ink-light);
+  flex-shrink: 0;
+  display: flex;
+}
+.tbTimerRunning .tbTimerIcon { color: var(--accent); }
+.tbTimerDisplay {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-mid);
+  line-height: 1;
+}
+.tbTimerRunning .tbTimerDisplay { color: var(--accent); }
+
 .tbRight {
   display: flex;
   align-items: center;
@@ -120,6 +156,129 @@
 }
 .tbIcon:hover { background: var(--accent-lt); color: var(--accent); border-color: var(--accent); }
 .tbIconActive { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+/* ── META ROW (reminder left, Rnd/sts right) ── */
+.instrMetaReminders {
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.instrMetaRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.noteIconBtn {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink-light);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+.noteIconBtn:hover { border-color: var(--accent); color: var(--accent); }
+.noteIconBtnActive { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+.activeReminder {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.activeReminderIcon { color: var(--accent); flex-shrink: 0; }
+.activeReminderText {
+  font-size: 11px;
+  font-family: var(--font-sans);
+  color: var(--accent);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── REMINDER MODAL ── */
+.reminderModal { max-width: 420px; width: 92vw; }
+.reminderList {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.reminderEmpty { font-size: 12px; color: var(--ink-mid); text-align: center; padding: 12px 0; }
+.reminderRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.reminderTypeBadge {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  border-radius: 3px;
+  padding: 1px 4px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.reminderTypeRepeat { background: var(--accent-lt); color: var(--accent); }
+.reminderTypeAbs { background: var(--surface2); color: var(--ink-mid); }
+.reminderRowNum { font-size: 11px; font-family: var(--font-mono); color: var(--ink-mid); flex-shrink: 0; }
+.reminderRowText { font-size: 12px; font-family: var(--font-sans); color: var(--ink); flex: 1; min-width: 0; }
+.reminderDelete {
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-mid); padding: 2px; flex-shrink: 0;
+  display: flex; align-items: center;
+}
+.reminderDelete:hover { color: var(--danger); }
+
+.soundOptBtn {
+  width: 26px; height: 22px; flex-shrink: 0;
+  border: 1px solid var(--border); border-radius: 3px;
+  background: var(--surface2); font-size: 11px;
+  cursor: pointer; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.4; transition: all 0.12s;
+}
+.soundOptBtnActive { opacity: 1; border-color: var(--accent); background: var(--accent-lt); }
+
+.reminderAddForm { border-top: 1px solid var(--border); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.reminderTypeToggle { display: flex; gap: 4px; }
+.reminderTypeBtn {
+  flex: 1; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--ink-mid);
+  font-size: 11px; font-family: var(--font-sans);
+  cursor: pointer; transition: all 0.15s;
+}
+.reminderTypeBtnActive { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.reminderAddRow { display: flex; gap: 6px; }
+.reminderRowInput {
+  width: 60px; flex-shrink: 0;
+  height: 32px; padding: 0 8px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface2); color: var(--ink);
+  font-size: 13px; font-family: var(--font-mono);
+}
+.reminderTextInput {
+  flex: 1; height: 32px; padding: 0 8px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface2); color: var(--ink);
+  font-size: 13px; font-family: var(--font-sans);
+}
+.reminderTextInput:focus, .reminderRowInput:focus { outline: none; border-color: var(--accent); }
 
 /* ── CHART AREA — always light regardless of theme ── */
 .chartArea {
@@ -345,6 +504,52 @@
   white-space: normal;
 }
 
+/* Row note — inline editable area */
+.rowNoteArea {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  padding: 2px 4px;
+  max-height: 40px;
+  overflow-y: auto;
+}
+
+/* ── SHAPING STEPS inline in row note area ── */
+.shapingStep {
+  font-size: 11px;
+  font-family: var(--font-sans);
+  color: var(--accent);
+  font-weight: 400;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* ── COMPLETION BANNER toast ── */
+.completionBanner {
+  position: fixed;
+  bottom: 54px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  padding: 6px 18px;
+  border-radius: 20px;
+  white-space: nowrap;
+  z-index: 200;
+  pointer-events: none;
+  animation: bannerIn 0.2s ease;
+}
+@keyframes bannerIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 .aiPill {
   background: transparent;
   border: 1px solid var(--warn);
@@ -365,41 +570,41 @@
 
 .splitMain {
   height: 24px;
-  border: 1px solid var(--border);
-  border-right: none;
+  border: none;
+  border-right: 1px solid rgba(255,255,255,0.2);
   border-radius: 4px 0 0 4px;
-  background: var(--surface2);
-  color: var(--ink);
+  background: var(--accent);
+  color: var(--bg);
   font-family: var(--font-sans);
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  padding: 0 6px;
-  transition: all 0.15s;
+  padding: 0 8px;
+  transition: opacity 0.15s;
   display: flex; align-items: center; gap: 4px;
 }
-.splitMain:hover { border-color: var(--accent); color: var(--accent); }
+.splitMain:hover { opacity: 0.88; }
 .splitMain:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
 
 .splitArrow {
   height: 24px;
   width: 20px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--accent);
   border-radius: 0 4px 4px 0;
-  background: var(--surface2);
-  color: var(--ink-mid);
+  background: var(--accent-lt);
+  color: var(--accent);
   font-size: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s;
+  transition: opacity 0.15s;
 }
-.splitArrow:hover { background: var(--accent-lt); color: var(--accent); border-color: var(--accent); }
+.splitArrow:hover { opacity: 0.8; }
 
 .backMenu {
   position: absolute;
-  bottom: calc(100% + 6px);
+  top: calc(100% + 6px);
   left: 0;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -496,7 +701,27 @@
   flex-direction: column;
   gap: 12px;
   box-shadow: var(--shadow);
+  position: relative;
 }
+
+.modalClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--ink-light);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.12s;
+}
+.modalClose:hover { background: var(--surface2); color: var(--ink); }
 
 .jumpTitle {
   font-size: 16px;

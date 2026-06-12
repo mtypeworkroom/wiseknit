@@ -139,6 +139,14 @@
   color: var(--accent-text);
 }
 
+.filterEmpty {
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--ink-light);
+  font-style: italic;
+  text-align: center;
+}
+
 .filterClear {
   display: block;
   width: 100%;

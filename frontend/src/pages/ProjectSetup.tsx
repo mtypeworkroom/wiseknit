@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo } from 'react'
 import { UploadIcon, FileCheckIcon, ChevronLeftIcon, ChevronRightIcon, PencilIcon } from '../components/icons'
 import { savePDF, saveImage } from '../store/imageStore'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useProjectStore, selectTagList } from '../store/projectStore'
 import type { Project, NeedleType, YarnWeight, ProjectChart } from '../types'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
@@ -71,6 +71,7 @@ const STEPS = ['Basics', 'Yarn', 'Needles', 'Pattern', 'Review']
 export default function ProjectSetup() {
   const navigate = useNavigate()
   const { id: editId } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
   const { projects, addProject, updateProject } = useProjectStore()
   const tagList = selectTagList(projects)
 
@@ -107,7 +108,8 @@ export default function ProjectSetup() {
     }
   }, [existingProject])
 
-  const [step, setStep] = useState(0)
+  const startStep = Math.min(Math.max(parseInt(searchParams.get('step') ?? '0') || 0, 0), STEPS.length - 1)
+  const [step, setStep] = useState(startStep)
   const [form, setForm] = useState<SetupState>(initialForm)
   const [tagInput, setTagInput] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)

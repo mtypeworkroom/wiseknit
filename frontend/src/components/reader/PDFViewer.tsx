@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { loadPDF } from '../../store/imageStore'
-import { BookmarkIcon, StitchMarkerIcon, SectionMarkerIcon } from '../icons'
-import type { PdfSection, PdfReadingRect } from '../../types'
+import { BookmarkIcon, StitchMarkerIcon, SectionMarkerIcon, BracketIcon } from '../icons'
+import type { PdfSection, PdfReadingRect, BracketPos } from '../../types'
 import styles from './PDFViewer.module.css'
 
 interface PDFViewerProps {
@@ -10,12 +10,22 @@ interface PDFViewerProps {
   initialPage?: number
   /** Set when navigating from a section chip — shows bookmark marker and reading rects */
   activeSection?: PdfSection
+  /** Global highlights not tied to a section (shown when no activeSection) */
+  extraRects?: PdfReadingRect[]
+  bracketPos?: BracketPos
   onSaveSection?: (label: string, page: number, markXPct?: number, markYPct?: number) => void
-  /** Only passed when navigating from a chip; enables the stitch-marker (highlight) button */
   onSaveReadingRect?: (page: number, x1Pct: number, y1Pct: number, x2Pct: number, y2Pct: number, color: string) => void
-  /** Long-press a highlight to call this and remove it by id */
   onRemoveReadingRect?: (id: string) => void
+  onSaveBracket?: (pos: BracketPos) => void
   onClose: () => void
+}
+
+type BracketDragMode = 'move' | 'n' | 's' | 'e' | 'w'
+interface BracketDragState {
+  mode: BracketDragMode
+  fLeft: number; fTop: number; fWidth: number; fHeight: number
+  startXPct: number; startYPct: number
+  initPos: BracketPos
 }
 
 type TagPhase = 'idle' | 'placing' | 'naming' | 'drawing-rect'
@@ -34,7 +44,8 @@ function getDist(touches: TouchList): number {
 }
 
 export default function PDFViewer({
-  pdfKey, initialPage = 1, activeSection, onSaveSection, onSaveReadingRect, onRemoveReadingRect, onClose,
+  pdfKey, initialPage = 1, activeSection, extraRects, bracketPos: bracketPosProp,
+  onSaveSection, onSaveReadingRect, onRemoveReadingRect, onSaveBracket, onClose,
 }: PDFViewerProps) {
   const pdfRef = useRef<any>(null)
   const [pdfLoaded, setPdfLoaded] = useState(false)
@@ -49,8 +60,15 @@ export default function PDFViewer({
   const [tagYPct, setTagYPct] = useState<number | null>(null)
   const [rectColor, setRectColor] = useState(DEFAULT_COLOR)
 
+  const [bracketActive, setBracketActive] = useState(false)
+  const [localBracket, setLocalBracket] = useState<BracketPos>(
+    () => bracketPosProp ?? { x1Pct: 5, y1Pct: 5, x2Pct: 95, y2Pct: 14 }
+  )
+
   const frameRef = useRef<HTMLDivElement>(null)
   const pageAreaRef = useRef<HTMLDivElement>(null)
+  const bracketRef = useRef<HTMLDivElement>(null)
+  const bracketDragRef = useRef<BracketDragState | null>(null)
   // Bookmark marker and preview rect live outside pageFrame to keep its
   // compositing layer free of SVG content (SVGs degrade rasterisation quality).
   // Plain-background reading-rect divs render safely inside pageFrame.
@@ -86,6 +104,7 @@ export default function PDFViewer({
   const lastTapRef = useRef(0)
 
   useEffect(() => { tagPhaseRef.current = tagPhase }, [tagPhase])
+  useEffect(() => { if (bracketPosProp) setLocalBracket(bracketPosProp) }, [bracketPosProp])
 
   const cancelLongPress = () => {
     if (longPressTimerRef.current) { clearTimeout(longPressTimerRef.current); longPressTimerRef.current = null }
@@ -216,6 +235,7 @@ export default function PDFViewer({
     }
 
     const onTouchStart = (e: TouchEvent) => {
+      if (bracketRef.current?.contains(e.target as Node)) return
       if (tagPhaseRef.current !== 'idle') return
       if (e.touches.length === 1) {
         const t = e.touches[0]
@@ -287,6 +307,7 @@ export default function PDFViewer({
     }
 
     const onMouseDown = (e: MouseEvent) => {
+      if (bracketRef.current?.contains(e.target as Node)) return
       if (tagPhaseRef.current !== 'idle') return
       const hit = hitRect(e.clientX, e.clientY)
       if (hit) { startLongPress(hit.id, e.clientX, e.clientY); return }
@@ -341,6 +362,66 @@ export default function PDFViewer({
       if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current)
     }
   }, [])
+
+  // ── Bracket drag ──────────────────────────────────────────────────────────
+
+  const computeBracketPos = (drag: BracketDragState, clientX: number, clientY: number): BracketPos => {
+    const xPct = Math.max(0, Math.min(100, (clientX - drag.fLeft) / drag.fWidth * 100))
+    const yPct = Math.max(0, Math.min(100, (clientY - drag.fTop) / drag.fHeight * 100))
+    const dx = xPct - drag.startXPct
+    const dy = yPct - drag.startYPct
+    const p = drag.initPos
+    if (drag.mode === 'move') {
+      const w = p.x2Pct - p.x1Pct, h = p.y2Pct - p.y1Pct
+      const x1 = Math.max(0, Math.min(100 - w, p.x1Pct + dx))
+      const y1 = Math.max(0, Math.min(100 - h, p.y1Pct + dy))
+      return { x1Pct: x1, y1Pct: y1, x2Pct: x1 + w, y2Pct: y1 + h }
+    }
+    if (drag.mode === 'n') return { ...p, y1Pct: Math.max(0, Math.min(p.y2Pct - 1, p.y1Pct + dy)) }
+    if (drag.mode === 's') return { ...p, y2Pct: Math.max(p.y1Pct + 1, Math.min(100, p.y2Pct + dy)) }
+    if (drag.mode === 'w') return { ...p, x1Pct: Math.max(0, Math.min(p.x2Pct - 1, p.x1Pct + dx)) }
+    return { ...p, x2Pct: Math.max(p.x1Pct + 1, Math.min(100, p.x2Pct + dx)) }
+  }
+
+  const applyBracketDOM = (pos: BracketPos) => {
+    const el = bracketRef.current
+    if (!el) return
+    el.style.left = `${pos.x1Pct}%`
+    el.style.top = `${pos.y1Pct}%`
+    el.style.width = `${pos.x2Pct - pos.x1Pct}%`
+    el.style.height = `${pos.y2Pct - pos.y1Pct}%`
+  }
+
+  const startBracketDrag = (e: React.PointerEvent, mode: BracketDragMode) => {
+    e.stopPropagation()
+    e.preventDefault()
+    if (!frameRef.current) return
+    const fr = frameRef.current.getBoundingClientRect()
+    bracketDragRef.current = {
+      mode,
+      fLeft: fr.left, fTop: fr.top, fWidth: fr.width, fHeight: fr.height,
+      startXPct: (e.clientX - fr.left) / fr.width * 100,
+      startYPct: (e.clientY - fr.top) / fr.height * 100,
+      initPos: { ...localBracket },
+    }
+    ;(e.currentTarget as Element).setPointerCapture(e.pointerId)
+  }
+
+  const onBracketPointerMove = (e: React.PointerEvent) => {
+    if (!bracketDragRef.current) return
+    e.stopPropagation()
+    applyBracketDOM(computeBracketPos(bracketDragRef.current, e.clientX, e.clientY))
+  }
+
+  const onBracketPointerUp = (e: React.PointerEvent) => {
+    if (!bracketDragRef.current) return
+    e.stopPropagation()
+    const newPos = computeBracketPos(bracketDragRef.current, e.clientX, e.clientY)
+    bracketDragRef.current = null
+    setLocalBracket(newPos)
+    onSaveBracket?.(newPos)
+    applyBracketDOM(newPos)
+  }
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
@@ -418,7 +499,10 @@ export default function PDFViewer({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  const pageRects = (activeSection?.readingRects ?? []).filter(r => r.page === pageNum)
+  const pageRects = [
+    ...(activeSection?.readingRects ?? []),
+    ...(extraRects ?? []),
+  ].filter(r => r.page === pageNum)
   pageRectsRef.current = pageRects
 
   return createPortal(
@@ -472,6 +556,14 @@ export default function PDFViewer({
                 <StitchMarkerIcon size={18} />
               </button>
             )}
+            <button
+              className={`${styles.tagBtn}${bracketActive ? ` ${styles.tagBtnActive}` : ''}`}
+              onClick={() => setBracketActive(a => !a)}
+              aria-label="Row bracket"
+              title="Row bracket"
+            >
+              <BracketIcon size={16} />
+            </button>
             <div className={styles.navBtns}>
               <button className={styles.navBtn} onClick={() => goTo(pageNum - 1)} disabled={pageNum <= 1}>‹</button>
               <button className={styles.navBtn} onClick={() => goTo(pageNum + 1)} disabled={pageNum >= totalPages}>›</button>
@@ -508,6 +600,30 @@ export default function PDFViewer({
                   />
                 )
               })}
+              {bracketActive && (
+                <div
+                  ref={bracketRef}
+                  className={styles.bracket}
+                  style={{
+                    left: `${localBracket.x1Pct}%`,
+                    top: `${localBracket.y1Pct}%`,
+                    width: `${localBracket.x2Pct - localBracket.x1Pct}%`,
+                    height: `${localBracket.y2Pct - localBracket.y1Pct}%`,
+                  }}
+                  onPointerMove={onBracketPointerMove}
+                  onPointerUp={onBracketPointerUp}
+                >
+                  <div className={`${styles.bCorner} ${styles.bCornerTL}`} />
+                  <div className={`${styles.bCorner} ${styles.bCornerTR}`} />
+                  <div className={`${styles.bCorner} ${styles.bCornerBL}`} />
+                  <div className={`${styles.bCorner} ${styles.bCornerBR}`} />
+                  <div className={`${styles.bEdge} ${styles.bEdgeN}`} onPointerDown={e => startBracketDrag(e, 'n')} />
+                  <div className={`${styles.bEdge} ${styles.bEdgeS}`} onPointerDown={e => startBracketDrag(e, 's')} />
+                  <div className={`${styles.bEdge} ${styles.bEdgeW}`} onPointerDown={e => startBracketDrag(e, 'w')} />
+                  <div className={`${styles.bEdge} ${styles.bEdgeE}`} onPointerDown={e => startBracketDrag(e, 'e')} />
+                  <div className={styles.bBody} onPointerDown={e => startBracketDrag(e, 'move')} />
+                </div>
+              )}
             </div>
             {rendering && <div className={styles.pageSpinner} />}
             {tagPhase === 'placing' && (

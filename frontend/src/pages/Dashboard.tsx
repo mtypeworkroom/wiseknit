@@ -121,37 +121,43 @@ export default function Dashboard() {
             </span>
 
             <div className={styles.headerActions}>
-              {/* Filter button — only shown when there are tags */}
-              {tagList.length > 0 && (
-                <div className={styles.filterWrap} ref={filterRef}>
-                  <button
-                    className={`${styles.filterBtn}${activeTags.length > 0 ? ` ${styles.filterBtnActive}` : ''}`}
-                    onClick={() => { setFilterOpen(o => !o); setSortOpen(false) }}
-                  >
-                    Filter{activeTags.length > 0 ? ` · ${activeTags.length}` : ''}
-                  </button>
-                  {filterOpen && (
-                    <div className={styles.filterDropdown}>
-                      <div className={styles.filterDropdownInner}>
-                        {tagList.map(tag => (
-                          <button
-                            key={tag}
-                            className={`${styles.filterTagChip}${activeTags.includes(tag) ? ` ${styles.filterTagChipOn}` : ''}`}
-                            onClick={() => toggleTag(tag)}
-                          >
-                            {tag}
-                          </button>
-                        ))}
+              {/* Filter button — always shown */}
+              <div className={styles.filterWrap} ref={filterRef}>
+                <button
+                  className={`${styles.filterBtn}${activeTags.length > 0 ? ` ${styles.filterBtnActive}` : ''}`}
+                  onClick={() => { setFilterOpen(o => !o); setSortOpen(false) }}
+                >
+                  Filter{activeTags.length > 0 ? ` · ${activeTags.length}` : ''}
+                </button>
+                {filterOpen && (
+                  <div className={styles.filterDropdown}>
+                    {tagList.length === 0 ? (
+                      <div className={styles.filterEmpty}>
+                        Add tags to projects to filter here
                       </div>
-                      {activeTags.length > 0 && (
-                        <button className={styles.filterClear} onClick={() => { setActiveTags([]); setFilterOpen(false) }}>
-                          Clear filter
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+                    ) : (
+                      <>
+                        <div className={styles.filterDropdownInner}>
+                          {tagList.map(tag => (
+                            <button
+                              key={tag}
+                              className={`${styles.filterTagChip}${activeTags.includes(tag) ? ` ${styles.filterTagChipOn}` : ''}`}
+                              onClick={() => toggleTag(tag)}
+                            >
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                        {activeTags.length > 0 && (
+                          <button className={styles.filterClear} onClick={() => { setActiveTags([]); setFilterOpen(false) }}>
+                            Clear filter
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Sort button */}
               <div className={styles.sortWrap} ref={sortRef}>

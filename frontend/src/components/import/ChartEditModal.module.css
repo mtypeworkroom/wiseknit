@@ -128,28 +128,144 @@
   order: 1;
 }
 
-/* Nudge bar — closest to the image; single row, no wrapping */
+/* Nudge bar — 2×2 grid of edge groups */
 .refineNudgeBar {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
   padding: 5px 8px;
   border-bottom: 1px solid var(--border);
 }
 
-/* Actions bar — name, counts, save; single row, no wrapping */
+/* Rows + Sts inputs — top of controls panel */
+.topInputsBar {
+  display: flex;
+  gap: 4px;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* Actions bar */
 .refineActionsBar {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   padding: 4px 8px;
 }
 
 .refineSpacer { flex: 1; min-width: 0; }
+
+.countRow { display: flex; gap: 4px; flex-shrink: 0; }
+.actionBtns { display: flex; gap: 3px; flex-shrink: 0; align-items: center; }
+
+.squareBtn {
+  width: 28px; height: 28px; flex-shrink: 0;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: transparent; color: var(--ink-mid); font-size: 11px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.squareBtn:hover { border-color: var(--ink-mid); color: var(--ink); }
+.squareBtnSave { border-color: var(--accent); color: var(--accent); }
+.squareBtnSave:hover { background: var(--accent-lt); }
+
+/* ── Row notes section ── */
+.refineNotesBar {
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.notesToggle {
+  width: 100%;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.notesToggle:hover { background: var(--accent-lt); }
+
+.notesToggleLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.notesToggleMeta {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-weight: 600;
+}
+.notesToggleArrow {
+  font-size: 9px;
+  color: var(--ink-light);
+  margin-left: auto;
+}
+
+.notesBody {
+  padding: 6px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.notesRowNav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notesNavBtn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--ink-mid);
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+.notesNavBtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+.notesNavBtn:disabled { opacity: 0.3; cursor: default; }
+
+.notesRowLabel {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--ink);
+  flex: 1;
+  text-align: center;
+}
+
+.notesRowInput {
+  width: 100%;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.notesRowInput:focus { border-color: var(--accent); }
 
 /* Landscape: refineControls becomes right sidebar; both bars stack vertically */
 @media (orientation: landscape) {
@@ -165,24 +281,28 @@
   }
 
   .refineNudgeBar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
-    padding: 10px 8px 8px;
-    border-bottom: 1px solid var(--border);
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 8px;
   }
 
   .refineActionsBar {
     flex: 1;
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
-    padding: 10px 8px;
+    gap: 6px;
+    padding: 8px;
   }
 
   .refineSpacer { flex: 1; }
-  .countLabel { flex-direction: column; align-items: flex-start; gap: 3px; width: 100%; }
-  .countInput { width: 100% !important; text-align: left; }
+  .topInputsBar { padding: 6px 8px; }
+  .topInputsBar .countLabel { flex: 1; flex-direction: column; align-items: flex-start; gap: 2px; }
+  .topInputsBar .countInput { width: 100%; text-align: left; }
+  .countRow { width: 100%; }
+  .countRow .countLabel { flex: 1; flex-direction: column; align-items: flex-start; gap: 2px; }
+  .countRow .countInput { width: 100%; text-align: left; }
+  .actionBtns { justify-content: center; }
+  .countLabelText { font-size: 10px; }
   .iconBtn, .iconBtnPrimary { width: 100% !important; height: 30px; }
 }
 
@@ -283,6 +403,36 @@
 }
 .iconBtn:hover { border-color: var(--ink-mid); color: var(--ink); }
 
+/* RS-only toggle row */
+.settingsRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}
+.settingsRow:hover { background: var(--accent-lt); }
+.settingsRowText { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.settingsRowLabel { font-size: 11px; font-weight: 600; color: var(--ink); text-transform: uppercase; letter-spacing: 0.05em; }
+.settingsRowSub { font-size: 10px; color: var(--ink-mid); }
+.toggleInput { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+.toggleTrack {
+  width: 30px; height: 17px; border-radius: 9px;
+  background: var(--border); position: relative; flex-shrink: 0;
+  transition: background 0.2s;
+}
+.toggleTrackOn { background: var(--accent); }
+.toggleThumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  transition: transform 0.15s;
+}
+.toggleThumbOn { transform: translateX(13px); }
+
 .iconBtnPrimary {
   width: 30px; height: 30px; flex-shrink: 0;
   border: 1px solid var(--border); border-radius: 4px;
@@ -314,3 +464,65 @@
   border-left: 3px solid var(--border);
   flex-shrink: 0;
 }
+
+/* ── Reminders ── */
+.reminderEmpty { font-size: 11px; color: var(--ink-mid); padding: 4px 0 6px; }
+.reminderRow {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 0; border-bottom: 1px solid var(--border);
+}
+.reminderBadge {
+  font-size: 9px; font-family: var(--font-mono); font-weight: 700;
+  border-radius: 3px; padding: 1px 4px; flex-shrink: 0; text-transform: uppercase;
+}
+.reminderBadgeRepeat { background: var(--accent-lt); color: var(--accent); }
+.reminderBadgeAbs { background: var(--surface2); color: var(--ink-mid); border: 1px solid var(--border); }
+.reminderRowNum { font-size: 10px; font-family: var(--font-mono); color: var(--ink-mid); flex-shrink: 0; }
+.reminderRowText { font-size: 11px; color: var(--ink); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reminderDel {
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-mid); padding: 2px; flex-shrink: 0;
+  display: flex; align-items: center;
+}
+.reminderDel:hover { color: var(--danger); }
+.reminderAddRow { display: flex; gap: 4px; margin-top: 6px; align-items: center; }
+.reminderNumInput {
+  width: 46px; flex-shrink: 0; height: 26px; padding: 0 6px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface); color: var(--ink);
+  font-size: 12px; font-family: var(--font-mono);
+}
+.reminderNumInput:focus { outline: none; border-color: var(--accent); }
+.reminderTypeBtn {
+  width: 28px; height: 26px; flex-shrink: 0;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface2); color: var(--ink-mid);
+  font-size: 12px; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.reminderTypeBtnActive { background: var(--accent-lt); color: var(--accent); border-color: var(--accent); }
+.reminderTextInput {
+  flex: 1; height: 26px; padding: 0 7px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface); color: var(--ink);
+  font-size: 12px; font-family: var(--font-sans);
+}
+.reminderTextInput:focus { outline: none; border-color: var(--accent); }
+.reminderAddBtn {
+  width: 28px; height: 26px; flex-shrink: 0;
+  border: 1px solid var(--accent); border-radius: 4px;
+  background: var(--accent); color: var(--bg);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.15s;
+}
+.reminderAddBtn:hover { opacity: 0.85; }
+
+.soundOptBtn {
+  width: 22px; height: 20px; flex-shrink: 0;
+  border: 1px solid var(--border); border-radius: 3px;
+  background: var(--surface); color: var(--ink);
+  font-size: 10px; cursor: pointer; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.4; transition: all 0.12s;
+}
+.soundOptBtnActive { opacity: 1; border-color: var(--accent); background: var(--accent-lt); }

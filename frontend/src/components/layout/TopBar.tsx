@@ -1,8 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import logoDark from '../../assets/mtype_workroom_logo_circle_512.svg'
-import logoLight from '../../assets/mtype_workroom_logo_circle_512_light.svg'
-import { useThemeStore } from '../../store/themeStore'
-import { ChevronLeftIcon } from '../icons'
+import { ChevronLeftIcon, OwlIcon } from '../icons'
 import styles from './TopBar.module.css'
 
 interface TopBarProps {
@@ -23,9 +20,6 @@ export default function TopBar({
   rightContent,
 }: TopBarProps) {
   const navigate = useNavigate()
-  const { mode } = useThemeStore()
-  const isLight = mode === 'light' || (mode === 'auto' && !window.matchMedia('(prefers-color-scheme: dark)').matches)
-  const logo = isLight ? logoLight : logoDark
 
   const handleBack = () => {
     if (backTo) navigate(backTo)
@@ -43,7 +37,9 @@ export default function TopBar({
 
         {showBrand ? (
           <div className={styles.brandWrap}>
-            <img src={logo} alt="MType Workroom" className={styles.logo} />
+            <div className={styles.owlPill}>
+              <OwlIcon size={22} className={styles.owlIcon} />
+            </div>
             <span className={styles.brandText}>{title}</span>
           </div>
         ) : (

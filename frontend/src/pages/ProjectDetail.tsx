@@ -3,10 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore, selectTagList } from '../store/projectStore'
 import type { Gauge, Yarn, Needle, NeedleType, YarnWeight, ProjectChart, PdfSection, PdfReadingRect } from '../types'
 import ChartEditModal from '../components/import/ChartEditModal'
+import ShapingStepsModal from '../components/shaping/ShapingStepsModal'
 import PDFViewer from '../components/reader/PDFViewer'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
 import { loadPDF, saveImage } from '../store/imageStore'
-import { ArchiveIcon, TrashIcon, FileIcon, ImageIcon, PencilIcon, BookOpenIcon, ChartGridIcon } from '../components/icons'
+import { ArchiveIcon, TrashIcon, FileIcon, ImageIcon, PencilIcon, BookOpenIcon, ChartGridIcon, PlusIcon, RepeatIcon } from '../components/icons'
 import { CATEGORY_GROUPS, ALL_CATEGORIES } from '../data/categories'
 import styles from './ProjectDetail.module.css'
 
@@ -60,6 +61,7 @@ export default function ProjectDetail() {
   const [yarnForm, setYarnForm] = useState<Partial<Yarn>>({})
   const [needleForm, setNeedleForm] = useState<Partial<Needle>>({ sizeMm: 4.0, type: 'circular-fixed' })
   const [editModalChart, setEditModalChart] = useState<ProjectChart | null>(null)
+  const [shapingModalChart, setShapingModalChart] = useState<ProjectChart | null>(null)
   const [chartDropdownOpen, setChartDropdownOpen] = useState(false)
   const knitDropdownRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -146,22 +148,28 @@ export default function ProjectDetail() {
   }
 
   const handleSaveReadingRect = (page: number, x1Pct: number, y1Pct: number, x2Pct: number, y2Pct: number, color: string) => {
-    if (pdfActiveSectionIdx == null || !project.pdfSections) return
     const newRect: PdfReadingRect = { id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, page, x1Pct, y1Pct, x2Pct, y2Pct, color }
-    const sections = project.pdfSections.map((s, i) =>
-      i === pdfActiveSectionIdx ? { ...s, readingRects: [...(s.readingRects ?? []), newRect] } : s
-    )
-    updateProject(project.id, { pdfSections: sections })
-    setPdfActiveSection(sections[pdfActiveSectionIdx])
+    if (pdfActiveSectionIdx != null && project.pdfSections) {
+      const sections = project.pdfSections.map((s, i) =>
+        i === pdfActiveSectionIdx ? { ...s, readingRects: [...(s.readingRects ?? []), newRect] } : s
+      )
+      updateProject(project.id, { pdfSections: sections })
+      setPdfActiveSection(sections[pdfActiveSectionIdx])
+    } else {
+      updateProject(project.id, { readingRects: [...(project.readingRects ?? []), newRect] })
+    }
   }
 
   const handleRemoveReadingRect = (id: string) => {
-    if (pdfActiveSectionIdx == null || !project.pdfSections) return
-    const sections = project.pdfSections.map((s, i) =>
-      i === pdfActiveSectionIdx ? { ...s, readingRects: (s.readingRects ?? []).filter(r => r.id !== id) } : s
-    )
-    updateProject(project.id, { pdfSections: sections })
-    setPdfActiveSection(sections[pdfActiveSectionIdx])
+    if (pdfActiveSectionIdx != null && project.pdfSections) {
+      const sections = project.pdfSections.map((s, i) =>
+        i === pdfActiveSectionIdx ? { ...s, readingRects: (s.readingRects ?? []).filter(r => r.id !== id) } : s
+      )
+      updateProject(project.id, { pdfSections: sections })
+      setPdfActiveSection(sections[pdfActiveSectionIdx])
+    } else {
+      updateProject(project.id, { readingRects: (project.readingRects ?? []).filter(r => r.id !== id) })
+    }
   }
 
   const removeSection = (idx: number) => {
@@ -193,7 +201,13 @@ export default function ProjectDetail() {
 
   const saveChartEdit = (chartId: string, updates: Partial<ProjectChart>) => {
     updateProject(project.id, {
-      charts: (project.charts ?? []).map(c => c.id === chartId ? { ...c, ...updates } : c),
+      charts: (project.charts ?? []).map(c => {
+        if (c.id !== chartId) return c
+        const merged = { ...c, ...updates }
+        // Remove optional boolean flags that were cleared (undefined = off)
+        if (!merged.countBy2) delete merged.countBy2
+        return merged
+      }),
     })
     setEditModalChart(null)
   }
@@ -244,9 +258,12 @@ export default function ProjectDetail() {
           pdfKey={project.pdfKey}
           initialPage={pdfInitialPage}
           activeSection={pdfActiveSection}
+          extraRects={pdfActiveSectionIdx == null ? project.readingRects : undefined}
+          bracketPos={project.bracketPos}
           onSaveSection={handleSaveSection}
-          onSaveReadingRect={pdfActiveSectionIdx != null ? handleSaveReadingRect : undefined}
-          onRemoveReadingRect={pdfActiveSectionIdx != null ? handleRemoveReadingRect : undefined}
+          onSaveReadingRect={handleSaveReadingRect}
+          onRemoveReadingRect={handleRemoveReadingRect}
+          onSaveBracket={pos => updateProject(project.id, { bracketPos: pos })}
           onClose={() => setPdfViewerOpen(false)}
         />
       )}
@@ -264,6 +281,21 @@ export default function ProjectDetail() {
           chart={editModalChart}
           onSave={(updates) => saveChartEdit(editModalChart.id, updates)}
           onClose={() => setEditModalChart(null)}
+        />
+      )}
+
+      {shapingModalChart && (
+        <ShapingStepsModal
+          chart={shapingModalChart}
+          onSave={steps => {
+            updateProject(project.id, {
+              charts: (project.charts ?? []).map(c =>
+                c.id === shapingModalChart.id ? { ...c, intervalSteps: steps.length > 0 ? steps : undefined } : c
+              ),
+            })
+            setShapingModalChart(null)
+          }}
+          onClose={() => setShapingModalChart(null)}
         />
       )}
 
@@ -326,20 +358,6 @@ export default function ProjectDetail() {
                   )}
                 </div>
               )}
-              <button
-                className={styles.heroIconBtn}
-                title={project.status === 'archived' ? 'Unarchive' : 'Archive'}
-                onClick={() => updateProject(project.id, { status: project.status === 'archived' ? 'paused' : 'archived' })}
-              >
-                <ArchiveIcon size={14}/>
-              </button>
-              <button
-                className={`${styles.heroIconBtn} ${styles.heroIconBtnDanger}`}
-                title="Delete project"
-                onClick={() => { if (window.confirm(`Delete "${project.name}"? This cannot be undone.`)) { deleteProject(project.id); navigate('/dashboard') } }}
-              >
-                <TrashIcon size={14}/>
-              </button>
             </div>
           </div>
 
@@ -360,7 +378,12 @@ export default function ProjectDetail() {
 
           {/* Pattern */}
           <div className={styles.section}>
-            <div className="section-label">Pattern</div>
+            <div className={styles.sectionHeaderRow}>
+              <div className="section-label">Pattern</div>
+              <button className={styles.addBtn} onClick={() => navigate(`/project/${project.id}/setup?step=3`)} aria-label="Add chart">
+                <PlusIcon size={14}/>
+              </button>
+            </div>
             <div className="card">
               {project.pdfKey && (
                 <div className={styles.pdfRow}>
@@ -395,7 +418,7 @@ export default function ProjectDetail() {
                 </div>
               )}
               {(project.charts?.length ?? 0) === 0 ? (
-                <div className={styles.emptyState}>No charts yet</div>
+                <div className={styles.emptyState}>No charts yet — use + above to import</div>
               ) : (
                 project.charts!.map(chart => (
                   <div key={chart.id} className={styles.chartRow}>
@@ -405,6 +428,7 @@ export default function ProjectDetail() {
                       <span className={styles.chartRowMeta}>{chart.totalRows}r</span>
                     )}
                     <div className={styles.chartRowActions}>
+                      <button className={styles.addBtn} onClick={() => setShapingModalChart(chart)} aria-label="Interval steps"><RepeatIcon style={{ width: 14, height: 18 }}/></button>
                       <button className={styles.addBtn} onClick={() => setEditModalChart(chart)} aria-label="Edit chart"><PencilIcon size={14}/></button>
                       <button className={styles.chartDeleteBtn} onClick={() => deleteChart(chart.id)}>
                         <TrashIcon size={12}/>
@@ -788,6 +812,23 @@ export default function ProjectDetail() {
             </div>
           </div>
 
+          {/* Project actions */}
+          <div className={styles.projectActions}>
+            <button
+              className={styles.pageIconBtn}
+              title={project.status === 'archived' ? 'Unarchive' : 'Archive'}
+              onClick={() => updateProject(project.id, { status: project.status === 'archived' ? 'paused' : 'archived' })}
+            >
+              <ArchiveIcon size={14}/>
+            </button>
+            <button
+              className={`${styles.pageIconBtn} ${styles.pageIconBtnDanger}`}
+              title="Delete project"
+              onClick={() => { if (window.confirm(`Delete "${project.name}"? This cannot be undone.`)) { deleteProject(project.id); navigate('/dashboard') } }}
+            >
+              <TrashIcon size={14}/>
+            </button>
+          </div>
 
         </div>
       </div>

@@ -53,6 +53,22 @@
   font-size: 18px;
 }
 
+.aboutCard {
+  padding: 24px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.mtypeLogo {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  margin-bottom: 4px;
+}
+
 .comingSoon {
   padding: 32px;
   text-align: center;
@@ -60,3 +76,40 @@
   color: var(--ink-light);
   font-style: italic;
 }
+
+.settingGroup { display: flex; flex-direction: column; gap: 6px; }
+.settingGroupTitle { font-size: 13px; font-weight: 600; color: var(--ink); }
+.settingGroupSub { font-size: 11px; color: var(--ink-mid); margin-bottom: 4px; }
+
+.soundOption {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.soundOption:hover { border-color: var(--accent); }
+.soundOptionActive { border-color: var(--accent); background: var(--accent-lt); }
+.soundOptionLabel { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
+.soundOptionSub { font-size: 11px; color: var(--ink-mid); }
+
+.chimeRow { display: flex; align-items: stretch; gap: 6px; }
+.chimeOption { flex: 1; }
+.chimePreview {
+  width: 36px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--ink-mid);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chimePreview:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }

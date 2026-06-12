@@ -1,0 +1,410 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: var(--surface2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  max-width: 540px;
+  width: 100%;
+  margin: 0 auto;
+  background: var(--surface2);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--surface);
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--ink-mid);
+  margin-top: 2px;
+  font-family: var(--font-sans);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.saveBtn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--accent);
+  background: var(--accent-lt);
+  color: var(--accent);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.saveBtn:hover { background: var(--accent); color: var(--bg); }
+
+.closeBtn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--ink-light);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+}
+.closeBtn:hover { background: var(--surface2); color: var(--ink); }
+
+/* ── BODY ── */
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px;
+}
+
+
+.sectionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.groupHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.groupHeader {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  font-family: var(--font-sans);
+}
+
+.groupAddBtn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.12s, transform 0.12s;
+}
+.groupAddBtn:hover { opacity: 0.85; transform: scale(1.1); }
+
+.groupEmpty {
+  font-size: 12px;
+  color: var(--ink-light);
+  font-style: italic;
+  padding: 4px 0 6px;
+  font-family: var(--font-sans);
+}
+
+/* ── STEP CARD ── */
+.stepCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.stepSummary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.stepInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-sans);
+}
+
+.stepInstruction {
+  font-size: 11px;
+  color: var(--ink-mid);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-sans);
+}
+
+.stepPattern {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--ink-light);
+}
+
+.stepBtns {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.moveBtn {
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface2);
+  color: var(--ink-mid);
+  font-size: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+  padding: 0;
+}
+.moveBtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.moveBtn:disabled { opacity: 0.2; cursor: default; }
+
+.editBtn {
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface2);
+  color: var(--ink-mid);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+}
+.editBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+.deleteBtn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: none;
+  color: var(--ink-light);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: all 0.12s;
+}
+.deleteBtn:hover { color: var(--danger); background: var(--danger-lt, #ffeaea); }
+
+/* ── STEP FORM ── */
+.stepForm {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.formFieldRow {
+  display: flex;
+}
+
+.formNumRow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.formInlineRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.formLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-light);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-family: var(--font-sans);
+  flex: 1;
+}
+
+.formInput {
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.formInput:focus { border-color: var(--accent); }
+
+.formLabelSm {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-light);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-family: var(--font-sans);
+}
+
+.formInputSm {
+  height: 32px;
+  width: 62px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.12s;
+}
+.formInputSm:focus { border-color: var(--accent); }
+
+.formInlineLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-light);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-family: var(--font-sans);
+  flex-shrink: 0;
+  width: 56px;
+}
+
+
+.soundRow {
+  display: flex;
+  gap: 4px;
+}
+
+.soundBtn {
+  width: 32px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface2);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+  transition: all 0.12s;
+  padding: 0;
+}
+.soundBtnActive {
+  opacity: 1;
+  border-color: var(--accent);
+  background: var(--accent-lt);
+}
+
+.formActions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  padding-top: 2px;
+}
+
+.formCancelBtn {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-mid);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.formCancelBtn:hover { border-color: var(--danger); color: var(--danger); }
+
+.formConfirmBtn {
+  height: 28px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.formConfirmBtn:hover { opacity: 0.88; }
+
+/* ── ADD NEW STEP ── */
+.addCard {
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+

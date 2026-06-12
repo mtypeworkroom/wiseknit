@@ -37,6 +37,15 @@ export type StitchType =
   | 'sl'
   | 'empty'
 
+// ── BRACKET POSITION ─────────────────
+
+export interface BracketPos {
+  x1Pct: number
+  y1Pct: number
+  x2Pct: number
+  y2Pct: number
+}
+
 // ── PDF SECTION ──────────────────────
 
 export interface PdfReadingRect {
@@ -86,6 +95,10 @@ export interface Project {
   pdfKey?: string       // IndexedDB key for the attached PDF file
   pdfPageCount?: number // total pages in the attached PDF
   pdfSections?: PdfSection[]
+  readingRects?: PdfReadingRect[] // global highlights not tied to a section
+  bracketPos?: BracketPos
+  timerStartedAt?: string   // ISO timestamp; present = timer is running
+  timerStartRow?: number    // row when timer was started, for session record
 }
 
 // ── PROJECT CHART ────────────────────
@@ -104,10 +117,13 @@ export interface ProjectChart {
   totalStitches: number
   repeatStartRow: number
   workedInRound: boolean
+  countBy2?: boolean
   symbols: ProjectChartSymbol[]
   notes?: string
   rowNotes?: Record<number, string>  // per-row instructions keyed by row number
   flags: string[]
+  reminders?: ProjectReminder[]
+  intervalSteps?: IntervalStep[]
   imageKey?: string      // IndexedDB key for cropped chart image
   pageKey?: string       // IndexedDB key for full page image
   imageBase64?: string   // legacy — superseded by imageKey
@@ -155,6 +171,34 @@ export interface StitchSymbol {
   label: string
   description: string
   color?: string
+}
+
+// ── INTERVAL STEPS ───────────────────────
+
+export interface IntervalStep {
+  id: string
+  name: string
+  text: string           // plain-language instruction e.g. "K1, M1L at beg of row"
+  startRow: number       // total rows worked when counting begins (1-based)
+  repeatEvery: number    // fire every N total rows from startRow
+  repeatCount: number    // cap: total number of times it fires
+  order: number          // display order within the same position group
+  position: 'start' | 'middle' | 'end'
+  stsStart?: string      // for 'middle': stitch number or marker reference e.g. "12" or "marker 1"
+  sound: ReminderSound
+}
+
+// ── PROJECT REMINDERS ────────────────
+
+export type ReminderSound = 'chime+speak' | 'chime' | 'speak' | 'mute'
+export type ReminderChime = 'descend' | 'ascend' | 'bell' | 'ping' | 'double'
+
+export interface ProjectReminder {
+  id: string
+  text: string
+  type: 'absolute' | 'repeat'  // absolute = total rows worked; repeat = chart row position
+  row: number
+  sound?: ReminderSound  // undefined = use app default from settings
 }
 
 // ── REMINDERS & FLAGS ────────────────

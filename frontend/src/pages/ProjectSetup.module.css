@@ -130,7 +130,7 @@
 .scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 16px 32px;
+  padding: 10px 16px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -144,7 +144,7 @@
 .stepPanel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   animation: fadeIn 0.2s ease;
 }
 
@@ -153,18 +153,18 @@
   to   { opacity: 1; transform: none; }
 }
 
-.stepHeading { font-size: 20px; font-weight: 600; color: var(--ink); }
-.stepSub { font-size: 13px; color: var(--ink-mid); margin-top: 2px; }
+.stepHeading { font-size: 15px; font-weight: 600; color: var(--ink); }
+.stepSub { font-size: 12px; color: var(--ink-mid); margin-top: 1px; }
 
 /* ── CARD ── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .cardTitle {
@@ -201,8 +201,8 @@
 
 .input, .select, .textarea {
   width: 100%;
-  padding: 0 12px;
-  height: 40px;
+  padding: 0 10px;
+  height: 36px;
   background: var(--surface2);
   color: var(--ink);
   border: 1px solid var(--border);
@@ -219,9 +219,9 @@
 
 .textarea {
   height: auto;
-  padding: 10px 12px;
+  padding: 8px 10px;
   resize: vertical;
-  min-height: 90px;
+  min-height: 60px;
 }
 
 .hint {
@@ -334,7 +334,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 0;
+  padding: 6px 0;
   border-bottom: 1px solid var(--border);
   font-size: 13px;
 }
