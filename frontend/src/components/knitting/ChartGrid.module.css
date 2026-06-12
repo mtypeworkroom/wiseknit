@@ -20,7 +20,8 @@
 .colNum {
   width: 36px;
   text-align: center;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   font-size: 12px;
   color: var(--ink-light);
 }
@@ -38,7 +39,8 @@
   justify-content: flex-end;
   gap: 4px;
   padding-right: 8px;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   font-size: 11px;
   color: var(--ink-light);
   height: 36px;
@@ -57,7 +59,8 @@
 .sideLabel {
   width: 28px;
   padding-left: 6px;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   font-size: 11px;
   color: var(--ink-light);
   letter-spacing: 0.05em;
@@ -258,7 +261,8 @@
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 4px;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 .imageLegend {

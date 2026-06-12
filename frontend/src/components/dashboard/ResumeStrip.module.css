@@ -29,7 +29,8 @@
 .detail {
   font-size: 10px;
   color: var(--hero-mid);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

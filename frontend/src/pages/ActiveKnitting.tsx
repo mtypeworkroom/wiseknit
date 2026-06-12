@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import ChartGrid from '../components/knitting/ChartGrid'
@@ -18,10 +19,17 @@ function formatElapsed(ms: number): string {
   return `${m}:${String(sec).padStart(2, '0')}`
 }
 
+function textColorForBg(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return (r * 299 + g * 587 + b * 114) / 1000 > 128 ? '#1a1a1a' : '#ffffff'
+}
+
 export default function ActiveKnitting() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { projects, advanceRow, updateProject, addSession } = useProjectStore()
+  const { projects, advanceRow, updateProject, addSession, stepCounter } = useProjectStore()
   const defaultSound = useSettingsStore(s => s.reminderSound)
   const defaultVoice = useSettingsStore(s => s.reminderVoice)
   const defaultChime = useSettingsStore(s => s.reminderChime)
@@ -31,6 +39,45 @@ export default function ActiveKnitting() {
   const [backMenuOpen, setBackMenuOpen] = useState(false)
   const zoom: 'S' | 'M' | 'L' | 'XL' = 'M'
   const chartAreaRef = useRef<HTMLDivElement>(null)
+  const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const labelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [counterTooltip, setCounterTooltip] = useState<{ name: string; x: number; y: number } | null>(null)
+  const [slideLabel, setSlideLabel] = useState<{ name: string; x: number; y: number } | null>(null)
+
+  const handleCounterDown = (counterId: string, e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.pointerType === 'touch') {
+      const rect = e.currentTarget.getBoundingClientRect()
+      if (labelTimerRef.current) clearTimeout(labelTimerRef.current)
+      const counter = project.freeCounters?.find(c => c.id === counterId)
+      if (counter) {
+        setSlideLabel({ name: counter.name, x: rect.right + 6, y: rect.top + rect.height / 2 })
+        labelTimerRef.current = setTimeout(() => setSlideLabel(null), 1500)
+      }
+    }
+    pressTimerRef.current = setTimeout(() => {
+      pressTimerRef.current = null
+      stepCounter(project.id, counterId, -1)
+    }, 500)
+  }
+  const handleCounterUp = (counterId: string) => {
+    if (pressTimerRef.current !== null) {
+      clearTimeout(pressTimerRef.current)
+      pressTimerRef.current = null
+      stepCounter(project.id, counterId, 1)
+    }
+  }
+  const handleCounterCancel = () => {
+    if (pressTimerRef.current !== null) {
+      clearTimeout(pressTimerRef.current)
+      pressTimerRef.current = null
+    }
+  }
+
+  const handleCounterMouseEnter = (e: React.MouseEvent<HTMLButtonElement>, name: string) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setCounterTooltip({ name, x: rect.right + 8, y: rect.top + rect.height / 2 })
+  }
+  const handleCounterMouseLeave = () => setCounterTooltip(null)
   const [jumpMenuOpen, setJumpMenuOpen] = useState(false)
   const [noteModalOpen, setNoteModalOpen] = useState(false)
   const [noteModalValue, setNoteModalValue] = useState('')
@@ -355,18 +402,40 @@ export default function ActiveKnitting() {
         </button>
       </div>
 
-      {/* Chart area — full screen */}
-      <div
-        className={styles.chartArea}
-        ref={chartAreaRef}
-        onClick={() => { setPanelOpen(null); setBackMenuOpen(false); if (editingNote) cancelRowNote() }}
-      >
-        <ChartGrid
-          currentRow={project.currentRow}
-          totalRows={project.totalRows}
-          chart={chart}
-          zoom={zoom}
-        />
+      {/* Chart zone — counter sidebar (when present) + chart */}
+      <div className={styles.chartZone}>
+        {(project.freeCounters?.length ?? 0) > 0 && (
+          <div className={styles.counterSidebar}>
+            {project.freeCounters!.map(counter => (
+              <button
+                key={counter.id}
+                className={styles.counterPill}
+                style={{ background: counter.color ?? 'var(--accent)' }}
+                onPointerDown={e => handleCounterDown(counter.id, e)}
+                onPointerUp={() => handleCounterUp(counter.id)}
+                onPointerLeave={handleCounterCancel}
+                onContextMenu={e => e.preventDefault()}
+                onMouseEnter={e => handleCounterMouseEnter(e, counter.name)}
+                onMouseLeave={handleCounterMouseLeave}
+                aria-label={`${counter.name}: ${counter.value}. Tap to increment, hold to decrement.`}
+              >
+                <span className={styles.counterPillValue} style={{ color: textColorForBg(counter.color ?? '#3CCFEF') }}>{counter.value}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        <div
+          className={styles.chartArea}
+          ref={chartAreaRef}
+          onClick={() => { setPanelOpen(null); setBackMenuOpen(false) }}
+        >
+          <ChartGrid
+            currentRow={project.currentRow}
+            totalRows={project.totalRows}
+            chart={chart}
+            zoom={zoom}
+          />
+        </div>
       </div>
 
       {/* Legend panel */}
@@ -614,6 +683,25 @@ export default function ActiveKnitting() {
             </div>
           </div>
         </div>
+      )}
+
+      {counterTooltip && createPortal(
+        <div
+          className={styles.counterTooltip}
+          style={{ top: counterTooltip.y, left: counterTooltip.x }}
+        >
+          {counterTooltip.name}
+        </div>,
+        document.body
+      )}
+      {slideLabel && createPortal(
+        <div
+          className={styles.counterSlideLabel}
+          style={{ top: slideLabel.y, left: slideLabel.x }}
+        >
+          {slideLabel.name}
+        </div>,
+        document.body
       )}
 
     </div>

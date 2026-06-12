@@ -99,6 +99,7 @@ export interface Project {
   bracketPos?: BracketPos
   timerStartedAt?: string   // ISO timestamp; present = timer is running
   timerStartRow?: number    // row when timer was started, for session record
+  freeCounters?: FreeCounter[]
 }
 
 // ── PROJECT CHART ────────────────────
@@ -171,6 +172,18 @@ export interface StitchSymbol {
   label: string
   description: string
   color?: string
+}
+
+// ── FREE COUNTERS ─────────────────────────
+
+export interface FreeCounter {
+  id: string
+  name: string
+  value: number
+  color: string
+  triggerEvery?: number   // auto-step every N rows worked; absent = manual only
+  resetAt?: number        // count-up: reset to 0 at this value; count-down: reset to this when hitting 0
+  countDown?: boolean     // auto-trigger decrements instead of increments
 }
 
 // ── INTERVAL STEPS ───────────────────────

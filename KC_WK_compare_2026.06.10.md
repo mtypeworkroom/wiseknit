@@ -47,8 +47,10 @@
 - RS/WS detection, repeat count tracking, total rows worked
 - Session recording — start row, end row, duration, date; history on project detail
 - Full project metadata: yarn (all 9 fields), needle (size/type/cable), gauge, designer, category, notes
-- Per-row notes on charts — `rowNotes` schema exists; not yet wired to active knitting display
+- Per-row notes on charts — stored as `rowNotes` on ProjectChart; accessible via note icon in the active knitting strip; tap to open a modal, save, and dismiss
+- Interval steps — position-based (start / middle / end of row) repeating instructions that fire every N total rows from a configurable start row, up to a repeat count cap; displayed inline in the active knitting instruction strip; set up per chart via a dedicated modal
 - Progress bar and zoom levels in active knitting screen
+- Free counters — project-level named manual tally counters; user-chosen color with auto light/dark number contrast; left sidebar in active knitting (tap = increment, long-press = decrement, hover tooltip on desktop); setup inside Pattern card in Project Detail (inline chip row, + to add; tap chip to edit name/color, reset to 0, or delete); stored as `freeCounters[]` on `Project`
 
 ---
 
@@ -67,9 +69,9 @@
 | # | Feature | What KC does | WiseKnit today |
 |---|---|---|---|
 | 4 | **Count-by-2 mode** | Row marker advances every 2 rows — skips plain return rows for lace | ✅ RS Only toggle in chart setup — display row and total both double; chip 2 also reflects actual rows |
-| 5 | **Linked / secondary counters** | A counter that auto-increments every N main rows (e.g. "increase every 6 rows") | Only one main row counter per project |
+| 5 | **Linked / secondary counters** | A counter that auto-increments every N main rows (e.g. "increase every 6 rows") | Manual free counters built (project-level, named, color-coded); auto-increment every N rows not yet built |
 | 6 | **Written + chart linked view** | One tap advances both the written instruction position AND the chart row marker simultaneously | PDF viewer and active knitting chart screen are disconnected |
-| 7 | ✅ **Per-row instructions in active knitting** | Written instruction for the current row shown below the chart as it advances | Built: row note strip in bottom bar; tap to add/edit inline; auto-clears when row advances |
+| 7 | ✅ **Per-row instructions in active knitting** | Written instruction for the current row shown below the chart as it advances | Built: interval steps fire at configurable row intervals and display in the active knitting strip grouped by position (start / middle / end); per-row notes via note icon + modal |
 
 ### Tier 3 — Pattern navigation and annotation
 
@@ -694,12 +696,12 @@ Based on impact vs effort and what would make a knitter switch from KC. Organize
 
 ### Track A — KC Gap Closure (written pattern + active knitting)
 
-1. ✅ **Per-row instructions in active knitting** (Tier 2 #7) — done
+1. ✅ **Per-row instructions in active knitting** (Tier 2 #7) — interval steps: position-based (start/middle/end), fires every N total rows from start row × repeat count cap; per-row notes via note icon + modal
 2. ✅ **Row position marker on written pattern** (Tier 1 #1) — done
 3. ✅ **Live project timer** (Tier 1 #3) — done
 4. ✅ **Row alerts / reminders** (Tier 1 #2) — done
 5. ✅ **Count-by-2 mode** (Tier 2 #4) — RS Only toggle on chart setup; display row, total, and worked rows all correct
-6. **Linked / secondary counters** (Tier 2 #5) — up to 5 named counters; auto-increment or manual ← NEXT
+6. ✅ (manual) **Free counters** (Tier 2 #5 partial) — project-level named manual counters with color coding done; **auto-increment every N rows, reset-at, count-down** remaining ← NEXT
 7. **AI row instruction extraction** — differentiator; Phase 2 of the instruction strip; build after Phase 1 (manual entry) works
 8. **Size highlighting** (Tier 3 #8) — AI-only; high frequency pain point; depends on PDF text extraction
 9. **Inc/Dec evenly calculator** (Tier 4 #12) — commonly needed, self-contained to build

@@ -7,8 +7,9 @@ import ShapingStepsModal from '../components/shaping/ShapingStepsModal'
 import PDFViewer from '../components/reader/PDFViewer'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
 import { loadPDF, saveImage } from '../store/imageStore'
-import { ArchiveIcon, TrashIcon, FileIcon, ImageIcon, PencilIcon, BookOpenIcon, ChartGridIcon, PlusIcon, RepeatIcon } from '../components/icons'
+import { ArchiveIcon, TrashIcon, FileIcon, ImageIcon, PencilIcon, BookOpenIcon, ChartGridIcon, PlusIcon, RepeatIcon, HashIcon } from '../components/icons'
 import { CATEGORY_GROUPS, ALL_CATEGORIES } from '../data/categories'
+import ColorPicker from '../components/ColorPicker'
 import styles from './ProjectDetail.module.css'
 
 
@@ -39,10 +40,71 @@ const NEEDLE_SIZES: { label: string; mm: number }[] = [
   { label: 'US 50 (25.0mm)',   mm: 25.0 },
 ]
 
+function CounterFormPanel({
+  name, color, triggerEvery, resetAt, countDown,
+  onNameChange, onColorChange, onTriggerEveryChange, onResetAtChange, onCountDownChange,
+  onConfirm, onCancel, confirmLabel, extraActions,
+}: {
+  name: string
+  color: string
+  triggerEvery: string
+  resetAt: string
+  countDown: boolean
+  onNameChange: (v: string) => void
+  onColorChange: (v: string) => void
+  onTriggerEveryChange: (v: string) => void
+  onResetAtChange: (v: string) => void
+  onCountDownChange: (v: boolean) => void
+  onConfirm: () => void
+  onCancel: () => void
+  confirmLabel: string
+  extraActions?: React.ReactNode
+}) {
+  return (
+    <div className={styles.counterPanel}>
+      <div className={styles.counterPanelRow}>
+        <ColorPicker value={color} onChange={onColorChange} />
+        <input
+          className={styles.counterNameInput}
+          type="text"
+          value={name}
+          onChange={e => onNameChange(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') onConfirm() }}
+          placeholder="Counter name…"
+          autoFocus
+        />
+        <button className={styles.inlineSave} disabled={!name.trim()} onClick={onConfirm}>{confirmLabel}</button>
+        <button className={styles.inlineCancel} onClick={onCancel}>Cancel</button>
+      </div>
+      <div className={styles.counterLinkedRow}>
+        <span className={styles.counterLinkedLabel}>Auto every</span>
+        <input
+          className={styles.counterLinkedInput}
+          type="number" min="1" value={triggerEvery}
+          onChange={e => onTriggerEveryChange(e.target.value)}
+          placeholder="—"
+        />
+        <span className={styles.counterLinkedLabel}>rows &nbsp; Reset at</span>
+        <input
+          className={styles.counterLinkedInput}
+          type="number" min="1" value={resetAt}
+          onChange={e => onResetAtChange(e.target.value)}
+          placeholder="—"
+        />
+        <label className={styles.counterLinkedCheck}>
+          <input type="checkbox" checked={countDown} onChange={e => onCountDownChange(e.target.checked)} />
+          Count down
+        </label>
+      </div>
+      {extraActions && <div className={styles.counterPanelActions}>{extraActions}</div>}
+    </div>
+  )
+}
+
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { projects, sessions, deleteProject, updateProject } = useProjectStore()
+  const { projects, sessions, deleteProject, updateProject, addCounter, deleteCounter } = useProjectStore()
   const tagList = selectTagList(projects)
 
   const [editingField, setEditingField] = useState<EditingField>(null)
@@ -60,6 +122,12 @@ export default function ProjectDetail() {
   const [gaugeForm, setGaugeForm] = useState<Gauge>({ stitchesPer10cm: 0, rowsPer10cm: 0 })
   const [yarnForm, setYarnForm] = useState<Partial<Yarn>>({})
   const [needleForm, setNeedleForm] = useState<Partial<Needle>>({ sizeMm: 4.0, type: 'circular-fixed' })
+  const [chipMenuId, setChipMenuId] = useState<string | 'add' | null>(null)
+  const [chipEditName, setChipEditName] = useState('')
+  const [chipEditColor, setChipEditColor] = useState('#3CCFEF')
+  const [chipEditTriggerEvery, setChipEditTriggerEvery] = useState('')
+  const [chipEditResetAt, setChipEditResetAt] = useState('')
+  const [chipEditCountDown, setChipEditCountDown] = useState(false)
   const [editModalChart, setEditModalChart] = useState<ProjectChart | null>(null)
   const [shapingModalChart, setShapingModalChart] = useState<ProjectChart | null>(null)
   const [chartDropdownOpen, setChartDropdownOpen] = useState(false)
@@ -436,6 +504,140 @@ export default function ProjectDetail() {
                     </div>
                   </div>
                 ))
+              )}
+
+              {/* Counters row — lives inside the Pattern card */}
+              <div className={styles.counterInlineRow}>
+                <HashIcon size={14} className={styles.counterInlineIcon}/>
+                <span className={styles.counterInlineLabel}>Counters</span>
+                <div className={styles.counterChipsInline}>
+                  {(project.freeCounters ?? []).map(counter => (
+                    <button
+                      key={counter.id}
+                      className={`${styles.counterChip} ${chipMenuId === counter.id ? styles.counterChipActive : ''}`}
+                      style={chipMenuId === counter.id ? { borderColor: counter.color ?? 'var(--accent)' } : undefined}
+                      onClick={() => {
+                        if (chipMenuId === counter.id) { setChipMenuId(null) }
+                        else {
+                          setChipMenuId(counter.id)
+                          setChipEditName(counter.name)
+                          setChipEditColor(counter.color ?? COUNTER_PALETTE[0])
+                          setChipEditTriggerEvery(counter.triggerEvery ? String(counter.triggerEvery) : '')
+                          setChipEditResetAt(counter.resetAt ? String(counter.resetAt) : '')
+                          setChipEditCountDown(counter.countDown ?? false)
+                        }
+                      }}
+                    >
+                      <span className={styles.counterChipDot} style={{ background: counter.color ?? 'var(--accent)' }} />
+                      <span className={styles.counterChipName}>{counter.name}</span>
+                      <span className={styles.counterChipValue}>{counter.value}</span>
+                      {counter.triggerEvery && <span className={styles.counterChipLinked}>÷{counter.triggerEvery}</span>}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  className={styles.addBtn}
+                  onClick={() => {
+                    setChipMenuId(chipMenuId === 'add' ? null : 'add')
+                    setChipEditName('')
+                    setChipEditColor('#3CCFEF')
+                    setChipEditTriggerEvery('')
+                    setChipEditResetAt('')
+                    setChipEditCountDown(false)
+                  }}
+                  aria-label="Add counter"
+                >
+                  <PlusIcon size={14}/>
+                </button>
+              </div>
+
+              {/* Action panel — edit/reset/delete for selected chip */}
+              {chipMenuId && chipMenuId !== 'add' && (
+                <CounterFormPanel
+                  name={chipEditName}
+                  color={chipEditColor}
+                  triggerEvery={chipEditTriggerEvery}
+                  resetAt={chipEditResetAt}
+                  countDown={chipEditCountDown}
+                  onNameChange={setChipEditName}
+                  onColorChange={setChipEditColor}
+                  onTriggerEveryChange={setChipEditTriggerEvery}
+                  onResetAtChange={setChipEditResetAt}
+                  onCountDownChange={setChipEditCountDown}
+                  confirmLabel="Save"
+                  onConfirm={() => {
+                    if (!chipEditName.trim()) return
+                    const te = parseInt(chipEditTriggerEvery)
+                    const ra = parseInt(chipEditResetAt)
+                    updateProject(project.id, {
+                      freeCounters: (project.freeCounters ?? []).map(c =>
+                        c.id === chipMenuId ? {
+                          ...c,
+                          name: chipEditName.trim(),
+                          color: chipEditColor,
+                          triggerEvery: te > 0 ? te : undefined,
+                          resetAt: ra > 0 ? ra : undefined,
+                          countDown: chipEditCountDown || undefined,
+                        } : c
+                      ),
+                    })
+                    setChipMenuId(null)
+                  }}
+                  onCancel={() => setChipMenuId(null)}
+                  extraActions={
+                    <>
+                      <button
+                        className={styles.inlineCancel}
+                        onClick={() => {
+                          updateProject(project.id, {
+                            freeCounters: (project.freeCounters ?? []).map(c =>
+                              c.id === chipMenuId ? { ...c, value: 0 } : c
+                            ),
+                          })
+                          setChipMenuId(null)
+                        }}
+                      >Reset to 0</button>
+                      <button
+                        className={styles.counterDeleteBtn}
+                        onClick={() => { deleteCounter(project.id, chipMenuId); setChipMenuId(null) }}
+                      >
+                        <TrashIcon size={12}/> Delete
+                      </button>
+                    </>
+                  }
+                />
+              )}
+
+              {/* Add form */}
+              {chipMenuId === 'add' && (
+                <CounterFormPanel
+                  name={chipEditName}
+                  color={chipEditColor}
+                  triggerEvery={chipEditTriggerEvery}
+                  resetAt={chipEditResetAt}
+                  countDown={chipEditCountDown}
+                  onNameChange={setChipEditName}
+                  onColorChange={setChipEditColor}
+                  onTriggerEveryChange={setChipEditTriggerEvery}
+                  onResetAtChange={setChipEditResetAt}
+                  onCountDownChange={setChipEditCountDown}
+                  confirmLabel="Add"
+                  onConfirm={() => {
+                    if (!chipEditName.trim()) return
+                    const te = parseInt(chipEditTriggerEvery)
+                    const ra = parseInt(chipEditResetAt)
+                    addCounter(project.id, {
+                      name: chipEditName.trim(),
+                      color: chipEditColor,
+                      triggerEvery: te > 0 ? te : undefined,
+                      resetAt: ra > 0 ? ra : undefined,
+                      countDown: chipEditCountDown || undefined,
+                    })
+                    setChipEditName('')
+                    setChipMenuId(null)
+                  }}
+                  onCancel={() => setChipMenuId(null)}
+                />
               )}
             </div>
           </div>

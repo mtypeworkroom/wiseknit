@@ -445,7 +445,7 @@
 }
 .chartRow:last-of-type { border-bottom: none; }
 .chartRowName { flex: 1; font-size: 13px; color: var(--ink); font-weight: 500; }
-.chartRowPage { font-size: 11px; color: var(--ink-light); font-family: var(--font-mono); }
+.chartRowPage { font-size: 11px; color: var(--ink-light); font-family: var(--font-sans); font-variant-numeric: tabular-nums lining-nums; }
 .chartEditBtn {
   font-size: 11px; color: var(--accent); background: none; border: none;
   cursor: pointer; font-family: var(--font-sans); font-weight: 500;

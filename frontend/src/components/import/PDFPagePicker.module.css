@@ -116,7 +116,7 @@
 .pageBtnPhoto { background: var(--warn-lt); color: var(--warn); }
 
 .pageNum {
-  font-size: 12px; font-family: var(--font-mono);
+  font-size: 12px; font-family: var(--font-sans); font-variant-numeric: tabular-nums lining-nums;
   color: var(--ink-light); text-align: center;
   padding: 3px 0; border-bottom: 1px solid var(--border);
 }
@@ -164,7 +164,8 @@
 .cropDetail {
   font-size: 11px;
   color: var(--ink-mid);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   text-align: center;
   padding: 6px 8px;
   border-top: 1px solid var(--border);
@@ -338,7 +339,7 @@
   height: 38px; padding: 0 8px;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 4px; color: var(--ink);
-  font-family: var(--font-mono); font-size: 14px;
+  font-family: var(--font-sans); font-variant-numeric: tabular-nums lining-nums; font-size: 14px;
   outline: none; transition: border-color 0.15s;
   width: 100%; max-width: 80px; box-sizing: border-box;
 }
@@ -403,13 +404,14 @@
   font-size: 11px;
   color: var(--ok);
   font-weight: 600;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   flex-shrink: 0;
 }
 .cropStatusEmpty {
   font-size: 11px;
   color: var(--ink-light);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   flex-shrink: 0;
 }
 .cropViewport {
@@ -525,7 +527,8 @@
   border-radius: 3px;
   background: var(--surface);
   color: var(--ink);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -555,7 +558,7 @@
   flex-shrink: 0;
   background: var(--surface);
 }
-.footerInfo { flex: 1; font-size: 12px; color: var(--ink-mid); font-family: var(--font-mono); }
+.footerInfo { flex: 1; font-size: 12px; color: var(--ink-mid); font-family: var(--font-sans); font-variant-numeric: tabular-nums lining-nums; }
 .footerActions { display: flex; gap: 8px; }
 
 .cancelBtn {

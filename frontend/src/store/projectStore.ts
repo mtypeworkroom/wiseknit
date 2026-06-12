@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Project, Session } from '../types'
+import type { Project, Session, FreeCounter } from '../types'
 import { PLEIONE_PATTERN } from '../data/pleione'
 
 interface ProjectStore {
@@ -13,6 +13,9 @@ interface ProjectStore {
   advanceRow: (id: string) => void
   addSession: (session: Session) => void
   deleteProject: (id: string) => void
+  addCounter: (projectId: string, counter: Omit<FreeCounter, 'id' | 'value'>) => void
+  deleteCounter: (projectId: string, counterId: string) => void
+  stepCounter: (projectId: string, counterId: string, delta: 1 | -1) => void
 }
 
 const MOCK_PROJECTS: Project[] = [
@@ -69,12 +72,25 @@ export const useProjectStore = create<ProjectStore>()(
             const repeatStart = p.chartRepeatStartRow ?? 1
             const isAtEnd = p.currentRow >= chartRows
             const nextRow = isAtEnd ? repeatStart : p.currentRow + 1
-            const current = p.totalRowsWorked ?? 0
-            const next = current + 1
+            const newTotalRowsWorked = (p.totalRowsWorked ?? 0) + 1
+            const updatedCounters = (p.freeCounters ?? []).map(c => {
+              if (!c.triggerEvery || c.triggerEvery < 1) return c
+              if (newTotalRowsWorked % c.triggerEvery !== 0) return c
+              const delta = c.countDown ? -1 : 1
+              let newValue = c.value + delta
+              if (c.resetAt !== undefined && c.resetAt > 0) {
+                if (c.countDown && newValue <= 0) newValue = c.resetAt
+                else if (!c.countDown && newValue >= c.resetAt) newValue = 0
+              } else {
+                newValue = Math.max(0, newValue)
+              }
+              return { ...c, value: newValue }
+            })
             return {
               ...p,
               currentRow: nextRow,
-              totalRowsWorked: next,
+              totalRowsWorked: newTotalRowsWorked,
+              freeCounters: updatedCounters.length ? updatedCounters : p.freeCounters,
               updatedAt: new Date().toISOString(),
             }
           }),
@@ -88,6 +104,36 @@ export const useProjectStore = create<ProjectStore>()(
           projects: state.projects.filter((p) => p.id !== id),
           sessions: state.sessions.filter((s) => s.projectId !== id),
           activeProjectId: state.activeProjectId === id ? null : state.activeProjectId,
+        })),
+
+      addCounter: (projectId, counter) =>
+        set((state) => ({
+          projects: state.projects.map((p) => {
+            if (p.id !== projectId) return p
+            const newCounter: FreeCounter = { id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, value: 0, ...counter }
+            return { ...p, freeCounters: [...(p.freeCounters ?? []), newCounter], updatedAt: new Date().toISOString() }
+          }),
+        })),
+
+      deleteCounter: (projectId, counterId) =>
+        set((state) => ({
+          projects: state.projects.map((p) =>
+            p.id !== projectId ? p : { ...p, freeCounters: (p.freeCounters ?? []).filter(c => c.id !== counterId), updatedAt: new Date().toISOString() }
+          ),
+        })),
+
+      stepCounter: (projectId, counterId, delta) =>
+        set((state) => ({
+          projects: state.projects.map((p) => {
+            if (p.id !== projectId) return p
+            return {
+              ...p,
+              freeCounters: (p.freeCounters ?? []).map(c =>
+                c.id !== counterId ? c : { ...c, value: Math.max(0, c.value + delta) }
+              ),
+              updatedAt: new Date().toISOString(),
+            }
+          }),
         })),
     }),
     { name: 'wiseknit-projects' }

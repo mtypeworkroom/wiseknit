@@ -201,7 +201,8 @@
 }
 .notesToggleMeta {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   color: var(--accent);
   font-weight: 600;
 }
@@ -244,7 +245,8 @@
 
 .notesRowLabel {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   font-weight: 600;
   color: var(--ink);
   flex: 1;
@@ -325,7 +327,7 @@
   height: 26px; padding: 0 6px;
   background: var(--surface2); border: 1px solid var(--border);
   border-radius: 4px; color: var(--ink);
-  font-family: var(--font-mono); font-size: 12px;
+  font-family: var(--font-sans); font-variant-numeric: tabular-nums lining-nums; font-size: 12px;
   text-align: center; outline: none;
   /* hide number spinners — they eat the space at small sizes */
   -moz-appearance: textfield;
@@ -355,7 +357,7 @@
   width: 22px; height: 22px;
   border: 1px solid var(--border); border-radius: 3px;
   background: var(--surface); color: var(--ink);
-  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  font-family: var(--font-sans); font-variant-numeric: tabular-nums lining-nums; font-size: 12px; font-weight: 600;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: all 0.12s;
 }
@@ -477,7 +479,7 @@
 }
 .reminderBadgeRepeat { background: var(--accent-lt); color: var(--accent); }
 .reminderBadgeAbs { background: var(--surface2); color: var(--ink-mid); border: 1px solid var(--border); }
-.reminderRowNum { font-size: 10px; font-family: var(--font-mono); color: var(--ink-mid); flex-shrink: 0; }
+.reminderRowNum { font-size: 10px; font-family: var(--font-sans); font-variant-numeric: tabular-nums lining-nums; color: var(--ink-mid); flex-shrink: 0; }
 .reminderRowText { font-size: 11px; color: var(--ink); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .reminderDel {
   background: none; border: none; cursor: pointer;
@@ -490,7 +492,7 @@
   width: 46px; flex-shrink: 0; height: 26px; padding: 0 6px;
   border: 1px solid var(--border); border-radius: 4px;
   background: var(--surface); color: var(--ink);
-  font-size: 12px; font-family: var(--font-mono);
+  font-size: 12px; font-family: var(--font-sans); font-variant-numeric: tabular-nums lining-nums;
 }
 .reminderNumInput:focus { outline: none; border-color: var(--accent); }
 .reminderTypeBtn {

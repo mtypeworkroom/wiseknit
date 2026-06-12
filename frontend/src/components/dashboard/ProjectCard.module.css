@@ -151,7 +151,8 @@
 }
 
 .statVal {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   font-size: 11px;
   color: var(--ink);
   font-weight: 500;

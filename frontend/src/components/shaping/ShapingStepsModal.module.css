@@ -183,7 +183,8 @@
 
 .stepPattern {
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   color: var(--ink-light);
 }
 
@@ -316,7 +317,8 @@
   border-radius: 4px;
   background: var(--surface2);
   color: var(--ink);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
   font-size: 13px;
   outline: none;
   text-align: center;
