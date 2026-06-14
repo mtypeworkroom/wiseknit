@@ -6,8 +6,9 @@ import styles from './PDFPagePicker.module.css'
 
 export interface PageSelection {
   pageNumber: number
-  role: 'chart' | 'photo' | null
+  role: 'chart' | 'photo' | 'key' | null
   chartName?: string
+  keyName?: string
   imageBase64?: string       // full page
   croppedBase64?: string     // cropped chart area
   totalRows?: number
@@ -100,7 +101,7 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
     }
   }
 
-  const toggleRole = (index: number, role: 'chart' | 'photo') => {
+  const toggleRole = (index: number, role: 'chart' | 'photo' | 'key') => {
     setSelections(prev => prev.map((s, i) => {
       if (i !== index) {
         if (role === 'photo' && s.role === 'photo') return { ...s, role: null }
@@ -108,11 +109,16 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
       }
       if (s.role === role) {
         setExpandedIndex(null)
-        return { ...s, role: null, chartName: undefined, confirmed: false }
+        return { ...s, role: null, chartName: undefined, keyName: undefined, confirmed: false }
       }
       const chartCount = prev.filter(x => x.role === 'chart').length + 1
+      const keyCount = prev.filter(x => x.role === 'key').length + 1
       setExpandedIndex(index)
-      return { ...s, role, chartName: role === 'chart' ? `Chart ${chartCount}` : undefined, confirmed: false }
+      return {
+        ...s, role, confirmed: false,
+        chartName: role === 'chart' ? `Chart ${chartCount}` : undefined,
+        keyName: role === 'key' ? `Key ${keyCount}` : undefined,
+      }
     }))
   }
 
@@ -126,10 +132,12 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
   }
 
   const selectedCharts = selections.filter(s => s.role === 'chart')
+  const selectedKeys = selections.filter(s => s.role === 'key')
   const photoSel = selections.find(s => s.role === 'photo')
   const canComplete = !loading
     && (selectedCharts.length === 0 || selectedCharts.every(s => s.confirmed))
     && (!photoSel || photoSel.confirmed)
+    && (selectedKeys.length === 0 || selectedKeys.every(s => s.confirmed))
 
   return (
     <div className={styles.overlay}>
@@ -153,9 +161,10 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
               const sel = selections[i]
               const isChart = sel.role === 'chart'
               const isPhoto = sel.role === 'photo'
+              const isKey = sel.role === 'key'
 
               return (
-                <div key={i} ref={el => { pageCardRefs.current[i] = el }} className={`${styles.pageCard} ${isChart ? styles.pageChart : ''} ${isPhoto ? styles.pagePhoto : ''}`}>
+                <div key={i} ref={el => { pageCardRefs.current[i] = el }} className={`${styles.pageCard} ${isChart ? styles.pageChart : ''} ${isPhoto ? styles.pagePhoto : ''} ${isKey ? styles.pageKey : ''}`}>
 
                   <div className={styles.pageBtns}>
                     <button className={`${styles.pageBtn} ${isChart ? styles.pageBtnActive : ''}`} onClick={() => toggleRole(i, 'chart')}>
@@ -164,13 +173,16 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
                     <button className={`${styles.pageBtn} ${isPhoto ? styles.pageBtnPhoto : ''}`} onClick={() => toggleRole(i, 'photo')}>
                       {isPhoto ? '✓ Photo' : 'Photo'}
                     </button>
+                    <button className={`${styles.pageBtn} ${isKey ? styles.pageBtnKey : ''}`} onClick={() => toggleRole(i, 'key')}>
+                      {isKey ? '✓ Key' : 'Key'}
+                    </button>
                   </div>
 
                   <div className={styles.pageNum}>Page {i + 1}</div>
 
                   <div
                     className={styles.pageImgWrap}
-                    onClick={((isChart || isPhoto) && !sel.confirmed) ? () => setExpandedIndex(i) : undefined}
+                    onClick={((isChart || isPhoto || isKey) && !sel.confirmed) ? () => setExpandedIndex(i) : undefined}
                   >
                     <img src={src} alt={`Page ${i + 1}`} className={styles.pageImg} />
                     {isChart && !sel.confirmed && (
@@ -184,6 +196,12 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
                     )}
                     {isPhoto && sel.confirmed && (
                       <div className={styles.confirmedOverlay}>✓ Photo</div>
+                    )}
+                    {isKey && !sel.confirmed && (
+                      <div className={styles.tapToSetup}>Tap to crop stitch key</div>
+                    )}
+                    {isKey && sel.confirmed && (
+                      <div className={styles.confirmedOverlay}>✓ Stitch Key</div>
                     )}
                   </div>
 
@@ -208,6 +226,27 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
               </div>
             ))}
 
+            {/* ── Confirmed key crops — appear at the end ── */}
+            {selections.filter(s => s.role === 'key' && s.confirmed).map((sel) => (
+              <div key={`key-crop-${sel.pageNumber}`} className={`${styles.pageCard} ${styles.pageKey}`}>
+                <div className={styles.pageBtns}>
+                  <span className={styles.chartCropLabel}>✓ Key from p.{sel.pageNumber}</span>
+                  <button className={styles.pageBtn} onClick={() => setExpandedIndex(sel.pageNumber - 1)} aria-label="Re-crop"><PencilIcon size={13}/></button>
+                </div>
+                <input
+                  className={styles.keyNameInput}
+                  value={sel.keyName ?? ''}
+                  onChange={e => updateSel(sel.pageNumber - 1, { keyName: e.target.value })}
+                  placeholder="Key name…"
+                />
+                {sel.croppedBase64 && (
+                  <div className={styles.pageImgWrap}>
+                    <img src={sel.croppedBase64} alt={sel.keyName ?? 'Stitch Key'} className={styles.pageImg} />
+                  </div>
+                )}
+              </div>
+            ))}
+
           </div>
         )}
 
@@ -216,6 +255,12 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
             {selectedCharts.length} chart{selectedCharts.length !== 1 ? 's' : ''} selected
             {selectedCharts.filter(s => s.confirmed).length > 0 && ` · ${selectedCharts.filter(s => s.confirmed).length} confirmed`}
             {photoSel ? (photoSel.confirmed ? ' · 1 photo ✓' : ' · 1 photo — tap to crop') : ''}
+            {selectedKeys.length > 0 && (
+              ` · ${selectedKeys.length} key${selectedKeys.length !== 1 ? 's' : ''}`
+              + (selectedKeys.every(s => s.confirmed)
+                ? ' ✓'
+                : ` (${selectedKeys.filter(s => s.confirmed).length} confirmed)`)
+            )}
           </div>
           <div className={styles.footerActions}>
             <button className={styles.cancelBtn} onClick={onCancel}>Cancel</button>
@@ -249,6 +294,8 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
         <PhotoCropPanel
           src={pages[expandedIndex]}
           imageData={pageImageDatas[expandedIndex]}
+          title="Crop project photo — drag to reposition (4:5 portrait)"
+          aspect={4 / 5}
           onConfirm={(croppedBase64) => {
             setSelections(prev => prev.map((s, i) =>
               i === expandedIndex ? { ...s, croppedBase64, confirmed: true } : s
@@ -256,6 +303,18 @@ export default function PDFPagePicker({ file, onComplete, onCancel }: PDFPagePic
             setExpandedIndex(null)
           }}
           onCancel={() => setExpandedIndex(null)}
+        />
+      )}
+
+      {/* Stitch key crop overlay — full-screen, opens when a key page is active */}
+      {expandedIndex !== null && selections[expandedIndex]?.role === 'key' && pages[expandedIndex] && pageImageDatas[expandedIndex] && (
+        <KeyCropOverlay
+          src={pages[expandedIndex]}
+          imageData={pageImageDatas[expandedIndex]}
+          sel={selections[expandedIndex]}
+          onChange={patch => updateSel(expandedIndex, patch)}
+          onConfirm={() => confirmChart(expandedIndex)}
+          onBack={() => setExpandedIndex(null)}
         />
       )}
 
@@ -348,13 +407,14 @@ interface CropRefinePanelProps {
   imageData: ImageData
   initialBounds: PixelBounds
   chartName: string
+  confirmLabel?: string
   onBack: () => void
   onConfirm: (croppedBase64: string) => void
 }
 
-const NUDGE_PX = 4
+const NUDGE_PX = 2
 
-function CropRefinePanel({ imageData, initialBounds, chartName, onBack, onConfirm }: CropRefinePanelProps) {
+function CropRefinePanel({ imageData, initialBounds, chartName, confirmLabel = 'Confirm Chart ✓', onBack, onConfirm }: CropRefinePanelProps) {
   const [offsets, setOffsets] = useState<NudgeOffsets>({ top: 0, bottom: 0, left: 0, right: 0 })
   const [previewUrl, setPreviewUrl] = useState('')
 
@@ -409,7 +469,7 @@ function CropRefinePanel({ imageData, initialBounds, chartName, onBack, onConfir
 
       <div className={styles.refineActions}>
         <button className={styles.cancelBtn} onClick={onBack}><ChevronLeftIcon size={16}/></button>
-        <button className={styles.confirmBtn} onClick={handleConfirm}>Confirm Chart ✓</button>
+        <button className={styles.confirmBtn} onClick={handleConfirm}>{confirmLabel}</button>
       </div>
     </div>
   )
@@ -420,19 +480,25 @@ function CropRefinePanel({ imageData, initialBounds, chartName, onBack, onConfir
 interface PhotoCropPanelProps {
   src: string
   imageData: ImageData
+  title: string
+  aspect?: number
   onConfirm: (croppedBase64: string) => void
   onCancel: () => void
 }
 
-function PhotoCropPanel({ src, imageData, onConfirm, onCancel }: PhotoCropPanelProps) {
+function PhotoCropPanel({ src, imageData, title, aspect, onConfirm, onCancel }: PhotoCropPanelProps) {
   const [crop, setCrop] = useState<Crop>()
 
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget
-    setCrop(centerCrop(
-      makeAspectCrop({ unit: '%', width: 55 }, 4 / 5, width, height),
-      width, height
-    ))
+    if (aspect) {
+      setCrop(centerCrop(
+        makeAspectCrop({ unit: '%', width: 55 }, aspect, width, height),
+        width, height
+      ))
+    } else {
+      setCrop({ unit: '%', x: 10, y: 10, width: 80, height: 80 })
+    }
   }
 
   const handleConfirm = () => {
@@ -454,12 +520,12 @@ function PhotoCropPanel({ src, imageData, onConfirm, onCancel }: PhotoCropPanelP
     <div className={styles.chartOverlay}>
       <div className={styles.chartOverlayHeader}>
         <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
-          Crop project photo — drag to reposition (4:5 portrait)
+          {title}
         </span>
         {crop && <span className={styles.cropDone}>✓ Ready</span>}
       </div>
       <div className={styles.photoCropBody}>
-        <ReactCrop crop={crop} onChange={(_c, pc) => setCrop(pc)} aspect={4 / 5} className={styles.photoCropReact}>
+        <ReactCrop crop={crop} onChange={(_c, pc) => setCrop(pc)} aspect={aspect} className={styles.photoCropReact}>
           <img src={src} alt="Page" className={styles.photoCropImg} onLoad={onImageLoad} />
         </ReactCrop>
       </div>
@@ -699,9 +765,9 @@ function ChartSetupOverlay({ src, imageData, sel, onChange, onConfirm, onBack }:
               </div>
             </div>
             <div className={styles.setupSection}>
-              <div className={styles.setupLabel}>Rows</div>
+              <div className={styles.setupLabel}>Rows <span className={styles.requiredStar}>*</span></div>
               <input
-                className={styles.setupInputSmall}
+                className={`${styles.setupInputSmall} ${!sel.totalRows ? styles.setupInputWarn : ''}`}
                 type="number" min={1}
                 value={sel.totalRows ?? ''}
                 onChange={e => { const v = parseInt(e.target.value); onChange({ totalRows: isNaN(v) ? undefined : Math.max(1, v) }) }}
@@ -709,9 +775,9 @@ function ChartSetupOverlay({ src, imageData, sel, onChange, onConfirm, onBack }:
               />
             </div>
             <div className={styles.setupSection}>
-              <div className={styles.setupLabel}>Sts / row</div>
+              <div className={styles.setupLabel}>Sts / row <span className={styles.requiredStar}>*</span></div>
               <input
-                className={styles.setupInputSmall}
+                className={`${styles.setupInputSmall} ${!sel.totalStitches ? styles.setupInputWarn : ''}`}
                 type="number" min={1}
                 value={sel.totalStitches ?? ''}
                 onChange={e => { const v = parseInt(e.target.value); onChange({ totalStitches: isNaN(v) ? undefined : Math.max(1, v) }) }}
@@ -723,8 +789,187 @@ function ChartSetupOverlay({ src, imageData, sel, onChange, onConfirm, onBack }:
           <button className={styles.confirmBtn} style={{ marginTop: 'auto' }} disabled={!canProceed} onClick={handlePreview}>
             Preview &amp; Refine <ChevronRightIcon size={12}/>
           </button>
+          {(!sel.totalRows || !sel.totalStitches) && (
+            <div className={styles.fieldHint}>Enter rows and sts to continue</div>
+          )}
         </div>
 
+      </div>
+    </div>
+  )
+}
+
+// ── Key Crop Overlay (full-screen) ───────────────────────────
+// Same crop → auto-detect → refine flow as ChartSetupOverlay,
+// but no metadata form — just draw a box and refine the crop.
+
+interface KeyCropOverlayProps {
+  src: string
+  imageData: ImageData
+  sel: PageSelection
+  onChange: (patch: Partial<PageSelection>) => void
+  onConfirm: () => void
+  onBack: () => void
+}
+
+function KeyCropOverlay({ src, imageData, sel, onChange, onConfirm, onBack }: KeyCropOverlayProps) {
+  const [crop, setCrop] = useState<Crop>({ unit: '%', x: 10, y: 10, width: 80, height: 80 })
+  const [phase, setPhase] = useState<'select' | 'refine'>('select')
+  const [detectedBounds, setDetectedBounds] = useState<PixelBounds | null>(null)
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 })
+  const [zoom, setZoom] = useState(1)
+  const zoomRef = useRef(1)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const viewportRef = useRef<HTMLDivElement>(null)
+
+  const baseWidth = containerSize.w > 0 && containerSize.h > 0
+    ? Math.round(imageData.width * Math.min(
+        containerSize.w / imageData.width,
+        containerSize.h / imageData.height,
+      ))
+    : 0
+  const displayWidth = baseWidth > 0 ? Math.round(baseWidth * zoom) : 0
+
+  const baseWidthRef = useRef(0)
+  const cropRef = useRef<Crop | undefined>(undefined)
+  baseWidthRef.current = baseWidth
+  cropRef.current = crop
+
+  useLayoutEffect(() => {
+    const el = viewportRef.current
+    if (!el) return
+    const measure = () => setContainerSize({ w: el.clientWidth, h: el.clientHeight })
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => {
+    const el = viewportRef.current
+    if (!el || zoom <= 1) return
+    const bw = baseWidthRef.current
+    if (!bw) return
+    const c = cropRef.current
+    const dispW = bw * zoom
+    const dispH = dispW * (imageData.height / imageData.width)
+    const cx = c && c.width > 0 ? (c.x + c.width / 2) / 100 : 0.5
+    const cy = c && c.height > 0 ? (c.y + c.height / 2) / 100 : 0.5
+    el.scrollLeft = Math.max(0, cx * dispW - el.clientWidth / 2)
+    el.scrollTop  = Math.max(0, cy * dispH - el.clientHeight / 2)
+  }, [zoom])
+
+  useEffect(() => {
+    const overlay = overlayRef.current
+    const viewport = viewportRef.current
+    if (!overlay || !viewport) return
+    let lastTouchDist: number | null = null
+
+    const doZoom = (pixels: number) => {
+      const factor = Math.pow(1.003, -pixels)
+      const cur = zoomRef.current
+      const next = Math.max(1, Math.min(20, cur * factor))
+      if (Math.abs(next - cur) < 0.001) return
+      zoomRef.current = next
+      setZoom(next)
+    }
+
+    const handleViewportWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return
+      e.preventDefault(); e.stopPropagation()
+      const raw = e.deltaMode === 1 ? e.deltaY * 30 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY
+      doZoom(Math.max(-200, Math.min(200, raw)))
+    }
+    const handleOverlayWheel = (e: WheelEvent) => { if (e.ctrlKey || e.metaKey) e.preventDefault() }
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2)
+        lastTouchDist = Math.hypot(e.touches[1].clientX - e.touches[0].clientX, e.touches[1].clientY - e.touches[0].clientY)
+    }
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2 || lastTouchDist === null) return
+      e.preventDefault()
+      const dist = Math.hypot(e.touches[1].clientX - e.touches[0].clientX, e.touches[1].clientY - e.touches[0].clientY)
+      const next = Math.max(1, Math.min(20, zoomRef.current * (dist / lastTouchDist)))
+      if (Math.abs(next - zoomRef.current) > 0.001) { zoomRef.current = next; setZoom(next) }
+      lastTouchDist = dist
+    }
+    const handleTouchEnd = () => { lastTouchDist = null }
+
+    viewport.addEventListener('wheel', handleViewportWheel, { passive: false })
+    overlay.addEventListener('wheel', handleOverlayWheel, { passive: false })
+    overlay.addEventListener('touchstart', handleTouchStart, { passive: true })
+    overlay.addEventListener('touchmove', handleTouchMove, { passive: false })
+    overlay.addEventListener('touchend', handleTouchEnd)
+    return () => {
+      viewport.removeEventListener('wheel', handleViewportWheel)
+      overlay.removeEventListener('wheel', handleOverlayWheel)
+      overlay.removeEventListener('touchstart', handleTouchStart)
+      overlay.removeEventListener('touchmove', handleTouchMove)
+      overlay.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [])
+
+  const handlePreview = () => {
+    const cropX = Math.round((crop.x / 100) * imageData.width)
+    const cropY = Math.round((crop.y / 100) * imageData.height)
+    const cropW = Math.round((crop.width / 100) * imageData.width)
+    const cropH = Math.round((crop.height / 100) * imageData.height)
+    if (cropW <= 0 || cropH <= 0) return
+    const { x, y, x2, y2 } = detectChartBounds(imageData.data, imageData.width, cropX, cropY, cropW, cropH)
+    const pad = 4
+    setDetectedBounds({
+      x: Math.max(0, x - pad),
+      y: Math.max(0, y - pad),
+      w: Math.min(imageData.width, x2 + pad + 1) - Math.max(0, x - pad),
+      h: Math.min(imageData.height, y2 + pad + 1) - Math.max(0, y - pad),
+    })
+    setPhase('refine')
+  }
+
+  if (phase === 'refine' && detectedBounds) {
+    return (
+      <div className={styles.chartOverlay}>
+        <CropRefinePanel
+          imageData={imageData}
+          initialBounds={detectedBounds}
+          chartName={sel.keyName || 'Stitch Key'}
+          confirmLabel="Confirm Key ✓"
+          onBack={() => setPhase('select')}
+          onConfirm={(croppedBase64) => { onChange({ croppedBase64 }); onConfirm() }}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div ref={overlayRef} className={styles.chartOverlay}>
+      <div className={styles.chartOverlayHeader}>
+        <button className={styles.cancelBtn} onClick={onBack}><ChevronLeftIcon size={16}/></button>
+        <input
+          className={styles.headerNameInput}
+          value={sel.keyName ?? ''}
+          onChange={e => onChange({ keyName: e.target.value })}
+          placeholder="Key name…"
+          autoFocus
+        />
+        {crop
+          ? <span className={styles.cropStatusReady}>Crop ✓</span>
+          : <span className={styles.cropStatusEmpty}>Draw a box on the left</span>
+        }
+      </div>
+      <div ref={viewportRef} className={`${styles.chartOverlayBody} ${styles.keyCropBody}`}>
+        <div style={displayWidth ? { width: displayWidth } : { width: '100%' }}>
+          <ReactCrop crop={crop} onChange={(_c, pc) => setCrop(pc)} className={styles.cropWrap}>
+            <img src={src} alt="Page" className={styles.cropImg} />
+          </ReactCrop>
+        </div>
+      </div>
+      <div className={styles.photoCropFooter}>
+        <button className={styles.cancelBtn} onClick={onBack}><ChevronLeftIcon size={16}/></button>
+        <button className={styles.confirmBtn} disabled={!crop} onClick={handlePreview}>
+          Preview &amp; Refine <ChevronRightIcon size={12}/>
+        </button>
       </div>
     </div>
   )

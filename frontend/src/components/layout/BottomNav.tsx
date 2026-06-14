@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { GridIcon, BarChartIcon, NavGearIcon } from '../icons'
+import { GridIcon, BarChartIcon, CalculatorIcon, NavGearIcon } from '../icons'
 import styles from './BottomNav.module.css'
 
 const NAV_ITEMS = [
@@ -8,11 +8,15 @@ const NAV_ITEMS = [
     path: '/dashboard',
     icon: <GridIcon/>,
   },
-
   {
     label: 'Stats',
     path: '/stats',
     icon: <BarChartIcon/>,
+  },
+  {
+    label: 'Calc',
+    path: '/calculators',
+    icon: <CalculatorIcon/>,
   },
   {
     label: 'Settings',

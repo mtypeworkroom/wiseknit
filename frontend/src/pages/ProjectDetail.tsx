@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore, selectTagList } from '../store/projectStore'
-import type { Gauge, Yarn, Needle, NeedleType, YarnWeight, ProjectChart, PdfSection, PdfReadingRect } from '../types'
+import type { Gauge, Yarn, Needle, NeedleType, YarnWeight, ProjectChart, PdfSection, PdfReadingRect, ProjectKeyImage } from '../types'
 import ChartEditModal from '../components/import/ChartEditModal'
 import ShapingStepsModal from '../components/shaping/ShapingStepsModal'
 import PDFViewer from '../components/reader/PDFViewer'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
-import { loadPDF, saveImage } from '../store/imageStore'
-import { ArchiveIcon, TrashIcon, FileIcon, ImageIcon, PencilIcon, BookOpenIcon, ChartGridIcon, PlusIcon, RepeatIcon, HashIcon } from '../components/icons'
+import { loadPDF, saveImage, deleteImage } from '../store/imageStore'
+import { ArchiveIcon, TrashIcon, FileIcon, ImageIcon, PencilIcon, BookOpenIcon, BookmarkIcon, ChartGridIcon, PlusIcon, RepeatIcon, HashIcon, InfoIcon } from '../components/icons'
 import { CATEGORY_GROUPS, ALL_CATEGORIES } from '../data/categories'
 import ColorPicker from '../components/ColorPicker'
 import styles from './ProjectDetail.module.css'
@@ -39,6 +39,13 @@ const NEEDLE_SIZES: { label: string; mm: number }[] = [
   { label: 'US 35 (19.0mm)',   mm: 19.0 },
   { label: 'US 50 (25.0mm)',   mm: 25.0 },
 ]
+
+function textColorForBg(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return (r * 299 + g * 587 + b * 114) / 1000 > 128 ? '#1a1a1a' : '#ffffff'
+}
 
 function CounterFormPanel({
   name, color, triggerEvery, resetAt, countDown,
@@ -267,6 +274,22 @@ export default function ProjectDetail() {
     updateProject(project.id, { charts: (project.charts ?? []).filter(c => c.id !== chartId) })
   }
 
+  const removeKey = async (keyId: string) => {
+    if (!window.confirm('Remove this stitch key?')) return
+    const key = project.keyImages?.find(k => k.id === keyId)
+    if (key) await deleteImage(key.imageKey).catch(() => {})
+    updateProject(project.id, {
+      keyImages: (project.keyImages ?? []).filter(k => k.id !== keyId),
+    })
+  }
+
+  const removePhoto = async () => {
+    if (!project.photoKey) return
+    await deleteImage(project.photoKey).catch(() => {})
+    updateProject(project.id, { photoKey: undefined, photo: undefined })
+  }
+
+
   const saveChartEdit = (chartId: string, updates: Partial<ProjectChart>) => {
     updateProject(project.id, {
       charts: (project.charts ?? []).map(c => {
@@ -448,109 +471,119 @@ export default function ProjectDetail() {
           <div className={styles.section}>
             <div className={styles.sectionHeaderRow}>
               <div className="section-label">Pattern</div>
-              <button className={styles.addBtn} onClick={() => navigate(`/project/${project.id}/setup?step=3`)} aria-label="Add chart">
-                <PlusIcon size={14}/>
-              </button>
+              <div className={styles.sectionHeaderActions}>
+                {project.pdfKey && project.pdfPageCount && (
+                  <span className={styles.sectionHeaderMeta}>{project.pdfPageCount}p</span>
+                )}
+                {project.pdfKey && (
+                  <button className={styles.addBtn} onClick={() => openPdfAt(1)} aria-label="Read PDF"><BookOpenIcon size={14}/></button>
+                )}
+              </div>
             </div>
             <div className="card">
               {project.pdfKey && (
-                <div className={styles.pdfRow}>
-                  <FileIcon size={14}/>
-                  <span className={styles.pdfRowName}>Pattern PDF</span>
-                  {project.pdfPageCount && (
-                    <span className={styles.pdfRowMeta}>{project.pdfPageCount} pages</span>
-                  )}
-                  <button className={styles.addBtn} onClick={() => openPdfAt(1)} aria-label="Read PDF"><BookOpenIcon size={14}/></button>
+                <div className={styles.actionPillsRow}>
+                  <button className={styles.iconPill} onClick={() => openPdfAt(1)} aria-label="Add bookmark">
+                    <BookmarkIcon size={11}/><span>+</span>
+                  </button>
+                  <button className={styles.iconPill} onClick={openPhotoPicker} aria-label="Add photo">
+                    <ImageIcon size={11}/><span>+</span>
+                  </button>
+                  <button className={styles.iconPill} onClick={() => navigate(`/project/${project.id}/setup?step=3&picker=true`)} aria-label="Add stitch key">
+                    <InfoIcon size={11}/><span>+</span>
+                  </button>
+                  <button
+                    className={styles.iconPill}
+                    onClick={() => {
+                      setChipMenuId(chipMenuId === 'add' ? null : 'add')
+                      setChipEditName('')
+                      setChipEditColor('#3CCFEF')
+                      setChipEditTriggerEvery('')
+                      setChipEditResetAt('')
+                      setChipEditCountDown(false)
+                    }}
+                    aria-label="Add counter"
+                  >
+                    <HashIcon size={11}/><span>+</span>
+                  </button>
                 </div>
               )}
               {project.pdfKey && (project.pdfSections?.length ?? 0) > 0 && (
                 <div className={styles.sectionChips}>
-                  {project.pdfSections!.map((s, i) => (
-                    <span key={i} className={styles.sectionChip}>
-                      <button className={styles.sectionChipLabel} onClick={() => openPdfAt(s.page, s, i)}>{s.label}</button>
-                      <button className={styles.sectionChipRemove} onClick={() => removeSection(i)} aria-label={`Remove ${s.label}`}>✕</button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              {project.pdfKey && (
-                <div className={styles.pdfRow}>
-                  <ImageIcon size={14}/>
-                  <span className={styles.pdfRowName}>Project Photo</span>
-                  {project.photoKey && (
-                    <span className={styles.pdfRowMeta}>set</span>
-                  )}
-                  <button className={styles.addBtn} onClick={openPhotoPicker} aria-label={project.photoKey ? 'Update photo' : 'Add photo'}>
-                    {project.photoKey ? <PencilIcon size={14}/> : 'Add'}
-                  </button>
-                </div>
-              )}
-              {(project.charts?.length ?? 0) === 0 ? (
-                <div className={styles.emptyState}>No charts yet — use + above to import</div>
-              ) : (
-                project.charts!.map(chart => (
-                  <div key={chart.id} className={styles.chartRow}>
-                    <ChartGridIcon size={14}/>
-                    <span className={styles.chartRowName}>{chart.name}</span>
-                    {chart.totalRows > 0 && (
-                      <span className={styles.chartRowMeta}>{chart.totalRows}r</span>
-                    )}
-                    <div className={styles.chartRowActions}>
-                      <button className={styles.addBtn} onClick={() => setShapingModalChart(chart)} aria-label="Interval steps"><RepeatIcon style={{ width: 14, height: 18 }}/></button>
-                      <button className={styles.addBtn} onClick={() => setEditModalChart(chart)} aria-label="Edit chart"><PencilIcon size={14}/></button>
-                      <button className={styles.chartDeleteBtn} onClick={() => deleteChart(chart.id)}>
-                        <TrashIcon size={12}/>
-                      </button>
-                    </div>
+                  <BookmarkIcon size={13} className={styles.chipsRowIcon}/>
+                  <div className={styles.chipsWrap}>
+                    {project.pdfSections!.map((s, i) => (
+                      <span key={i} className={styles.sectionChip}>
+                        <button className={styles.sectionChipLabel} onClick={() => openPdfAt(s.page, s, i)}>{s.label}</button>
+                        <button className={styles.sectionChipRemove} onClick={() => removeSection(i)} aria-label={`Remove ${s.label}`}>✕</button>
+                      </span>
+                    ))}
                   </div>
-                ))
-              )}
-
-              {/* Counters row — lives inside the Pattern card */}
-              <div className={styles.counterInlineRow}>
-                <HashIcon size={14} className={styles.counterInlineIcon}/>
-                <span className={styles.counterInlineLabel}>Counters</span>
-                <div className={styles.counterChipsInline}>
-                  {(project.freeCounters ?? []).map(counter => (
-                    <button
-                      key={counter.id}
-                      className={`${styles.counterChip} ${chipMenuId === counter.id ? styles.counterChipActive : ''}`}
-                      style={chipMenuId === counter.id ? { borderColor: counter.color ?? 'var(--accent)' } : undefined}
-                      onClick={() => {
-                        if (chipMenuId === counter.id) { setChipMenuId(null) }
-                        else {
-                          setChipMenuId(counter.id)
-                          setChipEditName(counter.name)
-                          setChipEditColor(counter.color ?? COUNTER_PALETTE[0])
-                          setChipEditTriggerEvery(counter.triggerEvery ? String(counter.triggerEvery) : '')
-                          setChipEditResetAt(counter.resetAt ? String(counter.resetAt) : '')
-                          setChipEditCountDown(counter.countDown ?? false)
-                        }
-                      }}
-                    >
-                      <span className={styles.counterChipDot} style={{ background: counter.color ?? 'var(--accent)' }} />
-                      <span className={styles.counterChipName}>{counter.name}</span>
-                      <span className={styles.counterChipValue}>{counter.value}</span>
-                      {counter.triggerEvery && <span className={styles.counterChipLinked}>÷{counter.triggerEvery}</span>}
-                    </button>
-                  ))}
                 </div>
-                <button
-                  className={styles.addBtn}
-                  onClick={() => {
-                    setChipMenuId(chipMenuId === 'add' ? null : 'add')
-                    setChipEditName('')
-                    setChipEditColor('#3CCFEF')
-                    setChipEditTriggerEvery('')
-                    setChipEditResetAt('')
-                    setChipEditCountDown(false)
-                  }}
-                  aria-label="Add counter"
-                >
-                  <PlusIcon size={14}/>
-                </button>
-              </div>
-
+              )}
+              {project.pdfKey && project.photoKey && (
+                <div className={styles.sectionChips}>
+                  <ImageIcon size={13} className={styles.chipsRowIcon}/>
+                  <div className={styles.chipsWrap}>
+                    <span className={styles.sectionChip}>
+                      <button className={styles.sectionChipLabel} onClick={openPhotoPicker}>Project Photo</button>
+                      <button className={styles.sectionChipRemove} onClick={removePhoto} aria-label="Remove photo">✕</button>
+                    </span>
+                  </div>
+                </div>
+              )}
+              {project.pdfKey && (project.keyImages ?? []).length > 0 && (
+                <div className={styles.sectionChips}>
+                  <InfoIcon size={13} className={styles.chipsRowIcon}/>
+                  <div className={styles.chipsWrap}>
+                    {(project.keyImages ?? []).map((key: ProjectKeyImage) => (
+                      <span key={key.id} className={styles.sectionChip}>
+                        <span className={styles.keyChipLabel}>{key.name}</span>
+                        <button className={styles.sectionChipRemove} onClick={() => removeKey(key.id)} aria-label={`Remove ${key.name}`}>✕</button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {(project.freeCounters?.length ?? 0) > 0 && (
+                <div className={styles.sectionChips}>
+                  <HashIcon size={13} className={styles.chipsRowIcon}/>
+                  <div className={styles.chipsWrap}>
+                    {project.freeCounters!.map(counter => (
+                      <span
+                        key={counter.id}
+                        className={`${styles.sectionChip} ${styles.counterChipWrapper} ${chipMenuId === counter.id ? styles.counterChipActive : ''}`}
+                        style={{ background: counter.color ?? '#3CCFEF', color: textColorForBg(counter.color ?? '#3CCFEF'), border: 'none' }}
+                      >
+                        <button
+                          className={styles.counterChipBody}
+                          onClick={() => {
+                            if (chipMenuId === counter.id) { setChipMenuId(null) }
+                            else {
+                              setChipMenuId(counter.id)
+                              setChipEditName(counter.name)
+                              setChipEditColor(counter.color ?? COUNTER_PALETTE[0])
+                              setChipEditTriggerEvery(counter.triggerEvery ? String(counter.triggerEvery) : '')
+                              setChipEditResetAt(counter.resetAt ? String(counter.resetAt) : '')
+                              setChipEditCountDown(counter.countDown ?? false)
+                            }
+                          }}
+                        >
+                          <span className={styles.counterChipName}>{counter.name}</span>
+                          <span className={styles.counterChipValue}>{counter.value}</span>
+                          {counter.triggerEvery && <span className={styles.counterChipLinked}>÷{counter.triggerEvery}</span>}
+                        </button>
+                        <button
+                          className={styles.sectionChipRemove}
+                          style={{ color: 'inherit' }}
+                          onClick={() => { deleteCounter(project.id, counter.id); if (chipMenuId === counter.id) setChipMenuId(null) }}
+                          aria-label={`Remove ${counter.name}`}
+                        >✕</button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* Action panel — edit/reset/delete for selected chip */}
               {chipMenuId && chipMenuId !== 'add' && (
                 <CounterFormPanel
@@ -607,7 +640,6 @@ export default function ProjectDetail() {
                   }
                 />
               )}
-
               {/* Add form */}
               {chipMenuId === 'add' && (
                 <CounterFormPanel
@@ -638,6 +670,28 @@ export default function ProjectDetail() {
                   }}
                   onCancel={() => setChipMenuId(null)}
                 />
+              )}
+              <div className={styles.sectionDivider}>
+                <ChartGridIcon size={11}/>Charts
+                <button className={styles.chartDeleteBtn} onClick={() => navigate(`/project/${project.id}/setup?step=3&picker=true`)} aria-label="Add chart" style={{ marginLeft: 'auto', color: 'var(--accent)', opacity: 1, fontSize: 16, fontWeight: 300, lineHeight: 1 }}>+</button>
+              </div>
+              {(project.charts?.length ?? 0) === 0 ? (
+                <div className={styles.emptyState}>No charts yet — use + above to import</div>
+              ) : (
+                project.charts!.map(chart => (
+                  <div key={chart.id} className={styles.chartRow}>
+                    <ChartGridIcon size={14}/>
+                    <span className={styles.chartRowName}>{chart.name}</span>
+                    {chart.totalRows > 0 && (
+                      <span className={styles.chartRowMeta}>{chart.totalRows}r</span>
+                    )}
+                    <div className={styles.chartRowActions}>
+                      <button className={styles.addBtn} onClick={() => setShapingModalChart(chart)} aria-label="Interval steps"><RepeatIcon style={{ width: 14, height: 18 }}/></button>
+                      <button className={styles.addBtn} onClick={() => setEditModalChart(chart)} aria-label="Edit chart"><PencilIcon size={14}/></button>
+                      <button className={styles.chartDeleteBtn} onClick={() => deleteChart(chart.id)} aria-label="Remove chart">✕</button>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </div>

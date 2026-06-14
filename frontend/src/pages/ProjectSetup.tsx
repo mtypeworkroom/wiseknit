@@ -1,9 +1,9 @@
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import { UploadIcon, FileCheckIcon, ChevronLeftIcon, ChevronRightIcon, PencilIcon } from '../components/icons'
-import { savePDF, saveImage } from '../store/imageStore'
+import { savePDF, saveImage, loadPDF } from '../store/imageStore'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useProjectStore, selectTagList } from '../store/projectStore'
-import type { Project, NeedleType, YarnWeight, ProjectChart } from '../types'
+import type { Project, NeedleType, YarnWeight, ProjectChart, ProjectKeyImage } from '../types'
 import PDFPagePicker, { type PageSelection } from '../components/import/PDFPagePicker'
 import ChartEditModal from '../components/import/ChartEditModal'
 import { CATEGORY_GROUPS } from '../data/categories'
@@ -109,6 +109,7 @@ export default function ProjectSetup() {
   }, [existingProject])
 
   const startStep = Math.min(Math.max(parseInt(searchParams.get('step') ?? '0') || 0, 0), STEPS.length - 1)
+  const autoPicker = searchParams.get('picker') === 'true'
   const [step, setStep] = useState(startStep)
   const [form, setForm] = useState<SetupState>(initialForm)
   const [tagInput, setTagInput] = useState('')
@@ -120,6 +121,19 @@ export default function ProjectSetup() {
   const [deletedChartIds, setDeletedChartIds] = useState<Set<string>>(new Set())
   const [editModalChart, setEditModalChart] = useState<ProjectChart | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // When arriving on the pattern step with ?picker=true (e.g. from "Add stitch key"),
+  // load the stored PDF from IndexedDB so the page picker can be opened immediately.
+  useEffect(() => {
+    if (!autoPicker || !existingProject?.pdfKey || pdfFile) return
+    loadPDF(existingProject.pdfKey).then(ab => {
+      if (!ab) return
+      const file = new File([ab], 'pattern.pdf', { type: 'application/pdf' })
+      setPdfFile(file)
+      setShowPagePicker(true)
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const set = (key: keyof SetupState, value: any) =>
     setForm(f => ({ ...f, [key]: value }))
@@ -204,6 +218,23 @@ export default function ProjectSetup() {
       await saveImage(photoKey, photoSel.croppedBase64)
     }
 
+    // Migrate legacy single keyImageKey → keyImages array
+    let keyImages: ProjectKeyImage[] = existingProject?.keyImages
+      ? [...existingProject.keyImages]
+      : existingProject?.keyImageKey
+        ? [{ id: existingProject.keyImageKey, name: 'Stitch Key', imageKey: existingProject.keyImageKey }]
+        : []
+
+    const keySelections = pageSelections.filter(s => s.role === 'key' && s.croppedBase64 && s.confirmed)
+    if (keySelections.length > 0) {
+      const newKeys: ProjectKeyImage[] = await Promise.all(keySelections.map(async (sel, i) => {
+        const imageKey = `key-${projectId}-${Date.now()}-${i}`
+        await saveImage(imageKey, sel.croppedBase64!)
+        return { id: imageKey, name: sel.keyName || `Key ${keyImages.length + i + 1}`, imageKey }
+      }))
+      keyImages = [...keyImages, ...newKeys]
+    }
+
     const confirmedSelections = pageSelections.filter(s => s.role === 'chart' && s.confirmed)
     const projectCharts: ProjectChart[] = await Promise.all(confirmedSelections.map(async (sel, i) => {
       const chartId = `chart-${Date.now()}-${i}`
@@ -243,6 +274,7 @@ export default function ProjectSetup() {
       startedAt: now.split('T')[0],
       notes: form.notes || undefined,
       photoKey: photoKey,
+      keyImages: keyImages.length > 0 ? keyImages : undefined,
       charts: projectCharts.length > 0 ? projectCharts : undefined,
       pdfKey: pdfKey,
       pdfPageCount: finalPageCount || undefined,
@@ -495,6 +527,13 @@ export default function ProjectSetup() {
                   </div>
                 )}
 
+                {pageSelections.filter(s => s.role === 'key').map(s => (
+                  <div key={`key-${s.pageNumber}`} className={styles.chartRow}>
+                    <span className={styles.chartRowName} style={{ color: 'var(--ok)' }}>{s.keyName || 'Stitch key'}</span>
+                    <span className={styles.chartRowPage}>p.{s.pageNumber}{s.confirmed ? '' : ' — tap to crop'}</span>
+                  </div>
+                ))}
+
                 {(!existingProject?.charts?.length && pageSelections.filter(s => s.role === 'chart').length === 0) && (
                   <div className={styles.noChartsText} style={{ padding: '8px 0' }}>No charts yet — upload a PDF to get started</div>
                 )}
@@ -660,7 +699,7 @@ export default function ProjectSetup() {
         {step > 0 && (
           <button className={styles.btnBack} onClick={prevStep} aria-label="Back"><ChevronLeftIcon size={16}/></button>
         )}
-        <button className={styles.btnDiscard} onClick={() => navigate('/dashboard')}>Discard & Exit</button>
+        <button className={styles.btnDiscard} onClick={() => navigate(existingProject ? `/project/${existingProject.id}` : '/dashboard')}>Discard & Exit</button>
         {step < 4 && step !== 3 && (
           <button className={styles.skipBtn} onClick={nextStep}>Skip</button>
         )}

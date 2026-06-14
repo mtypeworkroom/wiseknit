@@ -276,6 +276,23 @@
   text-align: right;
 }
 .missing { color: var(--ink-light); font-style: italic; }
+.iconPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  border-radius: 10px;
+  border: 1px solid var(--ink-mid);
+  background: var(--surface);
+  color: var(--ink-mid);
+  font-size: 11px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.iconPill:active { background: var(--border); }
 .addBtn {
   font-size: 11px;
   color: var(--accent);
@@ -375,23 +392,22 @@
 .chartRow {
   display: flex;
   align-items: center;
-  padding: 10px 14px;
+  padding: 10px 6px 10px 14px;
   gap: 8px;
-  border-bottom: 1px solid var(--border);
   color: var(--ink-mid);
 }
-.chartRow:last-of-type { border-bottom: none; }
 .chartRowName { flex: 1; font-size: 13px; color: var(--ink); }
-.chartRowActions { display: flex; align-items: center; gap: 4px; width: 54px; flex-shrink: 0; }
+.chartRowActions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .chartRowMeta { font-size: 11px; color: var(--ink-light); font-family: var(--font-sans); font-variant-numeric: tabular-nums lining-nums; flex-shrink: 0; width: 58px; text-align: right; }
 .chartDeleteBtn {
-  width: 22px; height: 22px;
   border: none; background: transparent;
-  color: var(--ink-light); font-size: 12px;
-  cursor: pointer; border-radius: 3px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-light); font-size: 9px;
+  cursor: pointer; flex-shrink: 0;
+  padding: 3px 10px 3px 4px;
+  opacity: 0.6;
+  line-height: 1;
 }
-.chartDeleteBtn:hover { background: rgba(220,38,38,0.1); color: #dc2626; }
+.chartDeleteBtn:hover { opacity: 1; color: #dc2626; }
 .pdfRow {
   display: flex;
   align-items: center;
@@ -417,10 +433,27 @@
 }
 .sectionChips {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 8px;
   padding: 8px 14px 10px;
   border-bottom: 1px solid var(--border);
+}
+.chipsRowIcon {
+  color: var(--ink-light);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.chipsWrap {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.keyChipLabel {
+  font-size: 12px;
+  color: var(--ink);
+  padding: 3px 8px 3px 10px;
+  line-height: 1.4;
 }
 .sectionChip {
   display: inline-flex;
@@ -453,53 +486,50 @@
 .sectionChipRemove:hover { opacity: 1; color: var(--danger, #dc2626); }
 
 
-/* counters — inline row inside Pattern card */
-.counterInlineRow {
-  display: flex;
-  align-items: center;
-  padding: 10px 14px;
-  gap: 8px;
-  border-top: 1px solid var(--border);
-}
-.counterInlineIcon { color: var(--ink-light); flex-shrink: 0; }
-.counterInlineLabel {
-  font-size: 13px;
-  color: var(--ink-light);
-  font-family: var(--font-sans);
-  flex-shrink: 0;
-}
-.counterChipsInline {
-  flex: 1;
-  min-width: 0;
+/* section dividers inside Pattern card */
+.sectionDivider {
   display: flex;
   align-items: center;
   gap: 5px;
-  overflow-x: auto;
+  padding: 4px 6px 3px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  font-family: var(--font-sans);
 }
-.counterChip {
+
+/* counters — chips row inside Pattern card */
+.counterChipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+}
+.counterChipWrapper {
+  flex-shrink: 0;
+  transition: filter 0.1s;
+}
+.counterChipWrapper:hover { filter: brightness(0.88); }
+.counterChipActive { filter: brightness(0.78); }
+.counterChipBody {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 2px 10px;
-  background: var(--surface2);
+  padding: 3px 6px 3px 10px;
+  background: transparent;
+  border: none;
+  color: inherit;
   cursor: pointer;
   white-space: nowrap;
-  flex-shrink: 0;
-  transition: border-color 0.1s, background 0.1s;
-}
-.counterChip:hover { border-color: var(--accent); }
-.counterChipActive { border-color: var(--accent); background: var(--accent-lt, rgba(60,207,239,0.1)); }
-.counterChipDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
+  font-family: var(--font-sans);
 }
 .counterChipName {
   font-size: 11px;
-  color: var(--ink);
+  color: inherit;
   font-family: var(--font-sans);
 }
 .counterChipValue {
@@ -507,14 +537,14 @@
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums lining-nums;
   font-weight: 700;
-  color: var(--accent);
+  color: inherit;
 }
 .counterChipLinked {
   font-size: 9px;
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums lining-nums;
-  color: var(--ink-light);
-  opacity: 0.7;
+  opacity: 0.75;
+  color: inherit;
 }
 .counterPanel {
   border-top: 1px solid var(--border);
@@ -633,6 +663,23 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 6px;
+}
+.sectionHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sectionHeaderMeta {
+  font-size: 11px;
+  color: var(--ink-light);
+  font-family: var(--font-sans);
+  padding-right: 2px;
+}
+.actionPillsRow {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
 }
 .notes {
   padding: 12px 14px;

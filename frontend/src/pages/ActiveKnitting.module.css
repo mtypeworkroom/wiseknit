@@ -369,6 +369,133 @@
   flex-shrink: 0;
 }
 
+.keyTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.keyTab {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-mid);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.keyTab:hover {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.keyTabActive {
+  background: var(--ok-lt);
+  border-color: var(--ok);
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.keyThumbBtn {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.keyImage {
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.keyHint {
+  display: block;
+  font-size: 10px;
+  color: var(--ink-mid);
+  text-align: center;
+  padding: 4px 0 0;
+  font-style: italic;
+}
+
+.keyEmpty {
+  font-size: 12px;
+  color: var(--ink-mid);
+  text-align: center;
+  padding: 16px 0;
+  font-style: italic;
+}
+
+/* ── Stitch Key Lightbox ─────────────────────────────────────── */
+
+.lightboxBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.93);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.lightboxClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightboxClose:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.lightboxImgWrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.lightboxImg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transform-origin: center;
+  user-select: none;
+  pointer-events: none;
+}
+
+.lightboxHint {
+  padding: 10px;
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
 .toolBtn {
   width: 100%;
   height: 32px;

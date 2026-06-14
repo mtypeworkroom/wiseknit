@@ -11,6 +11,7 @@ import ProjectDetail from './pages/ProjectDetail'
 import Patterns from './pages/Patterns'
 import Stats from './pages/Stats'
 import Settings from './pages/Settings'
+import Calculators from './pages/Calculators'
 
 // Layout
 import BottomNav from './components/layout/BottomNav'
@@ -41,6 +42,7 @@ function App() {
           <Route path="/import" element={<PatternImport />} />
           <Route path="/patterns" element={<Patterns />} />
           <Route path="/stats" element={<Stats />} />
+          <Route path="/calculators" element={<Calculators />} />
           <Route path="/settings/*" element={<Settings />} />
 
           {/* Project screens */}

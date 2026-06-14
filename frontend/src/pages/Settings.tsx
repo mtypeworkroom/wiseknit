@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useSettingsStore } from '../store/settingsStore'
+import type { Units } from '../store/settingsStore'
 import type { ReminderSound, ReminderChime } from '../types'
 import { playChime } from '../utils/audio'
 import TopBar from '../components/layout/TopBar'
@@ -22,7 +23,7 @@ const MENU_ITEMS = [
   {
     key: 'appearance' as SubPage,
     label: 'Appearance',
-    sub: 'Theme, chart size, font',
+    sub: 'Theme, units, chart size',
     icon: <AppearanceIcon size={18} stroke="var(--ink-mid)"/>,
     iconBg: 'var(--surface2)',
   },
@@ -53,6 +54,7 @@ export default function Settings() {
   const [subPage, setSubPage] = useState<SubPage>(null)
   const { mode, setMode } = useThemeStore()
 
+  const { units, setUnits } = useSettingsStore()
   const title = subPage ? SUB_TITLES[subPage] : 'Settings'
 
   return (
@@ -111,6 +113,30 @@ export default function Settings() {
         {subPage === 'ai' && <SettingsAI />}
         {subPage === 'appearance' && (
           <div className={styles.page}>
+
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>Measurements</div>
+              <div className="card">
+                {([
+                  { value: 'in' as Units, label: 'Inches (in)',       sub: 'Imperial — common in US and Canadian patterns' },
+                  { value: 'cm' as Units, label: 'Centimetres (cm)', sub: 'Metric — used in most knitting patterns worldwide' },
+                ]).map((opt, i, arr) => (
+                  <div
+                    key={opt.value}
+                    className={`card-row ${styles.menuRow}`}
+                    onClick={() => setUnits(opt.value)}
+                    style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}
+                  >
+                    <div className={styles.rowLeft}>
+                      <div className={styles.rowLabel}>{opt.label}</div>
+                      <div className={styles.rowSub}>{opt.sub}</div>
+                    </div>
+                    {units === opt.value && <span style={{ color: 'var(--accent)', fontSize: 18 }}>✓</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className={styles.section}>
               <div className={styles.sectionTitle}>Theme</div>
               <div className="card">
@@ -132,6 +158,7 @@ export default function Settings() {
                 ))}
               </div>
             </div>
+
           </div>
         )}
         {subPage === 'notifications' && <SettingsNotifications />}

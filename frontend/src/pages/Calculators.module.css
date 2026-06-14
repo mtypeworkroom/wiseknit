@@ -1,0 +1,533 @@
+.content {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 16px 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Card shell ───────────────────── */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* ── Card header (toggle button) ─── */
+
+.cardHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-sans);
+}
+
+.cardHeader:hover {
+  background: var(--surface2);
+}
+
+.cardOpen .cardHeader {
+  border-bottom: 1px solid var(--border);
+}
+
+.cardOpen .cardHeader:hover {
+  background: var(--surface2);
+}
+
+.cardHeaderText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+}
+
+.cardDesc {
+  font-size: 12px;
+  color: var(--ink-mid);
+}
+
+.chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--ink-mid);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  transform: rotate(90deg);
+}
+
+.chevronOpen {
+  transform: rotate(-90deg);
+}
+
+/* ── Card body ────────────────────── */
+
+.cardBody {
+  padding: 14px 16px 16px;
+}
+
+/* ── Form ─────────────────────────── */
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fieldLabel {
+  flex: 1;
+  font-size: 13px;
+  color: var(--ink-mid);
+}
+
+.input {
+  width: 90px;
+  padding: 6px 10px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums lining-nums;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink);
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ── Result ───────────────────────── */
+
+.result {
+  margin-top: 14px;
+  padding: 12px;
+  background: var(--surface2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.resultHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
+}
+
+.badgeInc {
+  background: var(--accent-lt);
+  color: var(--accent-text);
+}
+
+.badgeDec {
+  background: var(--danger-lt);
+  color: var(--danger);
+}
+
+.range {
+  font-size: 12px;
+  color: var(--ink-mid);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.shapeMeta {
+  font-size: 11px;
+  color: var(--ink-mid);
+  margin-left: auto;
+}
+
+.instr {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: var(--ink);
+  line-height: 1.5;
+  margin-bottom: 12px;
+  letter-spacing: 0.01em;
+}
+
+.grp {
+  white-space: nowrap;
+}
+
+.grp em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.ast {
+  color: var(--ink-mid);
+}
+
+.times {
+  font-size: 12px;
+  color: var(--ink-mid);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.sep {
+  color: var(--ink-mid);
+}
+
+.copyRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.copyBtn {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-mid);
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.copyBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.copyDone {
+  border-color: var(--ok);
+  color: var(--ok);
+  background: var(--ok-lt);
+}
+
+/* ── Edge case messages ───────────── */
+
+.none {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--ink-mid);
+  text-align: center;
+  padding: 10px;
+}
+
+.error {
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--danger);
+  padding: 8px 12px;
+  background: var(--danger-lt);
+  border-radius: 6px;
+}
+
+/* ── Pattern Size Finder ──────────── */
+
+.gaugeGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gaugeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gaugeRowLabel {
+  font-size: 12px;
+  color: var(--ink-mid);
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.gaugeInput {
+  width: 60px !important;
+  text-align: center !important;
+}
+
+.gaugeUnit {
+  font-size: 11px;
+  color: var(--ink-mid);
+  white-space: nowrap;
+}
+
+.gaugeHint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--ink-mid);
+  padding: 6px 10px;
+  background: var(--surface2);
+  border-radius: 4px;
+  border-left: 2px solid var(--accent);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.gaugeHintSep {
+  color: var(--border);
+}
+
+.gaugeWarn {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--danger);
+  padding: 6px 10px;
+  background: var(--danger-lt);
+  border-radius: 4px;
+  border-left: 2px solid var(--danger);
+  line-height: 1.4;
+}
+
+.sizeChartSection {
+  margin-top: 14px;
+}
+
+.sizeChartLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  margin-bottom: 6px;
+}
+
+.sizeList {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.sizeEmpty {
+  font-size: 12px;
+  color: var(--ink-mid);
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.sizeItem {
+  display: flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+
+.sizeItem:last-child { border-bottom: none; }
+
+.sizeItemMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sizeItemName {
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.sizeItemMeta {
+  font-size: 11px;
+  color: var(--ink-mid);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.sizeItemRemove {
+  margin-left: 8px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--ink-mid);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  border-radius: 3px;
+  padding: 0;
+  transition: color 0.12s, background 0.12s;
+}
+
+.sizeItemRemove:hover {
+  color: var(--danger);
+  background: var(--danger-lt);
+}
+
+.sizeAddRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.sizeAddName {
+  flex: 1 !important;
+  width: auto !important;
+  text-align: left !important;
+}
+
+.sizeAddMeasure {
+  width: 72px !important;
+}
+
+.sizeAddBtn {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.sizeAddBtn:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.chestField {
+  margin-top: 12px;
+}
+
+.sizeRecName {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.sizeRecDetail {
+  font-size: 12px;
+  color: var(--ink-mid);
+  font-variant-numeric: tabular-nums lining-nums;
+  margin-bottom: 6px;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sizeEase {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.sizeYardage {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.sizeYardageRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sizeYardageAmt {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.sizeYardageStated {
+  font-size: 11px;
+  color: var(--ink-mid);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.sizeYardageMore {
+  font-size: 12px;
+  color: var(--danger);
+  font-variant-numeric: tabular-nums lining-nums;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.sizeYardageLess {
+  font-size: 12px;
+  color: var(--ok);
+  font-variant-numeric: tabular-nums lining-nums;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.sizeNote {
+  font-size: 12px;
+  color: var(--ink-mid);
+  line-height: 1.5;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  margin: 0;
+}
+
+.sizeNote strong {
+  color: var(--ink);
+}
+
+.sizeDisclaimer {
+  font-size: 11px;
+  color: var(--ink-mid);
+  line-height: 1.4;
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-style: italic;
+}

@@ -98,6 +98,7 @@
 }
 .pageChart { border-color: var(--accent); }
 .pagePhoto { border-color: var(--warn); }
+.pageKey { border-color: var(--ok); }
 
 .pageBtns {
   display: flex;
@@ -114,6 +115,27 @@
 .pageBtn:hover { background: var(--surface); }
 .pageBtnActive { background: var(--accent-lt); color: var(--accent); }
 .pageBtnPhoto { background: var(--warn-lt); color: var(--warn); }
+.pageBtnKey { background: var(--ok-lt); color: var(--ok); }
+
+.keyNameInput {
+  width: 100%;
+  padding: 4px 8px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  box-sizing: border-box;
+}
+.keyNameInput:focus {
+  outline: none;
+  background: var(--surface2);
+  border-bottom-color: var(--ok);
+}
+.keyNameInput::placeholder { font-weight: 400; color: var(--ink-light); }
 
 .pageNum {
   font-size: 12px; font-family: var(--font-sans); font-variant-numeric: tabular-nums lining-nums;
@@ -231,6 +253,14 @@
   overflow-y: auto;
   background: var(--surface2);
 }
+
+.keyCropBody {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  user-select: none;
+}
 .setupHint {
   font-size: 11px;
   color: var(--ink-light);
@@ -344,6 +374,16 @@
   width: 100%; max-width: 80px; box-sizing: border-box;
 }
 .setupInputSmall:focus { border-color: var(--accent); }
+.setupInputWarn { border-color: var(--warn); }
+.setupInputWarn:focus { border-color: var(--accent); }
+.requiredStar { color: var(--warn); font-weight: 700; }
+.fieldHint {
+  font-size: 10px;
+  color: var(--warn);
+  font-family: var(--font-sans);
+  text-align: center;
+  margin-top: 4px;
+}
 
 .toggleRow {
   display: flex;
@@ -472,7 +512,7 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   overflow: hidden;
-  background: #fff;
+  background: #c0c0c0;
   display: flex;
   align-items: center;
   justify-content: center;

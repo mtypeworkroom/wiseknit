@@ -68,6 +68,12 @@ export interface PdfSection {
 
 // ── PROJECT ──────────────────────────
 
+export interface ProjectKeyImage {
+  id: string
+  name: string       // user label e.g. "Abbreviations", "Cable Symbols"
+  imageKey: string   // IndexedDB key for the cropped image
+}
+
 export interface Project {
   id: string
   name: string
@@ -91,7 +97,9 @@ export interface Project {
   photo?: string
   charts?: ProjectChart[]
   activeChartId?: string  // persisted chart selection
-  photoKey?: string     // IndexedDB key for the project photo crop
+  photoKey?: string       // IndexedDB key for the project photo crop
+  keyImageKey?: string    // legacy — superseded by keyImages
+  keyImages?: ProjectKeyImage[]  // cropped stitch key / legend images
   pdfKey?: string       // IndexedDB key for the attached PDF file
   pdfPageCount?: number // total pages in the attached PDF
   pdfSections?: PdfSection[]

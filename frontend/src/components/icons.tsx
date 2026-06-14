@@ -433,3 +433,16 @@ export function RepeatIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
+
+export function CalculatorIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <rect x="2" y="1" width="12" height="14" rx="2" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="3.5" y="2.5" width="9" height="2.5" rx="0.5" fill="currentColor" opacity="0.25"/>
+      <circle cx="6" cy="9" r="1.1" fill="currentColor"/>
+      <circle cx="10" cy="9" r="1.1" fill="currentColor"/>
+      <circle cx="6" cy="12.5" r="1.1" fill="currentColor"/>
+      <circle cx="10" cy="12.5" r="1.1" fill="currentColor"/>
+    </svg>
+  )
+}

@@ -6,6 +6,7 @@ import ChartGrid from '../components/knitting/ChartGrid'
 import { InfoIcon, BellIcon, PhoneIcon, RotateArrowIcon, RepeatIcon, MinusIcon, PlusIcon, PencilIcon, ClockIcon, TrashIcon } from '../components/icons'
 import type { ProjectReminder, ReminderSound, IntervalStep } from '../types'
 import { useSettingsStore } from '../store/settingsStore'
+import { loadImage } from '../store/imageStore'
 import { playReminderAlert } from '../utils/audio'
 import styles from './ActiveKnitting.module.css'
 
@@ -37,6 +38,9 @@ export default function ActiveKnitting() {
 
   const [panelOpen, setPanelOpen] = useState<'legend' | 'tools' | null>(null)
   const [backMenuOpen, setBackMenuOpen] = useState(false)
+  const [keyImages, setKeyImages] = useState<Array<{ name: string; src: string }>>([])
+  const [selectedKeyIndex, setSelectedKeyIndex] = useState(0)
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
   const zoom: 'S' | 'M' | 'L' | 'XL' = 'M'
   const chartAreaRef = useRef<HTMLDivElement>(null)
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -97,6 +101,23 @@ export default function ActiveKnitting() {
   useEffect(() => {
     if (!project) navigate('/dashboard')
   }, [project, navigate])
+
+  useEffect(() => {
+    if (!project) { setKeyImages([]); return }
+
+    let keysToLoad = project.keyImages ?? []
+    if (keysToLoad.length === 0 && project.keyImageKey) {
+      keysToLoad = [{ id: project.keyImageKey, name: 'Stitch Key', imageKey: project.keyImageKey }]
+    }
+    if (keysToLoad.length === 0) { setKeyImages([]); return }
+
+    Promise.all(keysToLoad.map(k => loadImage(k.imageKey).then(src => ({ name: k.name, src }))))
+      .then(results => {
+        setKeyImages(results.filter(r => r.src !== null) as Array<{ name: string; src: string }>)
+        setSelectedKeyIndex(0)
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project?.keyImages, project?.keyImageKey])
 
   // Update lastSessionAt when user opens the knitting screen
   useEffect(() => {
@@ -441,31 +462,37 @@ export default function ActiveKnitting() {
       {/* Legend panel */}
       <div className={`${styles.panel} ${panelOpen === 'legend' ? styles.panelOpen : ''}`}>
         <div className={styles.panelTitle}>Stitch Key</div>
-        {[
-          { sym: '', label: 'K — Knit', cls: '' },
-          { sym: '■', label: 'P — Purl', cls: styles.symPurl },
-          { sym: 'O', label: 'YO — Yarn Over', cls: styles.symYo },
-          { sym: 'K2T', label: 'K2tog — Decrease', cls: styles.symDec },
-          { sym: 'C4B', label: 'C4B — Cable Back', cls: styles.symCable },
-          { sym: 'C4F', label: 'C4F — Cable Front', cls: styles.symCable },
-        ].map(({ sym, label, cls }) => (
-          <div key={label} className={styles.legendItem}>
-            <div className={`${styles.legendSym} ${cls}`}>{sym}</div>
-            <span>{label}</span>
-          </div>
-        ))}
-        <div className={styles.panelTitle} style={{ marginTop: 20 }}>Sections</div>
-        {[
-          { color: 'var(--section-a)', label: 'Cable Panel' },
-          { color: 'var(--section-b)', label: 'Seed Stitch Border' },
-          { color: 'var(--section-c)', label: 'Stockinette Body' },
-        ].map(({ color, label }) => (
-          <div key={label} className={styles.sectionItem}>
-            <div className={styles.sectionDot} style={{ background: color }} />
-            <span>{label}</span>
-          </div>
-        ))}
+        {keyImages.length > 0 ? (() => {
+          const ki = keyImages[Math.min(selectedKeyIndex, keyImages.length - 1)]
+          return (
+            <>
+              {keyImages.length > 1 && (
+                <div className={styles.keyTabs}>
+                  {keyImages.map((k, i) => (
+                    <button
+                      key={i}
+                      className={`${styles.keyTab} ${i === selectedKeyIndex ? styles.keyTabActive : ''}`}
+                      onClick={() => setSelectedKeyIndex(i)}
+                    >
+                      {k.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <button className={styles.keyThumbBtn} onClick={() => setLightboxSrc(ki.src)} aria-label={`Open ${ki.name} full screen`}>
+                <img src={ki.src} alt={ki.name} className={styles.keyImage} />
+                <span className={styles.keyHint}>Tap to zoom</span>
+              </button>
+            </>
+          )
+        })() : (
+          <div className={styles.keyEmpty}>No stitch key — add one in project setup</div>
+        )}
       </div>
+
+      {lightboxSrc && (
+        <KeyLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+      )}
 
 
       {/* Instructions + nav bar — instructions wrap left, buttons anchored right */}
@@ -705,5 +732,111 @@ export default function ActiveKnitting() {
       )}
 
     </div>
+  )
+}
+
+// ── Stitch Key Lightbox ───────────────────────────────────────
+
+function KeyLightbox({ src, onClose }: { src: string; onClose: () => void }) {
+  const [scale, setScale] = useState(1)
+  const [translate, setTranslate] = useState({ x: 0, y: 0 })
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const stateRef = useRef({ scale: 1, tx: 0, ty: 0 })
+  const lastTouchDistRef = useRef<number | null>(null)
+  const lastPanRef = useRef<{ x: number; y: number } | null>(null)
+  const lastTapRef = useRef(0)
+
+  const applyTransform = (s: number, tx: number, ty: number) => {
+    stateRef.current = { scale: s, tx, ty }
+    setScale(s)
+    setTranslate({ x: tx, y: ty })
+  }
+
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        lastTouchDistRef.current = Math.hypot(
+          e.touches[1].clientX - e.touches[0].clientX,
+          e.touches[1].clientY - e.touches[0].clientY
+        )
+        lastPanRef.current = null
+      } else if (e.touches.length === 1) {
+        lastPanRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+        lastTouchDistRef.current = null
+      }
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault()
+      if (e.touches.length === 2 && lastTouchDistRef.current !== null) {
+        const dist = Math.hypot(
+          e.touches[1].clientX - e.touches[0].clientX,
+          e.touches[1].clientY - e.touches[0].clientY
+        )
+        const next = Math.max(1, Math.min(10, stateRef.current.scale * (dist / lastTouchDistRef.current)))
+        stateRef.current.scale = next
+        if (next <= 1) { applyTransform(1, 0, 0) } else { setScale(next) }
+        lastTouchDistRef.current = dist
+      } else if (e.touches.length === 1 && lastPanRef.current && stateRef.current.scale > 1) {
+        const dx = e.touches[0].clientX - lastPanRef.current.x
+        const dy = e.touches[0].clientY - lastPanRef.current.y
+        stateRef.current.tx += dx
+        stateRef.current.ty += dy
+        setTranslate({ x: stateRef.current.tx, y: stateRef.current.ty })
+        lastPanRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+      }
+    }
+
+    const onTouchEnd = () => { lastTouchDistRef.current = null; lastPanRef.current = null }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd)
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [])
+
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const next = Math.max(1, Math.min(10, stateRef.current.scale * Math.pow(1.002, -e.deltaY)))
+      stateRef.current.scale = next
+      if (next <= 1) { applyTransform(1, 0, 0) } else { setScale(next) }
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [])
+
+  const handleImgClick = () => {
+    const now = Date.now()
+    if (now - lastTapRef.current < 300) applyTransform(1, 0, 0)
+    lastTapRef.current = now
+  }
+
+  return createPortal(
+    <div className={styles.lightboxBackdrop}>
+      <button className={styles.lightboxClose} onClick={onClose}>✕</button>
+      <div ref={wrapRef} className={styles.lightboxImgWrap} onClick={handleImgClick}>
+        <img
+          src={src}
+          alt="Stitch key"
+          className={styles.lightboxImg}
+          style={{ transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})` }}
+          draggable={false}
+        />
+      </div>
+      <div className={styles.lightboxHint}>
+        {scale > 1 ? 'Double-tap to reset' : 'Pinch or scroll to zoom · Double-tap to reset'}
+      </div>
+    </div>,
+    document.body
   )
 }

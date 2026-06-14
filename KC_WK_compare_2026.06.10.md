@@ -86,9 +86,9 @@
 
 | # | Feature | Description | Notes |
 |---|---|---|---|
-| 12 | **Inc/Dec evenly** | Enter current stitch count + target → exact placement of each increase or decrease | Algorithm |
-| 13 | **Sleeve taper** | Enter measurements → full shaping schedule (inc/dec every N rows) | Algorithm |
-| 14 | **Stitch/row converter + size recommendation** | Enter gauge + body measurements → stitch/row counts + recommended pattern size | Algorithm; AI assists with reading finished measurements from PDF |
+| 12 | ✅ **Inc/Dec evenly** | Enter current stitch count + target → exact placement of each increase or decrease | Built |
+| 13 | ✅ **Sleeve taper** | Enter measurements → full shaping schedule (inc/dec every N rows) | Built |
+| 14 | ✅ **Stitch/row converter + size recommendation** | Enter gauge + body measurements → stitch/row counts + recommended pattern size | Built — sts + row gauge, size chart with chest/length/yardage, proportionality warning, yardage estimate with area-scaling explanation; unit preference (in/cm) in Settings |
 
 ### Tier 2 (addition) — PDF Page Management
 
@@ -429,18 +429,20 @@ Flow:
 
 **Yes, build it.** Having to navigate away from your place in the pattern to look up an abbreviation is a genuine friction point — you lose your place, you lose focus.
 
-**KC's UX problems to avoid:**
-- Requires switching between screens or opening a separate panel
-- Easy to lose your place in the pattern when you go to look something up
-- Going back and forth is disruptive enough that knitters often just don't use it
+**Display:** The existing slide-out info panel in ActiveKnitting (the ℹ button) is the right home. Already built and wired — just needs real content instead of hardcoded placeholders.
 
-**What better looks like — to be designed.** The goal is to see the key without losing your place in the pattern. Options to explore:
-- A slide-up panel from the bottom of the PDF viewer — pattern stays visible above it
-- A floating overlay that appears over the pattern, semi-transparent, dismisses with a tap
-- A persistent narrow strip at the edge (like a collapsed sidebar) that expands on tap without navigating away
-- The key content itself: either pulled from the pattern PDF automatically, or entered manually by the knitter during setup
+**Three-tier content strategy:**
 
-The right answer probably depends on screen size — what works on a tablet may differ from a phone. To be discussed further.
+- **Tier 1 — Manual crop (built):** Same one-gesture crop the user already knows from chart import. User crops the key/legend region from the PDF during project setup. Stored as `keyImageKey` on `Project` (IndexedDB). Displayed as a full-width zoomable image in the slide-out panel. Better than KC because: (a) no tiny unreadable thumbnail — the panel is full-width, (b) pinch-to-zoom works, (c) setup is one gesture.
+
+- **Tier 2 — Stitchfiddle integration (future):** Stitchfiddle exports contain structured color and symbol data. If a chart was built in Stitchfiddle, importing their export would auto-populate the key with zero user effort. Requires investigation of their export format and any available API. User has free license — note for future exploration.
+
+- **Tier 3 — AI crop read (future):** User crops the key region (same as Tier 1). Instead of displaying the image, send it to a vision model which returns structured `symbol → description` pairs. User reviews and corrects. Handles non-standard symbols, custom cables, colorwork. Result renders as structured entries (perfect quality at any size) rather than an image.
+
+**Add/Edit key flow:**
+- During project setup (Pattern step): offer key crop alongside chart selection in PDFPagePicker
+- On Project Detail page: Add/Edit Key button in the Pattern section navigates back to Setup step 3
+- In active knitting: panel shows key image if set; "No stitch key — add one in project setup" if not
 
 ---
 
@@ -704,8 +706,8 @@ Based on impact vs effort and what would make a knitter switch from KC. Organize
 6. ✅ (manual) **Free counters** (Tier 2 #5 partial) — project-level named manual counters with color coding done; **auto-increment every N rows, reset-at, count-down** remaining ← NEXT
 7. **AI row instruction extraction** — differentiator; Phase 2 of the instruction strip; build after Phase 1 (manual entry) works
 8. **Size highlighting** (Tier 3 #8) — AI-only; high frequency pain point; depends on PDF text extraction
-9. **Inc/Dec evenly calculator** (Tier 4 #12) — commonly needed, self-contained to build
-10. **Always-visible symbol key / QuickKeys** (Tier 3 #11) — powers both abbreviation lookup and the pattern key parser output
+9. ✅ **Calculators** (Tier 4 #12, #13, #14) — all three built: Inc/Dec Evenly, Sleeve Taper, Pattern Size Finder (sts + row gauge, size chart, yardage estimate, proportionality warning); unit preference in Settings
+10. **Always-visible symbol key / QuickKeys** (Tier 3 #11) — powers both abbreviation lookup and the pattern key parser output ← NEXT
 11. **Page navigation drawer** — bottom sheet replacing the ribbon; medium effort, clear UX improvement
 12. **PDF page add/delete and rotation** (#20, #21) — frequently needed; deletable pages fixes a known KC frustration
 13. **Pattern text sections** (Tier 5 #17) — crop written section from PDF; reuses chart crop infrastructure
@@ -713,12 +715,13 @@ Based on impact vs effort and what would make a knitter switch from KC. Organize
 
 ### Track B — Chart Enhancements (chart image quality)
 
-1. **Fix chart image display** — IndexedDB load in ChartGrid (in progress)
-2. **Adjustable row boundaries** — manual drag to correct uneven chart grids
-3. **Row boundary detection** — Hough line transform on chart image; fallback to manual drag
-4. **Repeat region marking** — touch gesture to bracket stitch repeat sections
-5. **Tap-to-identify symbols** — vision AI on demand per cell tap; uses pattern key dictionary if available
-6. **Pattern key parsing** — AI extracts symbol dictionary from pattern key text; populates symbol key (#11)
+1. ✅ **Chart setup wizard UX** — required fields with asterisks + warning borders on empty inputs, nudge intervals halved (4→2 px), crop preview shows zoomed selection with gray surround, Discard & Exit returns to project detail for existing projects / dashboard for new ones
+2. **Fix chart image display** — IndexedDB load in ChartGrid (in progress)
+3. **Adjustable row boundaries** — manual drag to correct uneven chart grids
+4. **Row boundary detection** — Hough line transform on chart image; fallback to manual drag
+5. **Repeat region marking** — touch gesture to bracket stitch repeat sections
+6. **Tap-to-identify symbols** — vision AI on demand per cell tap; uses pattern key dictionary if available
+7. **Pattern key parsing** — AI extracts symbol dictionary from pattern key text; populates symbol key (#11)
 
 ### Tier 5 / Future
 - Voice control (#19) — high value, significant build effort; enables stitch position tracker (#15)
